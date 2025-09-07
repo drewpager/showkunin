@@ -8,7 +8,6 @@ import Image from "next/image";
 const navigation = [
   { name: "Overview", href: "/" },
   { name: "Pricing", href: "/pricing" },
-  { name: "Github", href: "https://github.com/MarconLP/snapify" },
 ];
 
 export default function Header() {
@@ -46,9 +45,8 @@ export default function Header() {
           {navigation.map(({ href, name }) => (
             <Link key={name} href={href}>
               <span
-                className={`mx-[6px] cursor-pointer rounded-full p-2 text-sm text-[#666] hover:text-black ${
-                  router.asPath === href ? "bg-[#00000014]" : ""
-                }`}
+                className={`mx-[6px] cursor-pointer rounded-full p-2 text-sm text-[#666] hover:text-black ${router.asPath === href ? "bg-[#00000014]" : ""
+                  }`}
               >
                 {name}
               </span>
@@ -84,11 +82,10 @@ export default function Header() {
             height: navbarOpen ? "calc(100vh - 64px)" : "calc(100vh - 80px)",
             opacity: 0,
           }}
-          className={`absolute left-0 right-0 bg-white px-6 pt-6 opacity-0 ${
-            navbarOpen
+          className={`absolute left-0 right-0 bg-white px-6 pt-6 opacity-0 ${navbarOpen
               ? "visible top-[64px] block !opacity-100"
               : "invisible top-[80px]"
-          }`}
+            }`}
         >
           {navigation.map(({ href, name }) => (
             <Link key={name} href={href} onClick={closeNav}>

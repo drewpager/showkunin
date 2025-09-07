@@ -50,7 +50,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Snapify | The Open Source Loom Alternative</title>
+        <title>Showkunin | AI Process Automation Framework</title>
         <meta
           name="description"
           content="Share high-quality videos asynchronously and collaborate on your own schedule"
@@ -73,7 +73,7 @@ const Home: NextPage = () => {
             {/*</div>*/}
             <div className="text-center">
               <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-                The open source Loom alternative.
+                Show AI What You Want Automated.
               </h1>
               <p className="mt-6 text-lg leading-8 text-gray-600">
                 Self-hosted or hosted by us. You are in control of your own
@@ -195,11 +195,10 @@ const Home: NextPage = () => {
                 {[1, 2].map((x) => (
                   <div
                     key={x}
-                    className={`flex flex-row whitespace-nowrap py-12 ${
-                      x === 1
+                    className={`flex flex-row whitespace-nowrap py-12 ${x === 1
                         ? "animate-marquee"
                         : "absolute top-0 animate-marquee2"
-                    }`}
+                      }`}
                   >
                     {[
                       {

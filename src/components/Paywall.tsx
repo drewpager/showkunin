@@ -2,13 +2,14 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
 import { useAtom } from "jotai";
 import paywallAtom from "~/atoms/paywallAtom";
-import { CloseIcon } from "next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon";
+// import { XMarkIcon } from "next/dist/client/components/react-dev-overlay/internal/icons/XMarkIcon";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
-import { CheckIcon } from "@heroicons/react/20/solid";
+import { CheckIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import Tooltip from "~/components/Tooltip";
 import { usePostHog } from "posthog-js/react";
 import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
+
 
 export default function Paywall() {
   const [recordModalOpen] = useAtom(recordVideoModalOpen);
@@ -78,7 +79,7 @@ export default function Paywall() {
                   className="absolute right-6 top-6 text-gray-600"
                   tabIndex={0}
                 >
-                  <CloseIcon />
+                  <XMarkIcon />
                 </button>
                 <div className="mx-auto h-full max-w-7xl overflow-auto px-8 pb-8 pt-20">
                   <section className="relative mx-auto flex max-w-4xl flex-col justify-between gap-8 md:flex-row md:items-center ">
