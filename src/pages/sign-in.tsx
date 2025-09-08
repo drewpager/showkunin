@@ -15,7 +15,7 @@ const SignIn = ({
   return (
     <>
       <Head>
-        <title>Sign in to Snapify</title>
+        <title>Sign in to Showkunin</title>
         <meta
           name="description"
           content="Share high-quality videos asynchronously and collaborate on your own schedule"

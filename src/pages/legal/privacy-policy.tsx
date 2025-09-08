@@ -8,7 +8,7 @@ const Terms: NextPage = () => {
       <div className="px-8 pb-8 pt-[100px] lg:px-0">
         <p className="mb-5">Effective: May 1, 2023</p>
         <p className="mb-5">
-          This Privacy Policy describes how Snapify collects, uses, and shares
+          This Privacy Policy describes how Showkunin collects, uses, and shares
           your personal information, as well as your choices and rights with
           respect to your personal information.
         </p>
@@ -16,7 +16,7 @@ const Terms: NextPage = () => {
         <p className="mb-5">
           This Privacy Policy applies to information that relates to you as an
           identifiable individual (often referred to as “personal information”
-          or “personal data”) that Snapify receives or collects when you
+          or “personal data”) that Showkunin receives or collects when you
           interact with us or our services, website, and software (the
           “Services”).
         </p>
@@ -99,8 +99,8 @@ const Terms: NextPage = () => {
         <ul>
           <li>
             <em>Third-Party Integrations: </em>Third parties may create
-            integrations built on Snapify technology so that their applications
-            can interoperate with Snapify. If you choose to enable an
+            integrations built on Showkunin technology so that their applications
+            can interoperate with Showkunin. If you choose to enable an
             integration, the third-party may share some information about you
             with us to make your experience more seamless, such as your name,
             email, or other content or information needed to facilitate the
@@ -152,7 +152,7 @@ const Terms: NextPage = () => {
           associated with the accounts in their Workspaces; (2) grant, deny, or
           limit access to those accounts and Workspaces; and (3) configure the
           privacy settings for those accounts and Workspaces. If you create a
-          Snapify account with your work email and you aren’t already part of
+          Showkunin account with your work email and you aren’t already part of
           your company’s Workspace, your company may have the ability to add
           your account (including the content in it) to its Workspace. We’ll
           give you notice before that happens.
@@ -166,7 +166,7 @@ const Terms: NextPage = () => {
           How We Share Your Information
         </h2>
         <p className="mb-5">
-          We share information outside of Snapify only as described below:
+          We share information outside of Showkunin only as described below:
         </p>
         <ul>
           <li>
@@ -181,13 +181,13 @@ const Terms: NextPage = () => {
           </li>
           <li>
             <em>Third-party networks and websites</em>: With third-party social
-            media networks, advertising networks and websites, so that Snapify
+            media networks, advertising networks and websites, so that Showkunin
             can market and advertise on third-party platforms and websites.
           </li>
           <li>
             <em>Other Users</em>: When you collaborate with others, we display
             your basic account or profile information for context. For example,
-            if you share a Snapify recording with another user, we’ll let them
+            if you share a Showkunin recording with another user, we’ll let them
             know that it was you who shared it. Also, when users interact with a
             video or other content on our Services, we make certain usage
             information visible to the video owner and viewers, such as who
@@ -199,13 +199,13 @@ const Terms: NextPage = () => {
             person or entity, the administrator of that Workspace has the right
             to access the content in it. Customers and their authorized users
             may choose to share and disclose information according to their own
-            policies. Also, if you sign up for Snapify with an email domain that
+            policies. Also, if you sign up for Showkunin with an email domain that
             is owned or managed by your employer or organization, we may share
             the fact that you have an account with us and some basic account
             information with your employer or organization.
           </li>
           <li>
-            <em>Change in Business Structure: </em>If Snapify is involved in a
+            <em>Change in Business Structure: </em>If Showkunin is involved in a
             merger, acquisition, public offering, asset sale, insolvency,
             bankruptcy, or similar change in our business structure, we may need
             to disclose your information to those involved in the transaction,
@@ -258,7 +258,7 @@ const Terms: NextPage = () => {
         <p className="mb-5">
           We’ll retain information you store on our Services for as long as your
           account exists or as long as we need it to provide you Services. If
-          you delete your account or your content from Snapify, we’ll
+          you delete your account or your content from Showkunin, we’ll
           permanently delete your account or content within 30 days, unless we
           need to retain any information to comply with our legal obligations,
           resolve disputes, or enforce our agreements. For any other information
@@ -301,28 +301,28 @@ const Terms: NextPage = () => {
             for personal data.
           </li>
           <li>
-            <em>Privacy Shield: </em>While Snapify remains self-certified under
+            <em>Privacy Shield: </em>While Showkunin remains self-certified under
             the EU-U.S. and Swiss-U.S. Privacy Shield Frameworks and is
             committed to applying the Privacy Shield Principles to personal data
             received from the EU or Switzerland, we do not rely on those
             frameworks as a legal basis for personal data transfers. With
             respect to personal data received or transferred pursuant to the
-            Privacy Shield Frameworks,&nbsp;Snapify is subject to the
+            Privacy Shield Frameworks,&nbsp;Showkunin is subject to the
             investigatory and enforcement powers of the U.S. Federal Trade
             Commission. We are responsible for personal data we receive under
             the Privacy Shield, including onward transfers to third party agents
-            acting on our behalf. Snapify commits to cooperate with EU data
+            acting on our behalf. Showkunin commits to cooperate with EU data
             protection authorities and comply with the advice given by those
             authorities with regard to human resources data transferred from the
             EU in the context of the employment relationship. Please send any
             questions or complaints regarding our Privacy Shield compliance to{" "}
             <a
               className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-              href="mailto:privacy@snapify.it"
+              href="mailto:drew@greadings.com"
               rel="noopener"
               target="_blank"
             >
-              privacy@snapify.it
+              drew [at] greadings.com
             </a>{" "}
             or for unresolved complaints you may invoke binding arbitration, at
             no cost to you, from{" "}
@@ -347,7 +347,7 @@ const Terms: NextPage = () => {
             >
               resolve a complaint by invoking binding arbitration
             </a>
-            . You can view Snapify’s Privacy Shield certification on the{" "}
+            . You can view Showkunin’s Privacy Shield certification on the{" "}
             <a
               className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
               href="https://www.privacyshield.gov/list"
@@ -366,16 +366,16 @@ const Terms: NextPage = () => {
           personal data. Subject to any exemptions provided by law, you may have
           the right to request access to your personal information, as well as
           to seek to update, delete, or correct this information. You can
-          exercise most of these rights through your Snapify account. For
-          example, if you wish to delete your personal information from Snapify,
+          exercise most of these rights through your Showkunin account. For
+          example, if you wish to delete your personal information from Showkunin,
           you may permanently delete your account. You can also access and
           update your account information via your account settings page. If you
-          are unable to exercise your rights through your Snapify account,
+          are unable to exercise your rights through your Showkunin account,
           please contact the administrator of your Workspace, or otherwise you
           can{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="mailto:privacy@snapify.it"
+            href="mailto:drew@greadings.com"
             rel="noopener"
             target="_blank"
           >
@@ -386,14 +386,14 @@ const Terms: NextPage = () => {
         <h2 className="my-5 text-lg font-bold">Age Requirement</h2>
         <p className="mb-5">
           If you are under 13 years old (or the age of digital consent in your
-          country), you may not sign up for Snapify, and please do not send any
-          personal information about yourself to Snapify. If you believe that
+          country), you may not sign up for Showkunin, and please do not send any
+          personal information about yourself to Showkunin. If you believe that
           someone under 13 or the applicable age of digital consent has provided
           us with personal information in violation of this Privacy Policy,
           please{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="mailto:privacy@snapify.it"
+            href="mailto:drew@greadings.com"
             rel="noopener"
             target="_blank"
           >
@@ -405,7 +405,7 @@ const Terms: NextPage = () => {
           For EEA, Switzerland, and UK Data Subjects
         </h2>
         <p className="mb-5">
-          In general, Snapify is a processor of Customer Data. This means that
+          In general, Showkunin is a processor of Customer Data. This means that
           we process Customer Data only according to our customers’ instructions
           in accordance with our Terms of Service. For a list of our
           subprocessors, please visit our{" "}
@@ -415,12 +415,12 @@ const Terms: NextPage = () => {
           >
             Privacy for Humans
           </a>{" "}
-          page. Snapify acts as a controller for other types of personal data
-          where Snapify determines the purposes and means of processing of that
+          page. Showkunin acts as a controller for other types of personal data
+          where Showkunin determines the purposes and means of processing of that
           data, such as personal data used for marketing or research purposes.
         </p>
         <p className="mb-5">
-          Where Snapify acts as a controller of personal data, our lawful bases
+          Where Showkunin acts as a controller of personal data, our lawful bases
           for processing include:
         </p>
         <ul>
@@ -450,7 +450,7 @@ const Terms: NextPage = () => {
           You may{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="mailto:privacy@snapify.it"
+            href="mailto:drew@greadings.com"
             rel="noopener"
             target="_blank"
           >
@@ -467,7 +467,7 @@ const Terms: NextPage = () => {
         <p className="mb-5">
           If you feel we have not adequately addressed an issue, you have the
           right to lodge a complaint with your local data protection authority
-          or the Irish Data Protection Commission, which is Snapify’s lead
+          or the Irish Data Protection Commission, which is Showkunin’s lead
           supervisory authority in the European Union.{" "}
         </p>
         <h2 className="my-5 text-lg font-bold">For California Residents</h2>
@@ -620,11 +620,11 @@ const Terms: NextPage = () => {
           California law please contact us by email at{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="mailto:privacy@snapify.it"
+            href="mailto:drew@greadings.com"
             rel="noopener"
             target="_blank"
           >
-            privacy@snapify.it
+            drew [at] greadings.com
           </a>
           . We may request certain information to verify your identity before we
           can respond to your access and deletion requests. We will confirm
@@ -649,7 +649,7 @@ const Terms: NextPage = () => {
           behalf (an authorized agent). Authorized agents will need to
           demonstrate that you’ve authorized them to act on your behalf or must
           demonstrate they have power of attorney pursuant to applicable probate
-          law. Snapify retains the right to request confirmation directly from
+          law. Showkunin retains the right to request confirmation directly from
           you confirming that the agent is authorized to make such a request, or
           to request additional information to confirm the agent’s identity. An
           authorized agent is prohibited from using a consumer’s personal
@@ -713,11 +713,11 @@ const Terms: NextPage = () => {
           To make an access, deletion, or correction request, please email{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="mailto:privacy@snapify.it"
+            href="mailto:drew@greadings.com"
             rel="noopener"
             target="_blank"
           >
-            privacy@snapify.it
+            drew [at] greadings.com
           </a>
           . Before completing your request, we may need to verify your identity.
           We may request additional documentation or information solely for the
@@ -737,11 +737,11 @@ const Terms: NextPage = () => {
           you may email us at{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="mailto:privacy@snapify.it"
+            href="mailto:drew@greadings.com"
             rel="noopener"
             target="_blank"
           >
-            privacy@snapify.it
+            drew [at] greadings.com
           </a>
           .
         </p>
@@ -754,7 +754,7 @@ const Terms: NextPage = () => {
           your personal information, we will notify you either by email or other
           direct communication before the updates take effect. Any other
           revisions will become effective on the date the updates are posted by
-          Snapify.
+          Showkunin.
         </p>
         <p className="mb-5">
           View the{" "}
@@ -771,11 +771,11 @@ const Terms: NextPage = () => {
           Email us questions at{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="mailto:privacy@snapify.it"
+            href="mailto:drew@greadings.com"
             rel="noopener"
             target="_blank"
           >
-            privacy@snapify.it
+            drew [at] greadings.com
           </a>
           .
         </p>

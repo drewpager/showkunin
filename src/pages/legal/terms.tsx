@@ -9,14 +9,14 @@ const Terms: NextPage = () => {
         <p className="mb-5">Effective: May 1, 2023</p>
         <p className="mb-5">
           These Terms of Service (“Terms”) govern access to and use of the
-          Services made available by Snapify, Inc. By using our Services, you
+          Services made available by Showkunin, Inc. By using our Services, you
           agree to be bound by these Terms. If you use our Services on behalf of
           an entity or organization, you are binding that organization to these
           Terms, and you represent that you have the authority to do so.
         </p>
-        <h2 className="my-5 text-lg font-bold">1. Snapify’s Services</h2>
+        <h2 className="my-5 text-lg font-bold">1. Showkunin’s Services</h2>
         <p className="mb-5">
-          <strong>1.1 Registration. </strong>Snapify provides video messaging
+          <strong>1.1 Registration. </strong>Showkunin provides video messaging
           services for work. Upon registration, a user must either create a new
           Workspace or join an existing Workspace. If a user creates a new
           Workspace on behalf of themselves, the user is the Customer. If a user
@@ -35,8 +35,8 @@ const Terms: NextPage = () => {
           the Services for its business purposes in accordance with these Terms.
         </p>
         <p className="mb-5">
-          <strong>1.3 Software. </strong>Snapify may make Software available as
-          part of the Services. Subject to these Terms, Snapify grants to
+          <strong>1.3 Software. </strong>Showkunin may make Software available as
+          part of the Services. Subject to these Terms, Showkunin grants to
           Customer and its Authorized Users a limited non-exclusive,
           non-transferable, non-sublicensable license to download and use the
           Software to the extent necessary to use the Services. Software may
@@ -63,8 +63,8 @@ const Terms: NextPage = () => {
           Services in any way, including in violation of these Terms or
           applicable law. Any use of data mining, robots, or similar data
           gathering and extraction tools or framing all or any portion of the
-          Services without Snapify’s permission is strictly prohibited. Customer
-          will prevent, terminate, and notify Snapify of any unauthorized or
+          Services without Showkunin’s permission is strictly prohibited. Customer
+          will prevent, terminate, and notify Showkunin of any unauthorized or
           illegal use of or access to its or any Authorized User account or the
           Services.
         </p>
@@ -72,7 +72,7 @@ const Terms: NextPage = () => {
           <strong>1.5 Corporate Domains. </strong>If a user creates a Workspace
           using an email address belonging to their employer or organization,
           that account may be added to the organization&apos;s Workspace, in
-          which case Snapify will provide notice to the user or Administrator of
+          which case Showkunin will provide notice to the user or Administrator of
           the account, so they can help facilitate the transfer of their
           account. The Administrator of the Workspace will have the ability to
           control that account, which includes being able to access, modify, or
@@ -96,10 +96,10 @@ const Terms: NextPage = () => {
         <p className="mb-5">
           <strong>2.2 Customer Data. </strong>Customer is responsible for
           ensuring all Customer Data and any other content or information
-          provided to Snapify or uploaded, posted, recorded, or transmitted to
+          provided to Showkunin or uploaded, posted, recorded, or transmitted to
           the Services complies with these Terms. If any Customer Data violates
-          these terms, Snapify may ask Customer to remove or edit the Customer
-          Data so it is no longer in violation, or Snapify may, but is not
+          these terms, Showkunin may ask Customer to remove or edit the Customer
+          Data so it is no longer in violation, or Showkunin may, but is not
           obligated to, remove the Customer Data or take action as needed to
           resolve the issue.
         </p>
@@ -107,7 +107,7 @@ const Terms: NextPage = () => {
           <strong>2.3 Third-Party Apps. </strong>Third-Party Apps are subject to
           their own terms and privacy policies. Customer is responsible for
           reviewing those terms and policies before using Third-Party Apps.
-          Snapify is not responsible for Third-Party Apps and does not warrant
+          Showkunin is not responsible for Third-Party Apps and does not warrant
           or support them. By enabling a Third-Party App that uses or accesses
           Customer Data, Customer authorizes the transfer of that data to the
           Third-Party App and, if applicable, will ensure that there is a
@@ -119,7 +119,7 @@ const Terms: NextPage = () => {
           <strong>2.4 Prohibited Content. </strong>Customer will not and will
           ensure Authorized Users do not upload, post, record, or transmit any
           harmful, offensive, unlawful, or otherwise objectionable content to
-          Snapify or the Services, including content that: (a) is threatening,
+          Showkunin or the Services, including content that: (a) is threatening,
           abusive, harassing, defamatory, vulgar, obscene, discriminatory, or
           hateful; (b) infringes any patent, trademark, trade secret, copyright
           or other intellectual property right or violates the rights of others
@@ -130,21 +130,21 @@ const Terms: NextPage = () => {
         </p>
         <h2 className="my-5 text-lg font-bold">3. Data Protection</h2>
         <p className="mb-5">
-          <strong>3.1 Processing of Customer Data. </strong>Snapify will only
+          <strong>3.1 Processing of Customer Data. </strong>Showkunin will only
           process and use Customer Data: (a) to provide, protect, and update the
           Services, (b) to enforce these Terms and exercise its rights
           hereunder, (c) as required by law, and (d) as otherwise instructed by
-          Customer. Snapify may collect and use Customer Data on an aggregated
-          and/or anonymized basis for Snapify’s internal business purposes;
-          provided that Snapify will not use or share this data in a way that
+          Customer. Showkunin may collect and use Customer Data on an aggregated
+          and/or anonymized basis for Showkunin’s internal business purposes;
+          provided that Showkunin will not use or share this data in a way that
           identifies any individual or Customer as the source of the data.
         </p>
         <p className="mb-5">
-          <strong>3.2 Data Processing Addendum. </strong>Snapify will process
+          <strong>3.2 Data Processing Addendum. </strong>Showkunin will process
           Personal Data in accordance with its{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://www.snapify.it/dpa"
+            href="https://www.Showkunin.it/dpa"
             rel="noopener"
             target="_blank"
           >
@@ -153,13 +153,13 @@ const Terms: NextPage = () => {
           , which is incorporated into these Terms.
         </p>
         <p className="mb-5">
-          <strong>3.3 Security. </strong>Snapify will maintain an
+          <strong>3.3 Security. </strong>Showkunin will maintain an
           industry-standard information security program that consists of
           technical and organizational safeguards designed to protect Customer
-          Data, including Snapify’s{" "}
+          Data, including Showkunin’s{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://www.snapify.it/security-measures"
+            href="https://www.Showkunin.it/security-measures"
             rel="noopener"
             target="_blank"
           >
@@ -171,15 +171,15 @@ const Terms: NextPage = () => {
           usernames and passwords.
         </p>
         <p className="mb-5">
-          <strong>3.4 Subcontractors. </strong>Snapify may hire subcontractors
+          <strong>3.4 Subcontractors. </strong>Showkunin may hire subcontractors
           to assist in providing the Services, provided that: (a) subcontractors
           who receive Customer Data will be subject to confidentiality
-          obligations no less protective than those in these Terms; (b) Snapify
+          obligations no less protective than those in these Terms; (b) Showkunin
           will remain responsible for its obligations under these Terms and for
-          subcontractors’ use of Customer Data; and (c) Snapify’s{" "}
+          subcontractors’ use of Customer Data; and (c) Showkunin’s{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://www.snapify.it/dpa"
+            href="https://www.Showkunin.it/dpa"
             rel="noopener"
             target="_blank"
           >
@@ -197,21 +197,21 @@ const Terms: NextPage = () => {
           <strong>4.2 Renewals. </strong>Unless otherwise stated on an Order,
           each Subscription Term will automatically renew, unless Customer
           cancels their subscription at least 60 days prior to renewal. Customer
-          authorizes Snapify to charge Customer’s credit card on file or invoice
+          authorizes Showkunin to charge Customer’s credit card on file or invoice
           Customer for each renewal until Customer cancels their subscription.
         </p>
         <p className="mb-5">
           <strong>4.3 Downgrades. </strong>If Customer fails to pay Fees when
-          they are due, Snapify may downgrade Customer to a free plan upon
+          they are due, Showkunin may downgrade Customer to a free plan upon
           reasonable notice. If Customer is downgraded, Customer will lose
           access to certain features or functionality, but these Terms will
           continue to apply.
         </p>
         <p className="mb-5">
-          <strong>4.4 Price Changes. </strong>If Snapify increases its pricing,
-          Snapify will provide at least 30 days’ prior notice, and the new
+          <strong>4.4 Price Changes. </strong>If Showkunin increases its pricing,
+          Showkunin will provide at least 30 days’ prior notice, and the new
           pricing will go into effect on renewal. If Customer does not terminate
-          its subscription before renewal, Customer authorizes Snapify to
+          its subscription before renewal, Customer authorizes Showkunin to
           collect payment for the increased pricing.
         </p>
         <h2 className="my-5 text-lg font-bold">5. Confidentiality</h2>
@@ -248,11 +248,11 @@ const Terms: NextPage = () => {
           <strong>6.1 Ownership.</strong> Except as expressly stated, these
           Terms do not grant any rights, implied or otherwise, to any
           intellectual property. Customer owns and will continue to own all
-          intellectual property rights in Customer Data, and Snapify owns and
+          intellectual property rights in Customer Data, and Showkunin owns and
           will continue to own all intellectual property rights in the Services.
         </p>
         <p className="mb-5">
-          <strong>6.2 License.</strong> Customer grants Snapify a worldwide
+          <strong>6.2 License.</strong> Customer grants Showkunin a worldwide
           non-exclusive license to access, use, process, copy, modify,
           distribute, perform, export, and display Customer Data solely to
           provide the Services or as otherwise described in these Terms.
@@ -261,7 +261,7 @@ const Terms: NextPage = () => {
         </p>
         <p className="mb-5">
           <strong>6.3 Feedback.</strong> If Customer or Authorized Users provide
-          Feedback to Snapify, Snapify may use it without restriction or
+          Feedback to Showkunin, Showkunin may use it without restriction or
           obligation.
         </p>
         <h2 className="my-5 text-lg font-bold">7. Term &amp; Termination</h2>
@@ -280,29 +280,29 @@ const Terms: NextPage = () => {
           cure the breach within 30 days’ notice.
         </p>
         <p className="mb-5">
-          <strong>7.4 Effect of Termination.</strong> Upon termination, Snapify
+          <strong>7.4 Effect of Termination.</strong> Upon termination, Showkunin
           may delete or anonymize all Customer Data within a commercially
           reasonable period of time, and each party will return or delete any
-          other Confidential Information in its possession.&nbsp;Snapify will
+          other Confidential Information in its possession.&nbsp;Showkunin will
           only provide a prorated refund of prepaid fees for the remainder of
-          the Subscription Term if Customer terminates these Terms for Snapify’s
+          the Subscription Term if Customer terminates these Terms for Showkunin’s
           material breach in accordance with Section 7.3.
         </p>
         <p className="mb-5">
-          <strong>7.5 Suspension. </strong>Snapify may suspend Customer’s access
+          <strong>7.5 Suspension. </strong>Showkunin may suspend Customer’s access
           to the Services: (a) to the extent required by law, (b) to prevent
-          injury, death, or a credible risk of harm to Snapify, the Services, or
+          injury, death, or a credible risk of harm to Showkunin, the Services, or
           its users, or (c) for repeated violations of our terms and policies,
           including our{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://snapify.it/copyright"
+            href="https://Showkunin.it/copyright"
             rel="noopener"
             target="_blank"
           >
             <strong>Copyright Policy</strong>
           </a>
-          . If practicable, Snapify will use reasonable efforts to contact
+          . If practicable, Showkunin will use reasonable efforts to contact
           Customer and give Customer the opportunity to resolve the issue prior
           to suspension.
         </p>
@@ -313,30 +313,30 @@ const Terms: NextPage = () => {
         </p>
         <h2 className="my-5 text-lg font-bold">8. Legal Process</h2>
         <p className="mb-5">
-          If Snapify receives a request from law enforcement or another third
+          If Showkunin receives a request from law enforcement or another third
           party to provide data or information about Customer or its Authorized
-          Users, Snapify will only respond to valid Legal Process to the extent
-          required by law. Snapify will notify Customer of the request unless
+          Users, Showkunin will only respond to valid Legal Process to the extent
+          required by law. Showkunin will notify Customer of the request unless
           legally prohibited or notification would threaten the safety of an
           individual.
         </p>
         <h2 className="my-5 text-lg font-bold">9. Warranty and Disclaimer</h2>
         <p className="mb-5">
           <strong>9.1 Limited Warranty.</strong> The Services will perform
-          materially in accordance with Snapify’s Documentation. If Customer
+          materially in accordance with Showkunin’s Documentation. If Customer
           believes that this warranty has been breached, Customer must notify
-          Snapify no later than 10 days following the date of the alleged
+          Showkunin no later than 10 days following the date of the alleged
           breach. Customer’s sole and exclusive remedies for breach of this
           warranty are those described in Sections 7.
         </p>
         <p className="mb-5">
           <strong>9.2 Disclaimer. </strong>EXCEPT AS STATED IN THIS SECTION, THE
           SERVICES, DOCUMENTATION AND SOFTWARE ARE PROVIDED ON AN “AS IS” BASIS
-          WITHOUT WARRANTY. SNAPIFY MAKES NO GUARANTEES AS TO UPTIME OR
-          AVAILABILITY OF THE SERVICE. TO THE EXTENT PERMITTED BY LAW, SNAPIFY
+          WITHOUT WARRANTY. Showkunin MAKES NO GUARANTEES AS TO UPTIME OR
+          AVAILABILITY OF THE SERVICE. TO THE EXTENT PERMITTED BY LAW, Showkunin
           EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES, WHETHER EXPRESS OR
           IMPLIED, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY, TITLE,
-          FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. SNAPIFY IS NOT
+          FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. Showkunin IS NOT
           RESPONSIBLE FOR THE CONTENT, INFORMATION, OR MATERIALS POSTED BY THIRD
           PARTIES TO THE SERVICES OR ANY DAMAGE RESULTING FROM LIMITATIONS,
           DELAYS, AND OTHER PROBLEMS INHERENT IN THE USE OF THE INTERNET AND
@@ -349,48 +349,48 @@ const Terms: NextPage = () => {
           contrary, Beta Services: (a) may not be supported and may be changed
           or discontinued at any time; (b) may not be as reliable or available
           as the Services; (c) have not been subjected to the same security or
-          compliance reviews as the Services; (d) are SNAPIFY’s Confidential
+          compliance reviews as the Services; (d) are Showkunin’s Confidential
           Information; and (e) ARE PROVIDED “AS IS” WITHOUT ANY WARRANTY,
-          INDEMNITY, OR SUPPORT AND SNAPIFY’S LIABILITY FOR BETA SERVICES WILL
+          INDEMNITY, OR SUPPORT AND Showkunin’S LIABILITY FOR BETA SERVICES WILL
           NOT EXCEED FIFTY DOLLARS.
         </p>
         <h2 className="my-5 text-lg font-bold">10. Indemnification</h2>
         <p className="mb-5">
-          <strong>10.1 Indemnification by Snapify. </strong>Snapify will defend
+          <strong>10.1 Indemnification by Showkunin. </strong>Showkunin will defend
           Customer from and against any third-party claim, action, demand, or
           proceeding alleging that Customer’s use of the Services as permitted
           under these Terms infringes or misappropriates a third party’s
           intellectual property rights, and will indemnify and hold Customer
           harmless for reasonable attorney’s fees incurred as well as damages
           and other costs finally awarded against Customer or agreed in
-          settlement by Snapify resulting from the claim; provided, however,
-          that Snapify will have no liability under this section if a claim
+          settlement by Showkunin resulting from the claim; provided, however,
+          that Showkunin will have no liability under this section if a claim
           arises from (a) Customer Data or any third-party product or service;
           (b) any modification, combination, or development of the Services that
-          is not performed by or on behalf of Snapify; (c) Customer’s breach of
+          is not performed by or on behalf of Showkunin; (c) Customer’s breach of
           these Terms; or (d) Beta Services or other services offered for free
           or evaluation use.
         </p>
         <p className="mb-5">
           <strong>10.2 Indemnification by Customer. </strong>Customer will
-          defend Snapify from and against any third-party claim, action, demand,
+          defend Showkunin from and against any third-party claim, action, demand,
           or proceeding resulting from Customer Data or a violation of these
           Terms by Customer or its Authorized Users, and will indemnify and hold
-          Snapify harmless for reasonable attorney’s fees incurred as well as
-          damages and other costs finally awarded against Snapify or agreed in
+          Showkunin harmless for reasonable attorney’s fees incurred as well as
+          damages and other costs finally awarded against Showkunin or agreed in
           settlement by Customer resulting from the claim.
         </p>
         <p className="mb-5">
           <strong>10.3 Possible Infringement. </strong>If the Services infringe
           or are alleged to infringe a third party&apos;s intellectual property
-          rights, Snapify may: (a) obtain the right for Customer, at Snapify’s
+          rights, Showkunin may: (a) obtain the right for Customer, at Showkunin’s
           expense, to continue using the Services; (b) provide, at no additional
           charge, a non-infringing functionally equivalent replacement; or (c)
-          modify the Services so that they no longer infringe. If Snapify does
-          not believe the options above are commercially reasonable, Snapify may
+          modify the Services so that they no longer infringe. If Showkunin does
+          not believe the options above are commercially reasonable, Showkunin may
           terminate Customer&apos;s use of the affected Services and provide
           Customer a prorated refund of prepaid fees for the remainder of the
-          Subscription Term. Snapify will have no liability under this section
+          Subscription Term. Showkunin will have no liability under this section
           if Customer continues the allegedly infringing activity after being
           notified and provided with a non-infringing functionally equivalent
           replacement.
@@ -426,7 +426,7 @@ const Terms: NextPage = () => {
           SECTIONS 1.4 OR 2.4, EACH PARTY&apos;S ENTIRE LIABILITY ARISING OUT OF
           OR RELATED TO THESE TERMS, WHETHER IN CONTRACT OR TORT OR UNDER ANY
           OTHER THEORY OF LIABILITY, WILL NOT EXCEED IN AGGREGATE OF THE GREATER
-          OF FIFTY DOLLARS OR THE AMOUNT PAID BY CUSTOMER TO SNAPIFY IN THE 12
+          OF FIFTY DOLLARS OR THE AMOUNT PAID BY CUSTOMER TO Showkunin IN THE 12
           MONTHS PRECEDING THE LAST EVENT GIVING RISE TO LIABILITY. THE
           FOREGOING DISCLAIMER WILL NOT LIMIT CUSTOMER’S PAYMENT OBLIGATIONS
           ABOVE.
@@ -442,16 +442,16 @@ const Terms: NextPage = () => {
           <strong>12.1. Jurisdiction and Venue.</strong> Subject to the dispute
           resolution provisions below, all claims and disputes relating to these
           Terms or the Services may only be brought in the federal or state
-          courts of San Francisco County, California. Both Customer and Snapify
+          courts of Sonoma County, California. Both Customer and Showkunin
           consent to venue and personal jurisdiction there. Notwithstanding
           anything to the contrary, if Customer represents an entity or
           institution subject to state law mandating different dispute
-          resolution terms or governing law, Snapify agrees to such state law
+          resolution terms or governing law, Showkunin agrees to such state law
           requirements.
         </p>
         <p className="mb-5">
           <strong>12.2 Informal Resolution.</strong> Before filing a claim,
-          Snapify must first be contacted through the notice procedures below.
+          Showkunin must first be contacted through the notice procedures below.
           If a dispute is not resolved within 30 days of notice, a formal
           proceeding may be brought in accordance with this section.
         </p>
@@ -461,17 +461,17 @@ const Terms: NextPage = () => {
           and binding arbitration, except as set forth below. The American
           Arbitration Association (AAA) will administer the arbitration under
           its Commercial Arbitration Rules. The arbitration will be in English
-          and held in San Francisco, California.
+          and held in Sonoma, California.
         </p>
         <p className="mb-5">
           <strong>12.4 Exceptions.</strong> A lawsuit may be filed in the
-          federal or state courts of San Francisco County, California solely for
+          federal or state courts of Sonoma County, California solely for
           injunctive relief to stop unauthorized use or abuse of the Services or
           infringement of intellectual property rights without first engaging in
           the informal dispute resolution process described above.
         </p>
         <p className="mb-5">
-          <strong>12.5 NO CLASS ACTIONS. </strong>Disputes with Snapify may only
+          <strong>12.5 NO CLASS ACTIONS. </strong>Disputes with Showkunin may only
           be resolved on an individual basis and neither Customer nor any user
           will bring a claim in a class, consolidated, or representative action.
           The parties expressly waive any class arbitrations, class actions,
@@ -481,8 +481,8 @@ const Terms: NextPage = () => {
         <p className="mb-5">
           <strong>12.6. Opt-Out. </strong>To opt out of these arbitration
           provisions (including the waiver of class and representative claims),
-          Snapify must be notified by email at
-          arbitration-opt-out@Snapify.com&nbsp;no later than 30 days after
+          Showkunin must be notified by email at
+          drew [at] greadings.com&nbsp;no later than 30 days after
           account registration, unless a longer period is required by applicable
           law.
         </p>
@@ -495,26 +495,26 @@ const Terms: NextPage = () => {
           the extent there is a conflict. Any amendments must be in writing and
           signed by the parties. Notwithstanding anything to the contrary, no
           other terms or conditions in any Customer documentation or online
-          vendor portals will apply to Snapify’s provision of the Services to
+          vendor portals will apply to Showkunin’s provision of the Services to
           Customer, unless expressly agreed to in writing by an authorized
-          Snapify representative.
+          Showkunin representative.
         </p>
         <p className="mb-5">
-          <strong>13.2 Modifications. </strong>Snapify may update these Terms by
-          posting the updates to the Snapify website. If an update materially
+          <strong>13.2 Modifications. </strong>Showkunin may update these Terms by
+          posting the updates to the Showkunin website. If an update materially
           impacts Customer’s or its Authorized Users’ rights or obligations,
-          Snapify will provide at least 30 days’ notice before the updated Terms
+          Showkunin will provide at least 30 days’ notice before the updated Terms
           go into effect. Any other revisions will become effective on the date
-          the updated Terms are posted by Snapify. Continued use of or access to
+          the updated Terms are posted by Showkunin. Continued use of or access to
           the Services after the updated Terms go into effect will constitute
           acceptance of those Terms.
         </p>
         <p className="mb-5">
           <strong>13.3 Publicity. </strong>Upon prior written approval from
-          Customer, Snapify may include Customer’s name and logo on its website
+          Customer, Showkunin may include Customer’s name and logo on its website
           or in other marketing materials or channels solely to reference
-          Customer as Snapify customer, and subject to any trademark usage
-          guidelines provided to Snapify. Customer may revoke its approval at
+          Customer as Showkunin customer, and subject to any trademark usage
+          guidelines provided to Showkunin. Customer may revoke its approval at
           any time.
         </p>
         <p className="mb-5">
@@ -529,21 +529,21 @@ const Terms: NextPage = () => {
           post, airmail, or overnight courier and are deemed given when
           received. Notices to Customer may also be sent to the applicable
           Administrator account email address and are deemed given when sent.
-          Notices to Snapify must be sent to 5214F Diamond Heights Blvd #3391,
-          San Francisco, CA 94131, attn: Legal, with a copy to{" "}
+          Notices to Showkunin must be sent to 13939 Williams Road Suite 1,
+          Glen Ellen, CA 95442, attn: Legal, with a copy to{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="mailto:contractnotices@snapify.it"
+            href="mailto:drew@greadings.com"
             rel="noopener"
             target="_blank"
           >
-            contractnotices@snapify.it
+            drew@greadings.com
           </a>
           .
         </p>
         <p className="mb-5">
           <strong>13.6 Assignment. </strong>These Terms may not be assigned
-          without the prior written consent of the other party, except Snapify
+          without the prior written consent of the other party, except Showkunin
           may assign these Terms to an affiliate or in connection with a merger,
           acquisition, corporate reorganization, or sale of all or substantially
           all of its assets. Any other attempt to transfer or assign is void.
@@ -623,7 +623,7 @@ const Terms: NextPage = () => {
           “Customer Data” means all video, audio, or transcription data, images,
           comments, emoji reactions, user support communications, or other
           content or information submitted or uploaded to the Services by or
-          collected, stored, or processed by Snapify on behalf of Customer or
+          collected, stored, or processed by Showkunin on behalf of Customer or
           its Authorized Users.
         </p>
         <p className="mb-5">
@@ -645,14 +645,14 @@ const Terms: NextPage = () => {
         </p>
         <p className="mb-5">
           “Order” means the order form agreed to by the parties or the
-          applicable Snapify check-out webpage to purchase the Services.
+          applicable Showkunin check-out webpage to purchase the Services.
         </p>
         <p className="mb-5">
           “Personal Data” means personal data or personal information (each as
           defined in the{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://www.snapify.it/dpa"
+            href="https://www.Showkunin.it/dpa"
             rel="noopener"
             target="_blank"
           >
@@ -661,12 +661,12 @@ const Terms: NextPage = () => {
           ) contained within Customer Data.
         </p>
         <p className="mb-5">
-          “Services” means Snapify’s video messaging services and website,
+          “Services” means Showkunin’s video messaging services and website,
           including the Software, Documentation, tools, and services ordered by
           or provided to Customer in connection with the Services.
         </p>
         <p className="mb-5">
-          “Software” means Snapify’s client software provided as part of the
+          “Software” means Showkunin’s client software provided as part of the
           Services, such as mobile or desktop applications or browser
           extensions.
         </p>
@@ -677,28 +677,28 @@ const Terms: NextPage = () => {
         <p className="mb-5">
           “Taxes” means all government-imposed taxes, levies, or duties,
           including value-added, sales, use, or withholding taxes, except for
-          taxes based on Snapify’s net income.
+          taxes based on Showkunin’s net income.
         </p>
         <p className="mb-5">
           “Third-Party Apps” means any third-party applications, integrations,
           websites, products, or services that are linked in or that interact or
           interoperate with the Services, including any applications built by
-          third parties using Snapify’s SDKs or other developer tools.
+          third parties using Showkunin’s SDKs or other developer tools.
         </p>
         <p className="mb-5">
-          “Workspace” means the workspace in a Snapify account as described on
-          Snapify’s website.
+          “Workspace” means the workspace in a Showkunin account as described on
+          Showkunin’s website.
         </p>
         <h2 className="my-5 text-lg font-bold">Questions?</h2>
         <p className="mb-5">
           Email us questions at{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="mailto:legal@snapify.it"
+            href="mailto:drew@greadings.com"
             rel="noopener"
             target="_blank"
           >
-            legal@snapify.it
+            drew [at] greadings.com
           </a>
           .
         </p>

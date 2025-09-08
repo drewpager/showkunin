@@ -90,7 +90,7 @@ const Home: NextPage = () => {
                 <div className="flex flex-col gap-6 sm:flex-row">
                   <a
                     onClick={() =>
-                      posthog?.capture("clicked watch recorded demo demo")
+                      posthog?.capture("clicked watch recorded demo")
                     }
                     target="_blank"
                     href="https://snapify.it/share/clk3mpgnu0003mj0f042964wg"
@@ -150,12 +150,13 @@ const Home: NextPage = () => {
                   <div className="mx-auto mt-4 flex items-center justify-center gap-2">
                     <div className="flex-none">
                       <div>
-                        <img
+                        <Image
                           src={profilePicture}
                           alt="testimonial avatar"
                           className="rounded-full"
                           referrerPolicy="no-referrer"
-                          style={{ width: "32px", height: "32px" }}
+                          width={32}
+                          height={32}
                         />
                       </div>
                     </div>
@@ -196,8 +197,8 @@ const Home: NextPage = () => {
                   <div
                     key={x}
                     className={`flex flex-row whitespace-nowrap py-12 ${x === 1
-                        ? "animate-marquee"
-                        : "absolute top-0 animate-marquee2"
+                      ? "animate-marquee"
+                      : "absolute top-0 animate-marquee2"
                       }`}
                   >
                     {[
@@ -375,8 +376,8 @@ const Home: NextPage = () => {
         <div className="flex w-full items-center justify-center border-y border-[#eaeaea] bg-[#fafafa]">
           <div className="flex max-w-7xl flex-1 flex-col items-center justify-center py-4 lg:h-[140px] lg:flex-row">
             {[
-              { stat: "videos viewed", value: "20.000+" },
-              { stat: "videos created", value: "10.000+" },
+              { stat: "Tasks Automated", value: "10,000+" },
+              { stat: "Hours Saved", value: "20,000+" },
               { stat: "uptime", value: "99.99%" },
             ].map(({ stat, value }) => (
               <div

@@ -25,7 +25,7 @@ export default function Pricing() {
   return (
     <>
       <Head>
-        <title>Snapify | Pricing</title>
+        <title>Showkunin | Pricing</title>
         <meta
           name="description"
           content="Share high-quality videos asynchronously and collaborate on your own schedule"
@@ -46,16 +46,14 @@ export default function Pricing() {
             onClick={toggleBillingCycle}
           >
             <button
-              className={`rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition focus:z-10 focus:outline-none focus:ring-0 sm:w-auto ${
-                billedAnnually ? "" : "bg-white"
-              }`}
+              className={`rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition focus:z-10 focus:outline-none focus:ring-0 sm:w-auto ${billedAnnually ? "" : "bg-white"
+                }`}
             >
               <span>Monthly</span>
             </button>
             <button
-              className={`ml-0.5 rounded-full border border-transparent px-4 py-2 text-sm font-medium text-gray-700 transition duration-150 focus:z-10 focus:ring-0 sm:w-auto ${
-                billedAnnually ? "bg-white" : ""
-              }`}
+              className={`ml-0.5 rounded-full border border-transparent px-4 py-2 text-sm font-medium text-gray-700 transition duration-150 focus:z-10 focus:ring-0 sm:w-auto ${billedAnnually ? "bg-white" : ""
+                }`}
             >
               <span>Annually</span>
               <span className="ml-2 rounded-lg bg-neutral-200 p-1 text-xs font-normal">
@@ -71,7 +69,7 @@ export default function Pricing() {
         {[
           {
             name: "Pro",
-            price: { monthly: "$10", annual: "$8" },
+            price: { monthly: "$20", annual: "$10" },
             features: [
               {
                 feature: "Unlimited recordings",
@@ -88,7 +86,7 @@ export default function Pricing() {
               {
                 feature: "External video upload",
                 description:
-                  "Upload videos recorded using other tools or platforms to your Snapify library.",
+                  "Upload videos recorded using other tools or platforms to your Showkunin library.",
                 included: true,
               },
             ],
@@ -159,7 +157,7 @@ export default function Pricing() {
             </div>
             <div className="mt-2 flex-grow" />
             <Link
-              href="mailto:sales@snapify.it"
+              href="mailto:drew@greadings.com"
               onClick={() =>
                 posthog?.capture("clicked contact enterprise plan")
               }
@@ -180,11 +178,11 @@ export default function Pricing() {
             {
               question: "What are my payment options?",
               answer:
-                "You can be billed monthly, but save 20% if you pay annually. We currently accept credit card payment. Contact us at hello@snapify.it if you need an alternative payment method.",
+                "You can be billed monthly, but save 20% if you pay annually. We currently accept credit card payment. Contact us at drew@greadings.com if you need an alternative payment method.",
             },
             {
               question: "Can I import videos I already recorded?",
-              answer: "Yes! Snapify allows you to import your existing videos.",
+              answer: "Yes! Showkunin allows you to import your existing videos.",
             },
             {
               question: "How do I contact Support?",
@@ -202,9 +200,8 @@ export default function Pricing() {
                   <Disclosure.Button className="flex h-12 w-full items-center justify-between border-t border-[#eaeaea] px-4 py-8 text-left text-sm font-medium">
                     <span>{question}</span>
                     <ChevronUpIcon
-                      className={`transition-transform ${
-                        open ? "rotate-180" : ""
-                      } h-5 w-5`}
+                      className={`transition-transform ${open ? "rotate-180" : ""
+                        } h-5 w-5`}
                     />
                   </Disclosure.Button>
                   <Transition
