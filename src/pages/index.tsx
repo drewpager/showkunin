@@ -100,9 +100,8 @@ const Home: NextPage = () => {
                   </a>
                   {showDemoButton ? (
                     <a
-                      onClick={() => posthog?.capture("clicked schedule demo")}
+                      onClick={() => { alert("Not implemented"); posthog?.capture("clicked schedule demo") }}
                       target="_blank"
-                      href="https://cal.com/marcon/snapify-demo"
                       className="text-sm font-semibold leading-6"
                     >
                       Schedule personalized demo{" "}

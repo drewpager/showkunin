@@ -35,11 +35,11 @@ export default function CTA() {
               Record a video
             </button>
             <a
-              onClick={() =>
-                posthog?.capture("clicked schedule demo", { cta: true })
-              }
+              onClick={() => {
+                alert("Not implemented");
+                posthog?.capture("clicked schedule demo", { cta: true });
+              }}
               target="_blank"
-              href="https://cal.com/marcon/snapify-demo"
               className="text-sm font-semibold leading-6 text-white"
             >
               Schedule Demo <span aria-hidden="true">→</span>
