@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <div className="mx-16 flex items-center justify-center">
       <footer className="mb-4 mt-4 flex h-full w-[1048px] flex-col-reverse items-center justify-between text-sm md:flex-row">
-        <div className="my-[50px] ml-8 text-sm text-[#666] md:my-0">
+        <div className="my-[50px] ml-8 text-sm text-custom-dark md:my-0">
           © 2025 Showkunin
         </div>
         <div className="mr-8 flex w-full flex-col sm:px-[50px] md:w-auto md:flex-row md:gap-8 md:px-0">
@@ -14,7 +14,7 @@ export default function Footer() {
           ].map(({ name, link }) => (
             <Link
               key={name}
-              className="flex h-[42px] cursor-pointer items-center border-b border-[#eee] text-sm text-[#666] hover:text-black md:border-none"
+              className="flex h-[42px] cursor-pointer items-center border-b border-custom-dark border-opacity-30 text-sm text-custom-dark hover:text-custom-black md:border-none"
               href={link}
             >
               {name}

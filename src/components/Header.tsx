@@ -26,8 +26,8 @@ export default function Header() {
 
   return (
     <div
-      style={{ borderColor: attop ? "transparent" : "#E5E5E5" }}
-      className="header sticky top-0 z-10 flex h-[64px] border-b bg-white bg-opacity-40 backdrop-blur-sm backdrop-saturate-200"
+      style={{ borderColor: attop ? "#5d594b" : "#5d594b" }}
+      className="header sticky top-0 z-10 flex h-[64px] border-b bg-custom-white bg-opacity-40 backdrop-blur-sm backdrop-saturate-200"
     >
       <div className="m-auto flex w-[1048px] items-center justify-between px-[24px]">
         <Link href="/">
@@ -45,7 +45,7 @@ export default function Header() {
           {navigation.map(({ href, name }) => (
             <Link key={name} href={href}>
               <span
-                className={`mx-[6px] cursor-pointer rounded-full p-2 text-sm text-[#666] hover:text-black ${router.asPath === href ? "bg-[#00000014]" : ""
+                className={`mx-[6px] cursor-pointer rounded-full p-2 text-sm text-custom-dark hover:text-custom-black ${router.asPath === href ? "bg-custom-black bg-opacity-10" : ""
                   }`}
               >
                 {name}
@@ -56,7 +56,7 @@ export default function Header() {
 
         <Link
           href="/sign-in"
-          className="hidden text-sm font-semibold leading-6 text-gray-900 md:block"
+          className="hidden text-sm font-semibold leading-6 text-custom-black md:block"
         >
           Log in <span aria-hidden="true">&rarr;</span>
         </Link>
@@ -64,7 +64,7 @@ export default function Header() {
         <div className="flex flex-row items-center md:hidden">
           <Link
             href="/sign-in"
-            className="text-sm font-semibold leading-6 text-gray-900"
+            className="text-sm font-semibold leading-6 text-custom-black"
           >
             Log in <span aria-hidden="true">&rarr;</span>
           </Link>
@@ -82,14 +82,14 @@ export default function Header() {
             height: navbarOpen ? "calc(100vh - 64px)" : "calc(100vh - 80px)",
             opacity: 0,
           }}
-          className={`absolute left-0 right-0 bg-white px-6 pt-6 opacity-0 ${navbarOpen
-              ? "visible top-[64px] block !opacity-100"
-              : "invisible top-[80px]"
+          className={`absolute left-0 right-0 bg-custom-white px-6 pt-6 opacity-0 ${navbarOpen
+            ? "visible top-[64px] block !opacity-100"
+            : "invisible top-[80px]"
             }`}
         >
           {navigation.map(({ href, name }) => (
             <Link key={name} href={href} onClick={closeNav}>
-              <div className="flex h-[48px] cursor-pointer items-center border-b border-[#EAEAEA] text-[16px] hover:bg-[#FAFAFA]">
+              <div className="flex h-[48px] cursor-pointer items-center border-b border-custom-dark border-opacity-30 text-[16px] hover:bg-custom-white hover:bg-opacity-50">
                 {name}
               </div>
             </Link>

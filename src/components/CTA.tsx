@@ -21,16 +21,16 @@ export default function CTA() {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-custom-white">
       <div className="mx-auto max-w-7xl py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="relative isolate overflow-hidden bg-gray-900 px-6 py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
-          <h2 className="mx-auto max-w-2xl text-4xl font-bold tracking-tight text-white">
+        <div className="relative isolate overflow-hidden bg-custom-black px-6 py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
+          <h2 className="mx-auto max-w-2xl text-4xl font-bold tracking-tight text-custom-white">
             Ready to improve how your team communicates?
           </h2>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <button
               onClick={openRecordModal}
-              className="inline-flex max-h-[40px] items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              className="inline-flex max-h-[40px] items-center rounded-md border border-transparent bg-custom-orange px-4 py-2 text-sm font-medium text-custom-white shadow-sm hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:ring-offset-2"
             >
               Record a video
             </button>
@@ -40,7 +40,7 @@ export default function CTA() {
                 posthog?.capture("clicked schedule demo", { cta: true });
               }}
               target="_blank"
-              className="text-sm font-semibold leading-6 text-white"
+              className="text-sm font-semibold leading-6 text-custom-white"
             >
               Schedule Demo <span aria-hidden="true">→</span>
             </a>

@@ -32,7 +32,12 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      colors: {},
+      colors: {
+        "custom-white": "#c9c4b1",
+        "custom-orange": "#b24432",
+        "custom-black": "#080703",
+        "custom-dark": "#5d594b",
+      },
     },
   },
   plugins: [

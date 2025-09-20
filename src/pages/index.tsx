@@ -57,7 +57,7 @@ const Home: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="bg-white">
+      <div className="bg-custom-white">
         <Header />
 
         <div className="relative isolate px-6 pt-14 lg:px-8">
@@ -72,17 +72,17 @@ const Home: NextPage = () => {
             {/*  </div>*/}
             {/*</div>*/}
             <div className="text-center">
-              <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              <h1 className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
                 Show AI What You Want Automated.
               </h1>
-              <p className="mt-6 text-lg leading-8 text-gray-600">
+              <p className="mt-6 text-lg leading-8 text-custom-dark">
                 Self-hosted or hosted by us. You are in control of your own
                 data.
               </p>
               <div className="mt-10 flex flex-col items-center justify-center gap-6">
                 <button
                   onClick={openRecordModal}
-                  className="inline-flex h-[70px] flex-col items-center justify-between rounded-md border border-transparent bg-red-600 px-8 py-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  className="inline-flex h-[70px] flex-col items-center justify-between rounded-md border border-transparent bg-custom-orange px-8 py-4 text-sm font-medium text-custom-white shadow-sm hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:ring-offset-2"
                 >
                   <span>Record a video</span>
                   <span className="text-xs">(no account required)</span>
@@ -115,10 +115,10 @@ const Home: NextPage = () => {
 
           <div className="mx-auto hidden max-w-7xl py-6 sm:py-6 lg:py-6">
             <div className="text-center">
-              <p className="mt-6 text-xl font-semibold leading-8 text-gray-600">
+              <p className="mt-6 text-xl font-semibold leading-8 text-custom-dark">
                 TRUSTED BY THE BEST BRANDS
               </p>
-              <div className="relative flex overflow-x-hidden before:absolute before:left-0 before:z-10 before:h-full before:w-[15vw] before:bg-gradient-to-r before:from-white before:to-transparent after:absolute after:right-0 after:h-full after:w-[15vw] after:bg-gradient-to-r after:from-transparent after:to-white">
+              <div className="relative flex overflow-x-hidden before:absolute before:left-0 before:z-10 before:h-full before:w-[15vw] before:bg-gradient-to-r before:from-custom-white before:to-transparent after:absolute after:right-0 after:h-full after:w-[15vw] after:bg-gradient-to-r after:from-transparent after:to-custom-white">
                 {[1, 2].map((x) => (
                   <div
                     key={x}
@@ -179,10 +179,10 @@ const Home: NextPage = () => {
 
           <div className="mx-auto max-w-7xl py-32">
             <div className="flex flex-col text-center">
-              <span className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              <span className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
                 How does Snapify work?
               </span>
-              <span className="mt-4 text-[#6c6684]">
+              <span className="mt-4 text-custom-dark">
                 Get started easily. Share video instantly.
               </span>
             </div>
@@ -233,10 +233,10 @@ const Home: NextPage = () => {
 
           <div className="mx-auto max-w-7xl py-32">
             <div className="flex flex-col items-center justify-center text-center">
-              <span className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              <span className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
                 Ways to Use Snapify
               </span>
-              <span className="mt-4 max-w-[75%] text-[#6c6684]">
+              <span className="mt-4 max-w-[75%] text-custom-dark">
                 Snapify helps you get your message across quickly and clearly
                 whether you’re sharing an update with your team, documenting a
                 bug, or demoing an app.
@@ -269,16 +269,16 @@ const Home: NextPage = () => {
               ].map(({ title, description, features, image }) => (
                 <div
                   key={title}
-                  className="mx-auto max-w-[600px] flex-1 overflow-hidden rounded-lg border border-[#eaeaea]"
+                  className="mx-auto max-w-[600px] flex-1 overflow-hidden rounded-lg border border-custom-dark border-opacity-30"
                 >
                   <div className="flex flex-col pb-2 pt-8">
                     <div className="flex flex-col px-8">
                       <span className="mb-3 text-xl font-semibold">
                         {title}
                       </span>
-                      <span className="text-[#666]">{description}</span>
+                      <span className="text-custom-dark">{description}</span>
                     </div>
-                    <div className="mx-8 mt-4 border-t border-[#eaeaea] pt-4">
+                    <div className="mx-8 mt-4 border-t border-custom-dark border-opacity-30 pt-4">
                       {features.map((feature) => (
                         <div key={feature} className="mb-2 flex flex-row">
                           <CheckIcon className="h-6 w-6" />
@@ -299,7 +299,7 @@ const Home: NextPage = () => {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center border-y border-[#eaeaea] bg-[#fafafa]">
+        <div className="flex w-full items-center justify-center border-y border-custom-dark border-opacity-30 bg-custom-white bg-opacity-60">
           <div className="flex max-w-7xl flex-1 flex-col items-center justify-center py-4 lg:h-[140px] lg:flex-row">
             {[
               { stat: "Tasks Automated", value: "10,000+" },
@@ -308,10 +308,10 @@ const Home: NextPage = () => {
             ].map(({ stat, value }) => (
               <div
                 key={stat}
-                className="flex flex-1 flex-col py-5 text-center lg:border-r lg:border-[#eaeaea] lg:py-0 lg:last:border-r-0"
+                className="flex flex-1 flex-col py-5 text-center lg:border-r lg:border-custom-dark lg:border-opacity-30 lg:py-0 lg:last:border-r-0"
               >
-                <span className="text-6xl font-bold text-black">{value}</span>
-                <span className="pt-2 text-sm font-semibold uppercase text-[#666]">
+                <span className="text-6xl font-bold text-custom-black">{value}</span>
+                <span className="pt-2 text-sm font-semibold uppercase text-custom-dark">
                   {stat}
                 </span>
               </div>

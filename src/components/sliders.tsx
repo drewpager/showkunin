@@ -57,7 +57,7 @@ export function Time({ thumbnails }: TimeSliderProps) {
   useEffect(() => {
     if (seeking) return;
     setValue((time / duration) * 100);
-  }, [time, duration]);
+  }, [time, duration, seeking]);
 
   return (
     <Slider.Root

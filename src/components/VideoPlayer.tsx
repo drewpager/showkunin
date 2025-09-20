@@ -26,9 +26,9 @@ export default function VideoPlayer({ video_url, thumbnailUrl }: Props) {
 
   useEffect(() => {
     // Subscribe to state updates.
-    return player.current!.subscribe(({ paused, viewType }) => {
-      // console.log('is paused?', '->', state.paused);
-      // console.log('is audio view?', '->', state.viewType === 'audio');
+    return player.current?.subscribe(({ paused, viewType }) => {
+      console.log('is paused?', '->', paused);
+      console.log('is audio view?', '->', viewType === 'audio');
     });
   }, []);
 
