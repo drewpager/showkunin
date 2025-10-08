@@ -201,7 +201,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
   const handleSave = () => {
     if (blob) {
       const dateString =
-        "Snapify Recording - " + dayjs().format("D MMM YYYY") + ".webm";
+        "Showkunin Recording - " + dayjs().format("D MMM YYYY") + ".webm";
       invokeSaveAsDialog(blob, dateString);
     }
 
@@ -212,7 +212,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
     if (!blob || !videoRef.current) return;
 
     const dateString =
-      "Snapify Recording - " + dayjs().format("D MMM YYYY") + ".webm";
+      "Showkunin Recording - " + dayjs().format("D MMM YYYY") + ".webm";
     setSubmitting(true);
 
     try {
@@ -275,7 +275,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
         <div className="w-full">
           <Listbox value={selectedDevice} onChange={setSelectedDevice}>
             <div className="relative mt-1">
-              <Listbox.Button className="relative flex w-full cursor-default flex-row items-center justify-start rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 sm:text-sm">
+              <Listbox.Button className="relative flex w-full cursor-default flex-row items-center justify-start rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-[#5d594b]-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 sm:text-sm">
                 <MicrophoneIcon
                   className="mr-2 h-5 w-5 text-gray-400"
                   aria-hidden="true"
@@ -305,8 +305,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
                     <Listbox.Option
                       key={i}
                       className={({ active }) =>
-                        `relative cursor-default select-none py-2 pl-10 pr-4 text-gray-900 ${
-                          active ? "bg-gray-200" : ""
+                        `relative cursor-default select-none py-2 pl-10 pr-4 text-gray-900 ${active ? "bg-gray-200" : ""
                         }`
                       }
                       value={audioDevice}
@@ -314,9 +313,8 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
                       {({ selected }) => (
                         <>
                           <span
-                            className={`block truncate ${
-                              selected ? "font-medium" : "font-normal"
-                            }`}
+                            className={`block truncate ${selected ? "font-medium" : "font-normal"
+                              }`}
                           >
                             {audioDevice.label}
                           </span>
@@ -338,7 +336,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
           </Listbox>
           <button
             type="button"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-indigo-400 disabled:cursor-not-allowed"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[#5d594b] px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-[#5d594b]/80 disabled:cursor-not-allowed"
             onClick={() => void handleRecording()}
           >
             <span>Start recording</span>
@@ -404,7 +402,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
           <div className="flex items-center justify-center">
             <button
               type="button"
-              className="inline-flex items-center rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-indigo-400 disabled:cursor-not-allowed"
+              className="inline-flex items-center rounded-md bg-[#5d594b] px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-[#5d594b]/80 disabled:cursor-not-allowed"
               disabled={submitting}
               onClick={() => void handleUpload()}
             >
@@ -445,7 +443,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
             </button>
             <button
               type="button"
-              className="ml-auto inline-flex items-center rounded-md bg-[#dc2625] px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:opacity-80 disabled:cursor-not-allowed"
+              className="ml-auto inline-flex items-center rounded-md bg-[#ff623f] px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:opacity-80 disabled:cursor-not-allowed"
               onClick={() => {
                 posthog?.capture("recorder: closed post-modal");
                 void closeModal();

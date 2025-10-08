@@ -82,7 +82,7 @@ const Home: NextPage = () => {
               <div className="mt-10 flex flex-col items-center justify-center gap-6">
                 <button
                   onClick={openRecordModal}
-                  className="inline-flex h-[70px] flex-col items-center justify-between rounded-md border border-transparent bg-custom-orange px-8 py-4 text-sm font-medium text-custom-white shadow-sm hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:ring-offset-2"
+                  className="inline-flex h-[70px] flex-col items-center justify-between rounded-md border border-transparent bg-custom-orange px-8 py-4 text-sm font-medium text-white shadow-sm hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:ring-offset-2"
                 >
                   <span>Record a video</span>
                   <span className="text-xs">(no account required)</span>
@@ -180,10 +180,10 @@ const Home: NextPage = () => {
           <div className="mx-auto max-w-7xl py-32">
             <div className="flex flex-col text-center">
               <span className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
-                How does Snapify work?
+                How does Showkunin work?
               </span>
               <span className="mt-4 text-custom-dark">
-                Get started easily. Share video instantly.
+                Show off your tasks. Get them automated easily.
               </span>
             </div>
             <div className="mt-6 flex flex-col gap-x-6 xl:mt-16 xl:flex-row xl:gap-x-20">
@@ -234,12 +234,11 @@ const Home: NextPage = () => {
           <div className="mx-auto max-w-7xl py-32">
             <div className="flex flex-col items-center justify-center text-center">
               <span className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
-                Ways to Use Snapify
+                Ways to Use Showkunin
               </span>
               <span className="mt-4 max-w-[75%] text-custom-dark">
-                Snapify helps you get your message across quickly and clearly
-                whether you’re sharing an update with your team, documenting a
-                bug, or demoing an app.
+                Showkunin helps you get your request across quickly and clearly
+                whether you’re prompting a complex automation or seeking efficiency improvements.
               </span>
             </div>
             <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2">

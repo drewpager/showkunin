@@ -94,7 +94,7 @@ const VideoList: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Library | Snapify</title>
+        <title>Library | Showkunin</title>
         <meta
           name="description"
           content="Share high-quality videos asynchronously and collaborate on your own schedule"
@@ -104,7 +104,7 @@ const VideoList: NextPage = () => {
       <main className="flex h-screen min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="flex min-h-[62px] w-full items-center justify-between border-b border-solid border-b-[#E7E9EB] bg-white px-6">
           <Link href="/">
-            <span>Snapify</span>
+            <span>Showkunin</span>
           </Link>
           <div className="flex flex-row items-center justify-center">
             <VideoRecordModal />
@@ -112,15 +112,14 @@ const VideoList: NextPage = () => {
             <Paywall />
 
             {videos?.length &&
-            session?.user?.stripeSubscriptionStatus !== "active" &&
-            1 + 1 === 3 ? (
+              session?.user?.stripeSubscriptionStatus !== "active" &&
+              1 + 1 === 3 ? (
               <div className="mr-4 flex max-h-[35px] flex-col items-center justify-center rounded px-2 py-2 text-sm text-[#6c6685]">
                 <span>{videos.length}/10 videos</span>
                 <div className="mt-1 h-[3px] w-full rounded-full bg-gray-200">
                   <div
-                    className={`h-[3px] w-[45%] rounded-full ${
-                      videos.length >= 7 ? "bg-red-600" : "bg-blue-600"
-                    }`}
+                    className={`h-[3px] w-[45%] rounded-full ${videos.length >= 7 ? "bg-red-600" : "bg-blue-600"
+                      }`}
                     style={{
                       width: videos.length.toString() + "0%",
                     }}
