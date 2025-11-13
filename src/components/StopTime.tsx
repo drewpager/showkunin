@@ -4,9 +4,11 @@ interface Props {
   running: boolean;
   duration: number;
   setDuration: React.Dispatch<React.SetStateAction<number>>;
+  isPro: boolean;
+  maxDuration: number;
 }
 
-export default function StopTime({ running, duration, setDuration }: Props) {
+export default function StopTime({ running, duration, setDuration, isPro, maxDuration }: Props) {
   const calculateTimeDuration = (secs: number): string => {
     const hr = Math.floor(secs / 3600).toString();
     let min = Math.floor((secs - parseInt(hr) * 3600) / 60).toString();
@@ -35,9 +37,13 @@ export default function StopTime({ running, duration, setDuration }: Props) {
     return () => clearInterval(interval);
   }, [running, setDuration]);
 
+  const displayTime = isPro
+    ? calculateTimeDuration(duration)
+    : `${calculateTimeDuration(duration)}/${calculateTimeDuration(maxDuration)}`;
+
   return (
-    <div className="ml-1 flex w-10 items-center justify-center">
-      <span className="text-sm">{calculateTimeDuration(duration)}</span>
+    <div className="ml-1 flex items-center justify-center">
+      <span className="text-sm">{displayTime}</span>
     </div>
   );
 }

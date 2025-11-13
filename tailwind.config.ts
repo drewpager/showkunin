@@ -33,7 +33,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
-        "custom-white": "#c9c4b1",
+        "custom-white": "#F9FEFF",
         "custom-orange": "#b24432",
         "custom-black": "#080703",
         "custom-dark": "#5d594b",
@@ -41,8 +41,11 @@ export default {
     },
   },
   plugins: [
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-call
     require("tailwindcss-radix")(),
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("tailwindcss-animate"),
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-call
     require("@vidstack/react/tailwind.cjs")({
       prefix: "media",
     }),
@@ -54,11 +57,11 @@ function customVariants({
   addVariant,
   matchVariant,
 }: {
-  addVariant: any;
-  matchVariant: any;
+  addVariant: (name: string, styles: string | string[]) => void;
+  matchVariant: (name: string, cb: (value: string) => string) => void;
 }) {
   // Strict version of `.group` to help with nesting.
-  matchVariant("parent-data", (value: any) => `.parent[data-${value}] > &`);
+  matchVariant("parent-data", (value: string) => `.parent[data-${value}] > &`);
 
   addVariant("hocus", ["&:hover", "&:focus-visible"]);
   addVariant("group-hocus", [".group:hover &", ".group:focus-visible &"]);

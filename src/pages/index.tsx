@@ -27,11 +27,11 @@ const Home: NextPage = () => {
   const router = useRouter();
   const showDemoButton = useFeatureFlagEnabled("show-demo-button");
 
-  useEffect(() => {
-    if (session.status === "authenticated" && !recordModalOpen) {
-      void router.push("/videos");
-    }
-  }, [session, router]);
+  // useEffect(() => {
+  //   if (session.status === "authenticated" && !recordModalOpen) {
+  //     void router.push("/videos");
+  //   }
+  // }, [session, router]);
 
   const openRecordModal = () => {
     if (

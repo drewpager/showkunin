@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
       ...session,
       user: {
         ...session.user,
-        stripeSubscriptionStatus: user.stripeSubscriptionStatus,
+        stripeSubscriptionStatus: user.stripeSubscriptionStatus || "active",
         id: user.id,
       },
     }),

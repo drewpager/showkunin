@@ -31,6 +31,10 @@ export default function ProfileMenu() {
     void signOut();
   };
 
+  const openVideoLibrary = () => {
+    void push("/videos");
+  };
+
   return (
     <Menu as="div" className="relative inline-block text-left">
       <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -58,10 +62,22 @@ export default function ProfileMenu() {
             <Menu.Item>
               {({ active }) => (
                 <div
+                  onClick={openVideoLibrary}
+                  className={`mx-2 flex h-8 w-40 cursor-pointer flex-row content-center rounded-md p-2 ${active ? "bg-gray-100" : ""
+                    }`}
+                >
+                  <p className="leading-2 text-sm leading-4">
+                    Video Library
+                  </p>
+                </div>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <div
                   onClick={openBillingSettings}
-                  className={`mx-2 flex h-8 w-40 cursor-pointer flex-row content-center rounded-md p-2 ${
-                    active ? "bg-gray-100" : ""
-                  }`}
+                  className={`mx-2 flex h-8 w-40 cursor-pointer flex-row content-center rounded-md p-2 ${active ? "bg-gray-100" : ""
+                    }`}
                 >
                   <p className="leading-2 text-sm leading-4">
                     Billing settings
@@ -73,9 +89,8 @@ export default function ProfileMenu() {
               {({ active }) => (
                 <div
                   onClick={handleSignOut}
-                  className={`mx-2 flex h-8 w-40 cursor-pointer flex-row content-center rounded-md p-2 ${
-                    active ? "bg-gray-100" : ""
-                  }`}
+                  className={`mx-2 flex h-8 w-40 cursor-pointer flex-row content-center rounded-md p-2 ${active ? "bg-gray-100" : ""
+                    }`}
                 >
                   <p className="leading-2 text-sm leading-4">Sign out</p>
                 </div>

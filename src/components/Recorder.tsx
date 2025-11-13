@@ -19,6 +19,8 @@ import Tooltip from "~/components/Tooltip";
 import generateThumbnail from "~/utils/generateThumbnail";
 import * as EBML from "ts-ebml";
 import VideoPlayer from "~/components/VideoPlayer";
+import { useSession } from "next-auth/react";
+import { env } from "~/env.mjs";
 
 interface Props {
   closeModal: () => void;
@@ -50,6 +52,18 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
   const [, setPaywallOpen] = useAtom(paywallAtom);
   const videoRef = useRef<null | HTMLVideoElement>(null);
   const posthog = usePostHog();
+  const { data: session } = useSession();
+
+  // Check if user has pro access
+  // Following the same pattern used in videos.tsx and NewVideoMenu.tsx:
+  // - If Stripe is not configured (dev mode), everyone gets pro features
+  // - If Stripe IS configured (production), only users with "active" or "trialing" subscriptions get pro features
+  const isPro =
+    session?.user?.stripeSubscriptionStatus === "active" ||
+    session?.user?.stripeSubscriptionStatus === "trialing" ||
+    !env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+
+  const MAX_FREE_DURATION = 300; // 5 minutes in seconds
 
   const handleRecording = async () => {
     const screenStream = await navigator.mediaDevices.getDisplayMedia({
@@ -198,10 +212,19 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
     void getAudioDevices();
   }, []);
 
+  // Auto-stop recording when free user reaches 5-minute limit
+  useEffect(() => {
+    if (!isPro && step === "in" && duration >= MAX_FREE_DURATION) {
+      handleStop();
+      posthog?.capture("recorder: free user reached 5-minute limit");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [duration, isPro, step]);
+
   const handleSave = () => {
     if (blob) {
       const dateString =
-        "Showkunin Recording - " + dayjs().format("D MMM YYYY") + ".webm";
+        "Showkunin Recording - " + dayjs().format("MMM DD YYYY") + ".webm";
       invokeSaveAsDialog(blob, dateString);
     }
 
@@ -212,7 +235,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
     if (!blob || !videoRef.current) return;
 
     const dateString =
-      "Showkunin Recording - " + dayjs().format("D MMM YYYY") + ".webm";
+      "Showkunin Recording - " + dayjs().format("MMM DD YYYY") + ".webm";
     setSubmitting(true);
 
     try {
@@ -355,6 +378,8 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
                 running={!pause}
                 duration={duration}
                 setDuration={setDuration}
+                isPro={isPro}
+                maxDuration={MAX_FREE_DURATION}
               />
             </div>
           </Tooltip>
