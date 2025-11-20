@@ -16,6 +16,7 @@ import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
 import VideoRecordModal from "~/components/VideoRecordModal";
 import defaultProfileIcon from "~/assets/default profile icon.jpg";
 import VideoPlayer from "~/components/VideoPlayer";
+import VideoAnalysis from "~/components/VideoAnalysis";
 
 const VideoList: NextPage = () => {
   const router = useRouter();
@@ -180,6 +181,9 @@ const VideoList: NextPage = () => {
                 </>
               )}
             </div>
+
+            {/* AI Analysis Section */}
+            {video && <VideoAnalysis videoId={video.id} />}
           </div>
         </div>
       </main>

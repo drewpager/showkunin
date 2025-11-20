@@ -50,7 +50,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Showkunin | AI Process Automation Framework</title>
+        <title>Showkunin 職人 | AI Process Automation Framework</title>
         <meta
           name="description"
           content="Share high-quality videos asynchronously and collaborate on your own schedule"

@@ -104,7 +104,7 @@ const VideoList: NextPage = () => {
       <main className="flex h-screen min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="flex min-h-[62px] w-full items-center justify-between border-b border-solid border-b-[#E7E9EB] bg-custom-white px-6">
           <Link href="/">
-            <span>Showkunin</span>
+            <span>Showkunin 職人</span>
           </Link>
           <div className="flex flex-row items-center justify-center">
             <VideoRecordModal />

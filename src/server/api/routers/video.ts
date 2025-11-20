@@ -13,6 +13,11 @@ import {
 import "@dotenvx/dotenvx/config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { TRPCError } from "@trpc/server";
+import { genAI, fileManager } from "~/server/gemini";
+import axios from "axios";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 export const videoRouter = createTRPCRouter({
   getAll: protectedProcedure.query(
@@ -362,5 +367,107 @@ export const videoRouter = createTRPCRouter({
         deleteVideoObject,
         deleteThumbnailObject,
       };
+    }),
+  analyzeVideo: publicProcedure
+    .input(z.object({ videoId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { s3, prisma, session } = ctx;
+      
+      // Get video from database
+      const video = await prisma.video.findUnique({
+        where: { id: input.videoId },
+      });
+
+      if (!video) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      // Check if user has access to this video
+      if (video.userId !== session?.user.id && !video.sharing) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      try {
+        // Get the video from S3
+        const getObjectCommand = new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: video.userId + "/" + video.id,
+        });
+
+        const signedUrl = await getSignedUrl(s3, getObjectCommand, {
+          expiresIn: 3600,
+        });
+
+        // Download video to temporary file
+        const tempDir = os.tmpdir();
+        const tempFilePath = path.join(tempDir, `${video.id}.webm`);
+        
+        const response = await axios.get(signedUrl, {
+          responseType: "arraybuffer",
+        });
+        
+        fs.writeFileSync(tempFilePath, response.data);
+
+        // Upload to Gemini
+        const uploadResult = await fileManager.uploadFile(tempFilePath, {
+          mimeType: "video/webm",
+          displayName: video.title,
+        });
+
+        // Wait for file to be processed
+        let file = await fileManager.getFile(uploadResult.file.name);
+        while (file.state === "PROCESSING") {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          file = await fileManager.getFile(uploadResult.file.name);
+        }
+
+        if (file.state === "FAILED") {
+          throw new Error("Video processing failed");
+        }
+
+        // Analyze the video
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        
+        const result = await model.generateContent([
+          {
+            fileData: {
+              mimeType: uploadResult.file.mimeType,
+              fileUri: uploadResult.file.uri,
+            },
+          },
+          {
+            text: `You are an AI automation expert analyzing a screen recording. The user is showing you a task they want automated.
+
+Please analyze this video and provide:
+
+1. **Task Summary**: A clear description of what the user is trying to accomplish
+2. **Automation Approach**: How this task could be automated (e.g., using browser automation, API calls, scripts, etc.)
+3. **Implementation Steps**: Step-by-step instructions for implementing the automation
+4. **Code Example**: If applicable, provide code snippets with clear instructions on where to use them
+5. **Tools/Technologies**: List any tools, libraries, or services that would be helpful
+
+Format your response in a clear, structured way that's easy for the user to follow.`,
+          },
+        ]);
+
+        const analysisText = result.response.text();
+
+        // Clean up temporary file
+        fs.unlinkSync(tempFilePath);
+
+        // Delete the file from Gemini
+        await fileManager.deleteFile(uploadResult.file.name);
+
+        return {
+          success: true,
+          analysis: analysisText,
+        };
+      } catch (error) {
+        console.error("Error analyzing video:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to analyze video",
+        });
+      }
     }),
 });
