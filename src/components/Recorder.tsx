@@ -20,7 +20,7 @@ import generateThumbnail from "~/utils/generateThumbnail";
 import * as EBML from "ts-ebml";
 import VideoPlayer from "~/components/VideoPlayer";
 import { useSession } from "next-auth/react";
-import { env } from "~/env.mjs";
+
 
 interface Props {
   closeModal: () => void;
@@ -61,7 +61,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
   const isPro =
     session?.user?.stripeSubscriptionStatus === "active" ||
     session?.user?.stripeSubscriptionStatus === "trialing" ||
-    !env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   const MAX_FREE_DURATION = 300; // 5 minutes in seconds
 

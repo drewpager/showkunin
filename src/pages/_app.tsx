@@ -8,17 +8,17 @@ import "~/styles/globals.css";
 import CrispChat from "~/components/CrispChat";
 import posthog from "posthog-js";
 import { PostHogProvider, usePostHog } from "posthog-js/react";
-import { env } from "~/env.mjs";
+
 import { type ReactNode, useEffect } from "react";
 
 // Check that PostHog is client-side (used to handle Next.js SSR)
 if (
   typeof window !== "undefined" &&
-  !!env.NEXT_PUBLIC_POSTHOG_KEY &&
-  !!env.NEXT_PUBLIC_POSTHOG_PROXY_HOST
+  !!process.env.NEXT_PUBLIC_POSTHOG_KEY &&
+  !!process.env.NEXT_PUBLIC_POSTHOG_PROXY_HOST
 ) {
-  posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY, {
-    api_host: env.NEXT_PUBLIC_POSTHOG_PROXY_HOST,
+  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_PROXY_HOST,
     // Enable debug mode in development
     loaded: (posthog) => {
       if (process.env.NODE_ENV === "development") posthog.debug();

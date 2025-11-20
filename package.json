@@ -4,15 +4,19 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
+    "build": "dotenvx run -- next build",
+    "dev": "dotenvx run -- next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "test:e2e": "npm run db-seed && playwright test --headed --workers 1",
+    "test:e2e": "dotenvx run -- npm run db-seed && playwright test --headed --workers 1",
+    "test:s3": "dotenvx run -- tsx tests/s3-upload-test.ts",
     "stripe:listen": "stripe listen --forward-to http://localhost:3000/api/webhooks/stripe",
-    "db-seed": "NODE_ENV=development prisma db seed",
-    "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "db-seed": "dotenvx run -- NODE_ENV=development prisma db seed",
+    "start": "dotenvx run -- next start",
+    "typecheck": "tsc --noEmit",
+    "env:encrypt": "dotenvx encrypt",
+    "env:decrypt": "dotenvx decrypt",
+    "env:keys": "dotenvx keys"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -20,6 +24,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.310.0",
     "@aws-sdk/s3-request-presigner": "^3.310.0",
+    "@dotenvx/dotenvx": "^1.51.1",
     "@headlessui/react": "^1.7.13",
     "@heroicons/react": "^2.0.17",
     "@next-auth/prisma-adapter": "^1.0.5",

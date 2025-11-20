@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { env } from "~/env.mjs";
+import "@dotenvx/dotenvx/config";
 import { prisma } from "~/server/db";
 import type Stripe from "stripe";
 import { buffer } from "micro";
@@ -18,7 +18,7 @@ export const config = {
   },
 };
 
-const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export default async function handler(
   req: NextApiRequest,

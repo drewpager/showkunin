@@ -2,7 +2,7 @@
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
  * This is especially useful for Docker builds.
  */
-import { env } from "./src/env.mjs";
+import "@dotenvx/dotenvx/config";
 
 !process.env.SKIP_ENV_VALIDATION && (await import("./src/env.mjs"));
 
@@ -26,9 +26,9 @@ const config = {
 
   async rewrites() {
     return [
-      ...(!!env.POSTHOG_PROXY_PATH && !!env.NEXT_PUBLIC_POSTHOG_HOST ? [{
-        source: "/" + env.POSTHOG_PROXY_PATH +  "/:path*",
-        destination: env.NEXT_PUBLIC_POSTHOG_HOST + "/:path*",
+      ...(!!process.env.POSTHOG_PROXY_PATH && !!process.env.NEXT_PUBLIC_POSTHOG_HOST ? [{
+        source: "/" + process.env.POSTHOG_PROXY_PATH +  "/:path*",
+        destination: process.env.NEXT_PUBLIC_POSTHOG_HOST + "/:path*",
       }]: []),
     ];
   },

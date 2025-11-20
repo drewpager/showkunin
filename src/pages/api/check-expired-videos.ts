@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "~/server/db";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { env } from "~/env.mjs";
+import "@dotenvx/dotenvx/config";
 import { s3 } from "~/server/aws/s3";
 import { verifySignature } from "@upstash/qstash/nextjs";
 
@@ -38,11 +38,19 @@ export default verifySignature(async function handler(
   const expiredVideoIds = expiredVideos.map((x) => x.id);
   expiredVideos.map(async (video) => {
     const deleteObjectCommand = new DeleteObjectCommand({
-      Bucket: env.AWS_BUCKET_NAME,
+      Bucket: process.env.AWS_BUCKET_NAME,
       Key: video.user.id + "/" + video.id,
     });
 
-    return await s3.send(deleteObjectCommand);
+    const deleteThumbnailObjectCommand = new DeleteObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: video.user.id + "/" + video.id + "-thumbnail",
+    });
+
+    return await Promise.all([
+      s3.send(deleteObjectCommand),
+      s3.send(deleteThumbnailObjectCommand),
+    ]);
   });
 
   const deletedVideos = await prisma.video.deleteMany({

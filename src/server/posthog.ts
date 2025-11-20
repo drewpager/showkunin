@@ -1,9 +1,9 @@
 import { PostHog } from "posthog-node";
-import { env } from "~/env.mjs";
+import "@dotenvx/dotenvx/config";
 
 export const posthog =
-  !!env.NEXT_PUBLIC_POSTHOG_KEY && !!env.NEXT_PUBLIC_POSTHOG_HOST
-    ? new PostHog(env.NEXT_PUBLIC_POSTHOG_KEY, {
-        host: env.NEXT_PUBLIC_POSTHOG_HOST,
+  !!process.env.NEXT_PUBLIC_POSTHOG_KEY && !!process.env.NEXT_PUBLIC_POSTHOG_HOST
+    ? new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+        host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
       })
     : null;

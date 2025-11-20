@@ -19,7 +19,7 @@ import { usePostHog } from "posthog-js/react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { env } from "~/env.mjs";
+
 
 const VideoList: NextPage = () => {
   const [, setRecordOpen] = useAtom(recordVideoModalOpen);
@@ -57,7 +57,7 @@ const VideoList: NextPage = () => {
   const openUploadModal = () => {
     if (
       session?.user.stripeSubscriptionStatus === "active" ||
-      !env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+      !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
     ) {
       setUploadOpen(true);
 

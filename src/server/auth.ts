@@ -7,7 +7,7 @@ import {
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { env } from "~/env.mjs";
+import "@dotenvx/dotenvx/config";
 import { prisma } from "~/server/db";
 import { PostHog } from "posthog-node";
 
@@ -50,17 +50,17 @@ export const authOptions: NextAuthOptions = {
   },
   adapter: PrismaAdapter(prisma),
   providers: [
-    ...(!!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET
+    ...(!!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET
       ? [
           GoogleProvider({
-            clientId: env.GOOGLE_CLIENT_ID,
-            clientSecret: env.GOOGLE_CLIENT_SECRET,
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
           }),
         ]
       : []),
     GitHubProvider({
-      clientId: env.GITHUB_ID,
-      clientSecret: env.GITHUB_SECRET,
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
     }),
     /**
      * ...add more providers here.
@@ -74,9 +74,9 @@ export const authOptions: NextAuthOptions = {
   ],
   events: {
     async signIn(message) {
-      if (!!env.NEXT_PUBLIC_POSTHOG_KEY && !!env.NEXT_PUBLIC_POSTHOG_HOST) {
-        const client = new PostHog(env.NEXT_PUBLIC_POSTHOG_KEY, {
-          host: env.NEXT_PUBLIC_POSTHOG_HOST,
+      if (!!process.env.NEXT_PUBLIC_POSTHOG_KEY && !!process.env.NEXT_PUBLIC_POSTHOG_HOST) {
+        const client = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+          host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
         });
 
         client.capture({
@@ -92,7 +92,7 @@ export const authOptions: NextAuthOptions = {
       }
     },
     async signOut(message) {
-      if (!!env.NEXT_PUBLIC_POSTHOG_KEY && !!env.NEXT_PUBLIC_POSTHOG_HOST) {
+      if (!!process.env.NEXT_PUBLIC_POSTHOG_KEY && !!process.env.NEXT_PUBLIC_POSTHOG_HOST) {
         const session = message.session as unknown as {
           id: string;
           sessionToken: string;
@@ -101,8 +101,8 @@ export const authOptions: NextAuthOptions = {
         };
         if (!session?.userId) return;
 
-        const client = new PostHog(env.NEXT_PUBLIC_POSTHOG_KEY, {
-          host: env.NEXT_PUBLIC_POSTHOG_HOST,
+        const client = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+          host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
         });
 
         client.capture({

@@ -1,4 +1,4 @@
-import { env } from "~/env.mjs";
+import "@dotenvx/dotenvx/config";
 import { getOrCreateStripeCustomerIdForUser } from "~/server/stripe-webhook-handlers";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
@@ -12,8 +12,8 @@ export const stripeRouter = createTRPCRouter({
       async ({ ctx: { prisma, stripe, session, req, posthog }, input }) => {
         if (
           !stripe ||
-          !env.STRIPE_ANNUAL_PRICE_ID ||
-          !env.STRIPE_MONTHLY_PRICE_ID
+          !process.env.STRIPE_ANNUAL_PRICE_ID ||
+          !process.env.STRIPE_MONTHLY_PRICE_ID
         ) {
           throw new Error("Stripe env variables not set");
         }
@@ -29,9 +29,9 @@ export const stripeRouter = createTRPCRouter({
         }
 
         const baseUrl =
-          env.NODE_ENV === "development"
+          process.env.NODE_ENV === "development"
             ? `http://${req.headers.host ?? "localhost:3000"}`
-            : `https://${req.headers.host ?? env.NEXTAUTH_URL}`;
+            : `https://${req.headers.host ?? process.env.NEXTAUTH_URL ?? ""}`;
 
         const checkoutSession = await stripe.checkout.sessions.create({
           customer: customerId,
@@ -42,8 +42,8 @@ export const stripeRouter = createTRPCRouter({
           line_items: [
             {
               price: input.billedAnnually
-                ? env.STRIPE_ANNUAL_PRICE_ID
-                : env.STRIPE_MONTHLY_PRICE_ID,
+                ? process.env.STRIPE_ANNUAL_PRICE_ID
+                : process.env.STRIPE_MONTHLY_PRICE_ID,
               quantity: 1,
             },
           ],
@@ -99,9 +99,9 @@ export const stripeRouter = createTRPCRouter({
       }
 
       const baseUrl =
-        env.NODE_ENV === "development"
+        process.env.NODE_ENV === "development"
           ? `http://${req.headers.host ?? "localhost:3000"}`
-          : `https://${req.headers.host ?? env.NEXTAUTH_URL}`;
+          : `https://${req.headers.host ?? process.env.NEXTAUTH_URL ?? ""}`;
 
       const stripeBillingPortalSession =
         await stripe.billingPortal.sessions.create({

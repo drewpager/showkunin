@@ -10,7 +10,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
-import { env } from "~/env.mjs";
+import "@dotenvx/dotenvx/config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { TRPCError } from "@trpc/server";
 
@@ -37,7 +37,7 @@ export const videoRouter = createTRPCRouter({
           const thumbnailUrl = await getSignedUrl(
             s3,
             new GetObjectCommand({
-              Bucket: env.AWS_BUCKET_NAME,
+              Bucket: process.env.AWS_BUCKET_NAME,
               Key: video.userId + "/" + video.id + "-thumbnail",
             })
           );
@@ -87,7 +87,7 @@ export const videoRouter = createTRPCRouter({
       }
 
       const getObjectCommand = new GetObjectCommand({
-        Bucket: env.AWS_BUCKET_NAME,
+        Bucket: process.env.AWS_BUCKET_NAME,
         Key: video.userId + "/" + video.id,
       });
 
@@ -96,7 +96,7 @@ export const videoRouter = createTRPCRouter({
       const thumbnailUrl = await getSignedUrl(
         s3,
         new GetObjectCommand({
-          Bucket: env.AWS_BUCKET_NAME,
+          Bucket: process.env.AWS_BUCKET_NAME,
           Key: video.userId + "/" + video.id + "-thumbnail",
         })
       );
@@ -116,7 +116,7 @@ export const videoRouter = createTRPCRouter({
 
       if (
         session.user.stripeSubscriptionStatus !== "active" &&
-        !!env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
       ) {
         posthog?.capture({
           distinctId: session.user.id,
@@ -155,7 +155,7 @@ export const videoRouter = createTRPCRouter({
       const signedVideoUrl = await getSignedUrl(
         s3,
         new PutObjectCommand({
-          Bucket: env.AWS_BUCKET_NAME,
+          Bucket: process.env.AWS_BUCKET_NAME,
           Key: session.user.id + "/" + video.id,
         })
       );
@@ -163,7 +163,7 @@ export const videoRouter = createTRPCRouter({
       const signedThumbnailUrl = await getSignedUrl(
         s3,
         new PutObjectCommand({
-          Bucket: env.AWS_BUCKET_NAME,
+          Bucket: process.env.AWS_BUCKET_NAME,
           Key: video.userId + "/" + video.id + "-thumbnail",
         })
       );
@@ -344,14 +344,14 @@ export const videoRouter = createTRPCRouter({
 
       const deleteVideoObject = await s3.send(
         new DeleteObjectCommand({
-          Bucket: env.AWS_BUCKET_NAME,
+          Bucket: process.env.AWS_BUCKET_NAME,
           Key: session.user.id + "/" + input.videoId,
         })
       );
 
       const deleteThumbnailObject = await s3.send(
         new DeleteObjectCommand({
-          Bucket: env.AWS_BUCKET_NAME,
+          Bucket: process.env.AWS_BUCKET_NAME,
           Key: session.user.id + "/" + input.videoId + "-thumbnail",
         })
       );
