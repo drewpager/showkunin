@@ -183,7 +183,13 @@ const VideoList: NextPage = () => {
             </div>
 
             {/* AI Analysis Section */}
-            {video && <VideoAnalysis videoId={video.id} />}
+            {video && (
+              <VideoAnalysis
+                videoId={video.id}
+                initialAnalysis={video.aiAnalysis}
+                initialGeneratedAt={video.aiAnalysisGeneratedAt}
+              />
+            )}
           </div>
         </div>
       </main>

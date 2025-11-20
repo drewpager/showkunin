@@ -458,9 +458,19 @@ Format your response in a clear, structured way that's easy for the user to foll
         // Delete the file from Gemini
         await fileManager.deleteFile(uploadResult.file.name);
 
+        // Save analysis to database
+        const updatedVideo = await prisma.video.update({
+          where: { id: input.videoId },
+          data: {
+            aiAnalysis: analysisText,
+            aiAnalysisGeneratedAt: new Date(),
+          },
+        });
+
         return {
           success: true,
           analysis: analysisText,
+          generatedAt: updatedVideo.aiAnalysisGeneratedAt,
         };
       } catch (error) {
         console.error("Error analyzing video:", error);

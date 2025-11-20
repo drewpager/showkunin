@@ -26,6 +26,8 @@ model Video {
   delete_after_link_expires Boolean   @default(false)
   shareLinkExpiresAt        DateTime?
   linkShareSeo              Boolean   @default(false)
+  aiAnalysis                String?   @db.Text
+  aiAnalysisGeneratedAt     DateTime?
   user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
