@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "dotenvx run -- next build",
+    "build": "dotenvx run -f .env.production -- next build",
     "dev": "dotenvx run -- next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
