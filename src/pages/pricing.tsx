@@ -25,7 +25,7 @@ export default function Pricing() {
   return (
     <>
       <Head>
-        <title>Showkunin | Pricing</title>
+        <title>Greadings | Pricing</title>
         <meta
           name="description"
           content="Share high-quality videos asynchronously and collaborate on your own schedule"
@@ -86,7 +86,7 @@ export default function Pricing() {
               {
                 feature: "External video upload",
                 description:
-                  "Upload videos recorded using other tools or platforms to your Showkunin library.",
+                  "Upload videos recorded using other tools or platforms to your Greadings library.",
                 included: true,
               },
             ],
@@ -182,7 +182,7 @@ export default function Pricing() {
             },
             {
               question: "Can I import videos I already recorded?",
-              answer: "Yes! Showkunin allows you to import your existing videos.",
+              answer: "Yes! Greadings allows you to import your existing videos.",
             },
             {
               question: "How do I contact Support?",

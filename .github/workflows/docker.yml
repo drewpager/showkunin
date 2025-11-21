@@ -26,11 +26,11 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/drewpager/showkunin:latest
+          tags: ghcr.io/drewpager/Greadings:latest
           labels: |
-            org.opencontainers.image.url=https://github.com/drewpager/showkunin
-            org.opencontainers.image.source=https://github.com/drewpager/showkunin
-            org.opencontainers.image.title=showkunin
+            org.opencontainers.image.url=https://github.com/drewpager/Greadings
+            org.opencontainers.image.source=https://github.com/drewpager/Greadings
+            org.opencontainers.image.title=Greadings
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.created=${{ github.event.repository.updated_at }}
             org.opencontainers.image.description=Show AI What You Want Automated.

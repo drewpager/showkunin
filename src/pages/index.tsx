@@ -50,7 +50,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Showkunin 職人 | AI Process Automation Framework</title>
+        <title>Greadings | AI Process Automation Framework</title>
         <meta
           name="description"
           content="Share high-quality videos asynchronously and collaborate on your own schedule"
@@ -180,7 +180,7 @@ const Home: NextPage = () => {
           <div className="mx-auto max-w-7xl py-32">
             <div className="flex flex-col text-center">
               <span className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
-                How does Showkunin work?
+                How does Greadings work?
               </span>
               <span className="mt-4 text-custom-dark">
                 Show off your tasks. Get them automated easily.
@@ -234,10 +234,10 @@ const Home: NextPage = () => {
           <div className="mx-auto max-w-7xl py-32">
             <div className="flex flex-col items-center justify-center text-center">
               <span className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
-                Ways to Use Showkunin
+                Ways to Use Greadings
               </span>
               <span className="mt-4 max-w-[75%] text-custom-dark">
-                Showkunin helps you get your request across quickly and clearly
+                Greadings helps you get your request across quickly and clearly
                 whether you’re prompting a complex automation or seeking efficiency improvements.
               </span>
             </div>

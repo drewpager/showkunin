@@ -5,7 +5,7 @@ export default function Footer() {
     <div className="mx-16 flex items-center justify-center">
       <footer className="mb-4 mt-4 flex h-full w-[1048px] flex-col-reverse items-center justify-between text-sm md:flex-row">
         <div className="my-[50px] ml-8 text-sm text-custom-dark md:my-0">
-          © 2025 Showkunin
+          © 2025 Greadings
         </div>
         <div className="mr-8 flex w-full flex-col sm:px-[50px] md:w-auto md:flex-row md:gap-8 md:px-0">
           {[

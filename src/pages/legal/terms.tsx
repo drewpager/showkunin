@@ -9,14 +9,14 @@ const Terms: NextPage = () => {
         <p className="mb-5">Effective: May 1, 2023</p>
         <p className="mb-5">
           These Terms of Service (“Terms”) govern access to and use of the
-          Services made available by Showkunin, Inc. By using our Services, you
+          Services made available by Greadings, Inc. By using our Services, you
           agree to be bound by these Terms. If you use our Services on behalf of
           an entity or organization, you are binding that organization to these
           Terms, and you represent that you have the authority to do so.
         </p>
-        <h2 className="my-5 text-lg font-bold">1. Showkunin’s Services</h2>
+        <h2 className="my-5 text-lg font-bold">1. Greadings’s Services</h2>
         <p className="mb-5">
-          <strong>1.1 Registration. </strong>Showkunin provides video messaging
+          <strong>1.1 Registration. </strong>Greadings provides video messaging
           services for work. Upon registration, a user must either create a new
           Workspace or join an existing Workspace. If a user creates a new
           Workspace on behalf of themselves, the user is the Customer. If a user
@@ -35,8 +35,8 @@ const Terms: NextPage = () => {
           the Services for its business purposes in accordance with these Terms.
         </p>
         <p className="mb-5">
-          <strong>1.3 Software. </strong>Showkunin may make Software available as
-          part of the Services. Subject to these Terms, Showkunin grants to
+          <strong>1.3 Software. </strong>Greadings may make Software available as
+          part of the Services. Subject to these Terms, Greadings grants to
           Customer and its Authorized Users a limited non-exclusive,
           non-transferable, non-sublicensable license to download and use the
           Software to the extent necessary to use the Services. Software may
@@ -63,8 +63,8 @@ const Terms: NextPage = () => {
           Services in any way, including in violation of these Terms or
           applicable law. Any use of data mining, robots, or similar data
           gathering and extraction tools or framing all or any portion of the
-          Services without Showkunin’s permission is strictly prohibited. Customer
-          will prevent, terminate, and notify Showkunin of any unauthorized or
+          Services without Greadings’s permission is strictly prohibited. Customer
+          will prevent, terminate, and notify Greadings of any unauthorized or
           illegal use of or access to its or any Authorized User account or the
           Services.
         </p>
@@ -72,7 +72,7 @@ const Terms: NextPage = () => {
           <strong>1.5 Corporate Domains. </strong>If a user creates a Workspace
           using an email address belonging to their employer or organization,
           that account may be added to the organization&apos;s Workspace, in
-          which case Showkunin will provide notice to the user or Administrator of
+          which case Greadings will provide notice to the user or Administrator of
           the account, so they can help facilitate the transfer of their
           account. The Administrator of the Workspace will have the ability to
           control that account, which includes being able to access, modify, or
@@ -96,10 +96,10 @@ const Terms: NextPage = () => {
         <p className="mb-5">
           <strong>2.2 Customer Data. </strong>Customer is responsible for
           ensuring all Customer Data and any other content or information
-          provided to Showkunin or uploaded, posted, recorded, or transmitted to
+          provided to Greadings or uploaded, posted, recorded, or transmitted to
           the Services complies with these Terms. If any Customer Data violates
-          these terms, Showkunin may ask Customer to remove or edit the Customer
-          Data so it is no longer in violation, or Showkunin may, but is not
+          these terms, Greadings may ask Customer to remove or edit the Customer
+          Data so it is no longer in violation, or Greadings may, but is not
           obligated to, remove the Customer Data or take action as needed to
           resolve the issue.
         </p>
@@ -107,7 +107,7 @@ const Terms: NextPage = () => {
           <strong>2.3 Third-Party Apps. </strong>Third-Party Apps are subject to
           their own terms and privacy policies. Customer is responsible for
           reviewing those terms and policies before using Third-Party Apps.
-          Showkunin is not responsible for Third-Party Apps and does not warrant
+          Greadings is not responsible for Third-Party Apps and does not warrant
           or support them. By enabling a Third-Party App that uses or accesses
           Customer Data, Customer authorizes the transfer of that data to the
           Third-Party App and, if applicable, will ensure that there is a
@@ -119,7 +119,7 @@ const Terms: NextPage = () => {
           <strong>2.4 Prohibited Content. </strong>Customer will not and will
           ensure Authorized Users do not upload, post, record, or transmit any
           harmful, offensive, unlawful, or otherwise objectionable content to
-          Showkunin or the Services, including content that: (a) is threatening,
+          Greadings or the Services, including content that: (a) is threatening,
           abusive, harassing, defamatory, vulgar, obscene, discriminatory, or
           hateful; (b) infringes any patent, trademark, trade secret, copyright
           or other intellectual property right or violates the rights of others
@@ -130,21 +130,21 @@ const Terms: NextPage = () => {
         </p>
         <h2 className="my-5 text-lg font-bold">3. Data Protection</h2>
         <p className="mb-5">
-          <strong>3.1 Processing of Customer Data. </strong>Showkunin will only
+          <strong>3.1 Processing of Customer Data. </strong>Greadings will only
           process and use Customer Data: (a) to provide, protect, and update the
           Services, (b) to enforce these Terms and exercise its rights
           hereunder, (c) as required by law, and (d) as otherwise instructed by
-          Customer. Showkunin may collect and use Customer Data on an aggregated
-          and/or anonymized basis for Showkunin’s internal business purposes;
-          provided that Showkunin will not use or share this data in a way that
+          Customer. Greadings may collect and use Customer Data on an aggregated
+          and/or anonymized basis for Greadings’s internal business purposes;
+          provided that Greadings will not use or share this data in a way that
           identifies any individual or Customer as the source of the data.
         </p>
         <p className="mb-5">
-          <strong>3.2 Data Processing Addendum. </strong>Showkunin will process
+          <strong>3.2 Data Processing Addendum. </strong>Greadings will process
           Personal Data in accordance with its{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://www.Showkunin.it/dpa"
+            href="https://www.Greadings.it/dpa"
             rel="noopener"
             target="_blank"
           >
@@ -153,13 +153,13 @@ const Terms: NextPage = () => {
           , which is incorporated into these Terms.
         </p>
         <p className="mb-5">
-          <strong>3.3 Security. </strong>Showkunin will maintain an
+          <strong>3.3 Security. </strong>Greadings will maintain an
           industry-standard information security program that consists of
           technical and organizational safeguards designed to protect Customer
-          Data, including Showkunin’s{" "}
+          Data, including Greadings’s{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://www.Showkunin.it/security-measures"
+            href="https://www.Greadings.it/security-measures"
             rel="noopener"
             target="_blank"
           >
@@ -171,15 +171,15 @@ const Terms: NextPage = () => {
           usernames and passwords.
         </p>
         <p className="mb-5">
-          <strong>3.4 Subcontractors. </strong>Showkunin may hire subcontractors
+          <strong>3.4 Subcontractors. </strong>Greadings may hire subcontractors
           to assist in providing the Services, provided that: (a) subcontractors
           who receive Customer Data will be subject to confidentiality
-          obligations no less protective than those in these Terms; (b) Showkunin
+          obligations no less protective than those in these Terms; (b) Greadings
           will remain responsible for its obligations under these Terms and for
-          subcontractors’ use of Customer Data; and (c) Showkunin’s{" "}
+          subcontractors’ use of Customer Data; and (c) Greadings’s{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://www.Showkunin.it/dpa"
+            href="https://www.Greadings.it/dpa"
             rel="noopener"
             target="_blank"
           >
@@ -197,21 +197,21 @@ const Terms: NextPage = () => {
           <strong>4.2 Renewals. </strong>Unless otherwise stated on an Order,
           each Subscription Term will automatically renew, unless Customer
           cancels their subscription at least 60 days prior to renewal. Customer
-          authorizes Showkunin to charge Customer’s credit card on file or invoice
+          authorizes Greadings to charge Customer’s credit card on file or invoice
           Customer for each renewal until Customer cancels their subscription.
         </p>
         <p className="mb-5">
           <strong>4.3 Downgrades. </strong>If Customer fails to pay Fees when
-          they are due, Showkunin may downgrade Customer to a free plan upon
+          they are due, Greadings may downgrade Customer to a free plan upon
           reasonable notice. If Customer is downgraded, Customer will lose
           access to certain features or functionality, but these Terms will
           continue to apply.
         </p>
         <p className="mb-5">
-          <strong>4.4 Price Changes. </strong>If Showkunin increases its pricing,
-          Showkunin will provide at least 30 days’ prior notice, and the new
+          <strong>4.4 Price Changes. </strong>If Greadings increases its pricing,
+          Greadings will provide at least 30 days’ prior notice, and the new
           pricing will go into effect on renewal. If Customer does not terminate
-          its subscription before renewal, Customer authorizes Showkunin to
+          its subscription before renewal, Customer authorizes Greadings to
           collect payment for the increased pricing.
         </p>
         <h2 className="my-5 text-lg font-bold">5. Confidentiality</h2>
@@ -248,11 +248,11 @@ const Terms: NextPage = () => {
           <strong>6.1 Ownership.</strong> Except as expressly stated, these
           Terms do not grant any rights, implied or otherwise, to any
           intellectual property. Customer owns and will continue to own all
-          intellectual property rights in Customer Data, and Showkunin owns and
+          intellectual property rights in Customer Data, and Greadings owns and
           will continue to own all intellectual property rights in the Services.
         </p>
         <p className="mb-5">
-          <strong>6.2 License.</strong> Customer grants Showkunin a worldwide
+          <strong>6.2 License.</strong> Customer grants Greadings a worldwide
           non-exclusive license to access, use, process, copy, modify,
           distribute, perform, export, and display Customer Data solely to
           provide the Services or as otherwise described in these Terms.
@@ -261,7 +261,7 @@ const Terms: NextPage = () => {
         </p>
         <p className="mb-5">
           <strong>6.3 Feedback.</strong> If Customer or Authorized Users provide
-          Feedback to Showkunin, Showkunin may use it without restriction or
+          Feedback to Greadings, Greadings may use it without restriction or
           obligation.
         </p>
         <h2 className="my-5 text-lg font-bold">7. Term &amp; Termination</h2>
@@ -280,29 +280,29 @@ const Terms: NextPage = () => {
           cure the breach within 30 days’ notice.
         </p>
         <p className="mb-5">
-          <strong>7.4 Effect of Termination.</strong> Upon termination, Showkunin
+          <strong>7.4 Effect of Termination.</strong> Upon termination, Greadings
           may delete or anonymize all Customer Data within a commercially
           reasonable period of time, and each party will return or delete any
-          other Confidential Information in its possession.&nbsp;Showkunin will
+          other Confidential Information in its possession.&nbsp;Greadings will
           only provide a prorated refund of prepaid fees for the remainder of
-          the Subscription Term if Customer terminates these Terms for Showkunin’s
+          the Subscription Term if Customer terminates these Terms for Greadings’s
           material breach in accordance with Section 7.3.
         </p>
         <p className="mb-5">
-          <strong>7.5 Suspension. </strong>Showkunin may suspend Customer’s access
+          <strong>7.5 Suspension. </strong>Greadings may suspend Customer’s access
           to the Services: (a) to the extent required by law, (b) to prevent
-          injury, death, or a credible risk of harm to Showkunin, the Services, or
+          injury, death, or a credible risk of harm to Greadings, the Services, or
           its users, or (c) for repeated violations of our terms and policies,
           including our{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://Showkunin.it/copyright"
+            href="https://Greadings.it/copyright"
             rel="noopener"
             target="_blank"
           >
             <strong>Copyright Policy</strong>
           </a>
-          . If practicable, Showkunin will use reasonable efforts to contact
+          . If practicable, Greadings will use reasonable efforts to contact
           Customer and give Customer the opportunity to resolve the issue prior
           to suspension.
         </p>
@@ -313,30 +313,30 @@ const Terms: NextPage = () => {
         </p>
         <h2 className="my-5 text-lg font-bold">8. Legal Process</h2>
         <p className="mb-5">
-          If Showkunin receives a request from law enforcement or another third
+          If Greadings receives a request from law enforcement or another third
           party to provide data or information about Customer or its Authorized
-          Users, Showkunin will only respond to valid Legal Process to the extent
-          required by law. Showkunin will notify Customer of the request unless
+          Users, Greadings will only respond to valid Legal Process to the extent
+          required by law. Greadings will notify Customer of the request unless
           legally prohibited or notification would threaten the safety of an
           individual.
         </p>
         <h2 className="my-5 text-lg font-bold">9. Warranty and Disclaimer</h2>
         <p className="mb-5">
           <strong>9.1 Limited Warranty.</strong> The Services will perform
-          materially in accordance with Showkunin’s Documentation. If Customer
+          materially in accordance with Greadings’s Documentation. If Customer
           believes that this warranty has been breached, Customer must notify
-          Showkunin no later than 10 days following the date of the alleged
+          Greadings no later than 10 days following the date of the alleged
           breach. Customer’s sole and exclusive remedies for breach of this
           warranty are those described in Sections 7.
         </p>
         <p className="mb-5">
           <strong>9.2 Disclaimer. </strong>EXCEPT AS STATED IN THIS SECTION, THE
           SERVICES, DOCUMENTATION AND SOFTWARE ARE PROVIDED ON AN “AS IS” BASIS
-          WITHOUT WARRANTY. Showkunin MAKES NO GUARANTEES AS TO UPTIME OR
-          AVAILABILITY OF THE SERVICE. TO THE EXTENT PERMITTED BY LAW, Showkunin
+          WITHOUT WARRANTY. Greadings MAKES NO GUARANTEES AS TO UPTIME OR
+          AVAILABILITY OF THE SERVICE. TO THE EXTENT PERMITTED BY LAW, Greadings
           EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES, WHETHER EXPRESS OR
           IMPLIED, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY, TITLE,
-          FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. Showkunin IS NOT
+          FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. Greadings IS NOT
           RESPONSIBLE FOR THE CONTENT, INFORMATION, OR MATERIALS POSTED BY THIRD
           PARTIES TO THE SERVICES OR ANY DAMAGE RESULTING FROM LIMITATIONS,
           DELAYS, AND OTHER PROBLEMS INHERENT IN THE USE OF THE INTERNET AND
@@ -349,48 +349,48 @@ const Terms: NextPage = () => {
           contrary, Beta Services: (a) may not be supported and may be changed
           or discontinued at any time; (b) may not be as reliable or available
           as the Services; (c) have not been subjected to the same security or
-          compliance reviews as the Services; (d) are Showkunin’s Confidential
+          compliance reviews as the Services; (d) are Greadings’s Confidential
           Information; and (e) ARE PROVIDED “AS IS” WITHOUT ANY WARRANTY,
-          INDEMNITY, OR SUPPORT AND Showkunin’S LIABILITY FOR BETA SERVICES WILL
+          INDEMNITY, OR SUPPORT AND Greadings’S LIABILITY FOR BETA SERVICES WILL
           NOT EXCEED FIFTY DOLLARS.
         </p>
         <h2 className="my-5 text-lg font-bold">10. Indemnification</h2>
         <p className="mb-5">
-          <strong>10.1 Indemnification by Showkunin. </strong>Showkunin will defend
+          <strong>10.1 Indemnification by Greadings. </strong>Greadings will defend
           Customer from and against any third-party claim, action, demand, or
           proceeding alleging that Customer’s use of the Services as permitted
           under these Terms infringes or misappropriates a third party’s
           intellectual property rights, and will indemnify and hold Customer
           harmless for reasonable attorney’s fees incurred as well as damages
           and other costs finally awarded against Customer or agreed in
-          settlement by Showkunin resulting from the claim; provided, however,
-          that Showkunin will have no liability under this section if a claim
+          settlement by Greadings resulting from the claim; provided, however,
+          that Greadings will have no liability under this section if a claim
           arises from (a) Customer Data or any third-party product or service;
           (b) any modification, combination, or development of the Services that
-          is not performed by or on behalf of Showkunin; (c) Customer’s breach of
+          is not performed by or on behalf of Greadings; (c) Customer’s breach of
           these Terms; or (d) Beta Services or other services offered for free
           or evaluation use.
         </p>
         <p className="mb-5">
           <strong>10.2 Indemnification by Customer. </strong>Customer will
-          defend Showkunin from and against any third-party claim, action, demand,
+          defend Greadings from and against any third-party claim, action, demand,
           or proceeding resulting from Customer Data or a violation of these
           Terms by Customer or its Authorized Users, and will indemnify and hold
-          Showkunin harmless for reasonable attorney’s fees incurred as well as
-          damages and other costs finally awarded against Showkunin or agreed in
+          Greadings harmless for reasonable attorney’s fees incurred as well as
+          damages and other costs finally awarded against Greadings or agreed in
           settlement by Customer resulting from the claim.
         </p>
         <p className="mb-5">
           <strong>10.3 Possible Infringement. </strong>If the Services infringe
           or are alleged to infringe a third party&apos;s intellectual property
-          rights, Showkunin may: (a) obtain the right for Customer, at Showkunin’s
+          rights, Greadings may: (a) obtain the right for Customer, at Greadings’s
           expense, to continue using the Services; (b) provide, at no additional
           charge, a non-infringing functionally equivalent replacement; or (c)
-          modify the Services so that they no longer infringe. If Showkunin does
-          not believe the options above are commercially reasonable, Showkunin may
+          modify the Services so that they no longer infringe. If Greadings does
+          not believe the options above are commercially reasonable, Greadings may
           terminate Customer&apos;s use of the affected Services and provide
           Customer a prorated refund of prepaid fees for the remainder of the
-          Subscription Term. Showkunin will have no liability under this section
+          Subscription Term. Greadings will have no liability under this section
           if Customer continues the allegedly infringing activity after being
           notified and provided with a non-infringing functionally equivalent
           replacement.
@@ -426,7 +426,7 @@ const Terms: NextPage = () => {
           SECTIONS 1.4 OR 2.4, EACH PARTY&apos;S ENTIRE LIABILITY ARISING OUT OF
           OR RELATED TO THESE TERMS, WHETHER IN CONTRACT OR TORT OR UNDER ANY
           OTHER THEORY OF LIABILITY, WILL NOT EXCEED IN AGGREGATE OF THE GREATER
-          OF FIFTY DOLLARS OR THE AMOUNT PAID BY CUSTOMER TO Showkunin IN THE 12
+          OF FIFTY DOLLARS OR THE AMOUNT PAID BY CUSTOMER TO Greadings IN THE 12
           MONTHS PRECEDING THE LAST EVENT GIVING RISE TO LIABILITY. THE
           FOREGOING DISCLAIMER WILL NOT LIMIT CUSTOMER’S PAYMENT OBLIGATIONS
           ABOVE.
@@ -442,16 +442,16 @@ const Terms: NextPage = () => {
           <strong>12.1. Jurisdiction and Venue.</strong> Subject to the dispute
           resolution provisions below, all claims and disputes relating to these
           Terms or the Services may only be brought in the federal or state
-          courts of Sonoma County, California. Both Customer and Showkunin
+          courts of Sonoma County, California. Both Customer and Greadings
           consent to venue and personal jurisdiction there. Notwithstanding
           anything to the contrary, if Customer represents an entity or
           institution subject to state law mandating different dispute
-          resolution terms or governing law, Showkunin agrees to such state law
+          resolution terms or governing law, Greadings agrees to such state law
           requirements.
         </p>
         <p className="mb-5">
           <strong>12.2 Informal Resolution.</strong> Before filing a claim,
-          Showkunin must first be contacted through the notice procedures below.
+          Greadings must first be contacted through the notice procedures below.
           If a dispute is not resolved within 30 days of notice, a formal
           proceeding may be brought in accordance with this section.
         </p>
@@ -471,7 +471,7 @@ const Terms: NextPage = () => {
           the informal dispute resolution process described above.
         </p>
         <p className="mb-5">
-          <strong>12.5 NO CLASS ACTIONS. </strong>Disputes with Showkunin may only
+          <strong>12.5 NO CLASS ACTIONS. </strong>Disputes with Greadings may only
           be resolved on an individual basis and neither Customer nor any user
           will bring a claim in a class, consolidated, or representative action.
           The parties expressly waive any class arbitrations, class actions,
@@ -481,7 +481,7 @@ const Terms: NextPage = () => {
         <p className="mb-5">
           <strong>12.6. Opt-Out. </strong>To opt out of these arbitration
           provisions (including the waiver of class and representative claims),
-          Showkunin must be notified by email at
+          Greadings must be notified by email at
           drew [at] greadings.com&nbsp;no later than 30 days after
           account registration, unless a longer period is required by applicable
           law.
@@ -495,26 +495,26 @@ const Terms: NextPage = () => {
           the extent there is a conflict. Any amendments must be in writing and
           signed by the parties. Notwithstanding anything to the contrary, no
           other terms or conditions in any Customer documentation or online
-          vendor portals will apply to Showkunin’s provision of the Services to
+          vendor portals will apply to Greadings’s provision of the Services to
           Customer, unless expressly agreed to in writing by an authorized
-          Showkunin representative.
+          Greadings representative.
         </p>
         <p className="mb-5">
-          <strong>13.2 Modifications. </strong>Showkunin may update these Terms by
-          posting the updates to the Showkunin website. If an update materially
+          <strong>13.2 Modifications. </strong>Greadings may update these Terms by
+          posting the updates to the Greadings website. If an update materially
           impacts Customer’s or its Authorized Users’ rights or obligations,
-          Showkunin will provide at least 30 days’ notice before the updated Terms
+          Greadings will provide at least 30 days’ notice before the updated Terms
           go into effect. Any other revisions will become effective on the date
-          the updated Terms are posted by Showkunin. Continued use of or access to
+          the updated Terms are posted by Greadings. Continued use of or access to
           the Services after the updated Terms go into effect will constitute
           acceptance of those Terms.
         </p>
         <p className="mb-5">
           <strong>13.3 Publicity. </strong>Upon prior written approval from
-          Customer, Showkunin may include Customer’s name and logo on its website
+          Customer, Greadings may include Customer’s name and logo on its website
           or in other marketing materials or channels solely to reference
-          Customer as Showkunin customer, and subject to any trademark usage
-          guidelines provided to Showkunin. Customer may revoke its approval at
+          Customer as Greadings customer, and subject to any trademark usage
+          guidelines provided to Greadings. Customer may revoke its approval at
           any time.
         </p>
         <p className="mb-5">
@@ -529,7 +529,7 @@ const Terms: NextPage = () => {
           post, airmail, or overnight courier and are deemed given when
           received. Notices to Customer may also be sent to the applicable
           Administrator account email address and are deemed given when sent.
-          Notices to Showkunin must be sent to 13939 Williams Road Suite 1,
+          Notices to Greadings must be sent to 13939 Williams Road Suite 1,
           Glen Ellen, CA 95442, attn: Legal, with a copy to{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
@@ -543,7 +543,7 @@ const Terms: NextPage = () => {
         </p>
         <p className="mb-5">
           <strong>13.6 Assignment. </strong>These Terms may not be assigned
-          without the prior written consent of the other party, except Showkunin
+          without the prior written consent of the other party, except Greadings
           may assign these Terms to an affiliate or in connection with a merger,
           acquisition, corporate reorganization, or sale of all or substantially
           all of its assets. Any other attempt to transfer or assign is void.
@@ -623,7 +623,7 @@ const Terms: NextPage = () => {
           “Customer Data” means all video, audio, or transcription data, images,
           comments, emoji reactions, user support communications, or other
           content or information submitted or uploaded to the Services by or
-          collected, stored, or processed by Showkunin on behalf of Customer or
+          collected, stored, or processed by Greadings on behalf of Customer or
           its Authorized Users.
         </p>
         <p className="mb-5">
@@ -645,14 +645,14 @@ const Terms: NextPage = () => {
         </p>
         <p className="mb-5">
           “Order” means the order form agreed to by the parties or the
-          applicable Showkunin check-out webpage to purchase the Services.
+          applicable Greadings check-out webpage to purchase the Services.
         </p>
         <p className="mb-5">
           “Personal Data” means personal data or personal information (each as
           defined in the{" "}
           <a
             className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="https://www.Showkunin.it/dpa"
+            href="https://www.Greadings.it/dpa"
             rel="noopener"
             target="_blank"
           >
@@ -661,12 +661,12 @@ const Terms: NextPage = () => {
           ) contained within Customer Data.
         </p>
         <p className="mb-5">
-          “Services” means Showkunin’s video messaging services and website,
+          “Services” means Greadings’s video messaging services and website,
           including the Software, Documentation, tools, and services ordered by
           or provided to Customer in connection with the Services.
         </p>
         <p className="mb-5">
-          “Software” means Showkunin’s client software provided as part of the
+          “Software” means Greadings’s client software provided as part of the
           Services, such as mobile or desktop applications or browser
           extensions.
         </p>
@@ -677,17 +677,17 @@ const Terms: NextPage = () => {
         <p className="mb-5">
           “Taxes” means all government-imposed taxes, levies, or duties,
           including value-added, sales, use, or withholding taxes, except for
-          taxes based on Showkunin’s net income.
+          taxes based on Greadings’s net income.
         </p>
         <p className="mb-5">
           “Third-Party Apps” means any third-party applications, integrations,
           websites, products, or services that are linked in or that interact or
           interoperate with the Services, including any applications built by
-          third parties using Showkunin’s SDKs or other developer tools.
+          third parties using Greadings’s SDKs or other developer tools.
         </p>
         <p className="mb-5">
-          “Workspace” means the workspace in a Showkunin account as described on
-          Showkunin’s website.
+          “Workspace” means the workspace in a Greadings account as described on
+          Greadings’s website.
         </p>
         <h2 className="my-5 text-lg font-bold">Questions?</h2>
         <p className="mb-5">

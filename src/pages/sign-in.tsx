@@ -15,7 +15,7 @@ const SignIn = ({
   return (
     <>
       <Head>
-        <title>Sign in to Showkunin</title>
+        <title>Sign in to Greadings</title>
         <meta
           name="description"
           content="Share high-quality videos asynchronously and collaborate on your own schedule"

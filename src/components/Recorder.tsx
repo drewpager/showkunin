@@ -224,7 +224,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
   const handleSave = () => {
     if (blob) {
       const dateString =
-        "Showkunin Recording - " + dayjs().format("MMM DD YYYY") + ".webm";
+        "Greadings Recording - " + dayjs().format("MMM DD YYYY") + ".webm";
       invokeSaveAsDialog(blob, dateString);
     }
 
@@ -235,7 +235,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
     if (!blob || !videoRef.current) return;
 
     const dateString =
-      "Showkunin Recording - " + dayjs().format("MMM DD YYYY") + ".webm";
+      "Greadings Recording - " + dayjs().format("MMM DD YYYY") + ".webm";
     setSubmitting(true);
 
     try {

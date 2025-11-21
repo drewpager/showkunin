@@ -165,7 +165,7 @@ export default function Paywall() {
                             {
                               feature: "External video upload",
                               description:
-                                "Upload videos recorded using other tools or platforms to your Showkunin library.",
+                                "Upload videos recorded using other tools or platforms to your Greadings library.",
                             },
                           ].map(({ feature, description }) => (
                             <div
