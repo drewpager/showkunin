@@ -1,6 +1,5 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import { useSession } from "next-auth/react";
 import { useFeatureFlagEnabled, usePostHog } from "posthog-js/react";
 import { useAtom } from "jotai";
 import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
@@ -15,16 +14,11 @@ import CTA from "~/components/CTA";
 import engineeringUsecase from "~/assets/engineering usecase.png";
 import supportUsecase from "~/assets/support usecase.png";
 import logo from "~/assets/logo.png";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import StarIcon from "~/assets/StarIcon";
 import Paywall from "~/components/Paywall";
 
 const Home: NextPage = () => {
-  const [recordModalOpen, setRecordOpen] = useAtom(recordVideoModalOpen);
+  const [, setRecordOpen] = useAtom(recordVideoModalOpen);
   const posthog = usePostHog();
-  const session = useSession();
-  const router = useRouter();
   const showDemoButton = useFeatureFlagEnabled("show-demo-button");
 
   // useEffect(() => {

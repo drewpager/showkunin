@@ -27,7 +27,20 @@ const VideoList: NextPage = () => {
   const [, setPaywallOpen] = useAtom(paywallAtom);
   const router = useRouter();
   const { status, data: session } = useSession();
-  const { data: videos, isLoading } = api.video.getAll.useQuery();
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = api.video.getAll.useInfiniteQuery(
+    { limit: 20 },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
+
+  const videos = data?.pages.flatMap((page) => page.items) ?? [];
   const posthog = usePostHog();
   const searchParams = useSearchParams();
   const [closeWindow, setCloseWindow] = useState<boolean>(false);
@@ -190,7 +203,7 @@ const VideoList: NextPage = () => {
             </>
           ) : (
             <>
-              {videos && videos?.length <= 0 ? (
+              {!isLoading && videos && videos?.length <= 0 ? (
                 <div className="flex items-center justify-center px-8">
                   <div className="flex flex-col">
                     <span className="text-lg font-semibold text-zinc-700">
@@ -229,7 +242,7 @@ const VideoList: NextPage = () => {
                       />
                     ))}
 
-                  {isLoading ? (
+                  {isLoading || isFetchingNextPage ? (
                     <>
                       <VideoCardSkeleton />
                       <VideoCardSkeleton />
@@ -237,6 +250,18 @@ const VideoList: NextPage = () => {
                       <VideoCardSkeleton />
                     </>
                   ) : null}
+
+                  {!isLoading && hasNextPage && (
+                    <div className="col-span-full flex w-full items-center justify-center py-4">
+                      <button
+                        onClick={() => void fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                        className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      >
+                        {isFetchingNextPage ? "Loading..." : "Load More"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </>

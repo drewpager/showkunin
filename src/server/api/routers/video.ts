@@ -20,19 +20,46 @@ import path from "path";
 import os from "os";
 
 export const videoRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(
-    async ({ ctx: { prisma, session, s3, posthog } }) => {
-      const videos = await prisma.video.findMany({
-        where: {
-          userId: session.user.id,
-        },
-      });
+  getAll: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).nullish(),
+        cursor: z.string().nullish(),
+      })
+    )
+    .query(async ({ ctx: { prisma, session, s3, posthog }, input }) => {
+      const limit = input.limit ?? 20;
+      const { cursor } = input;
+
+      const [videos, totalCount] = await Promise.all([
+        prisma.video.findMany({
+          take: limit + 1,
+          where: {
+            userId: session.user.id,
+          },
+          cursor: cursor ? { id: cursor } : undefined,
+          orderBy: {
+            createdAt: "desc",
+          },
+        }),
+        prisma.video.count({
+          where: {
+            userId: session.user.id,
+          },
+        }),
+      ]);
+
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (videos.length > limit) {
+        const nextItem = videos.pop();
+        nextCursor = nextItem?.id;
+      }
 
       posthog?.capture({
         distinctId: session.user.id,
         event: "viewing video list",
         properties: {
-          videoAmount: videos.length,
+          videoAmount: totalCount,
         },
       });
       void posthog?.shutdownAsync();
@@ -51,9 +78,11 @@ export const videoRouter = createTRPCRouter({
         })
       );
 
-      return videosWithThumbnailUrl;
-    }
-  ),
+      return {
+        items: videosWithThumbnailUrl,
+        nextCursor,
+      };
+    }),
   get: publicProcedure
     .input(z.object({ videoId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -91,12 +120,15 @@ export const videoRouter = createTRPCRouter({
         void posthog?.shutdownAsync();
       }
 
-      const getObjectCommand = new GetObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: video.userId + "/" + video.id,
-      });
+      let signedUrl = null;
+      if (!video.fileDeletedAt) {
+        const getObjectCommand = new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: video.userId + "/" + video.id,
+        });
 
-      const signedUrl = await getSignedUrl(s3, getObjectCommand);
+        signedUrl = await getSignedUrl(s3, getObjectCommand);
+      }
 
       const thumbnailUrl = await getSignedUrl(
         s3,
@@ -406,7 +438,7 @@ export const videoRouter = createTRPCRouter({
           responseType: "arraybuffer",
         });
         
-        fs.writeFileSync(tempFilePath, response.data);
+        fs.writeFileSync(tempFilePath, new Uint8Array(response.data as ArrayBuffer));
 
         // Upload to Gemini
         const uploadResult = await fileManager.uploadFile(tempFilePath, {

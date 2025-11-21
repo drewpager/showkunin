@@ -1,5 +1,5 @@
 {
-  "name": "Greadings",
+  "name": "greadings",
   "version": "0.0.1",
   "private": true,
   "license": "MIT",
@@ -11,6 +11,7 @@
     "test:e2e": "dotenvx run -- npm run db-seed && playwright test --headed --workers 1",
     "test:s3": "dotenvx run -- tsx tests/s3-upload-test.ts",
     "test:gemini": "dotenvx run -- tsx tests/test-gemini.ts",
+    "retention": "dotenvx run -- tsx scripts/retention-policy.ts",
     "stripe:listen": "stripe listen --forward-to http://localhost:3000/api/webhooks/stripe",
     "db-seed": "dotenvx run -- NODE_ENV=development prisma db seed",
     "start": "dotenvx run -- next start",

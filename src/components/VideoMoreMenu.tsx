@@ -36,12 +36,12 @@ export default function VideoMoreMenu({ video }: Props) {
       icon: <DownloadIcon />,
       props: {
         onClick: () => {
-          void fetch(video.video_url).then((response) => {
+          void fetch(video?.video_url ?? "").then((response) => {
             void response.blob().then((blob) => {
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
-              a.download = video.title;
+              a.download = video?.title ?? "";
               a.click();
             });
           });
@@ -127,9 +127,8 @@ export default function VideoMoreMenu({ video }: Props) {
                   <Menu.Item>
                     {({ active }) => (
                       <div
-                        className={`mx-2 flex h-8 w-40 cursor-pointer flex-row content-center rounded-md p-2 ${
-                          active ? "bg-gray-100" : ""
-                        }`}
+                        className={`mx-2 flex h-8 w-40 cursor-pointer flex-row content-center rounded-md p-2 ${active ? "bg-gray-100" : ""
+                          }`}
                       >
                         <div className="mr-2 flex w-4 content-center justify-center">
                           {item.icon}

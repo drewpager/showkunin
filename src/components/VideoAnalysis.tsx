@@ -44,7 +44,7 @@ export default function VideoAnalysis({
     <div className="mt-6 rounded-lg border border-gray-200 bg-white">
       {!analysis ? (
         <button
-          onClick={handleAnalyze}
+          onClick={() => void handleAnalyze()}
           disabled={analyzeVideoMutation.isLoading}
           className="flex w-full items-center justify-between rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 text-left text-white transition-all hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
         >
@@ -168,28 +168,28 @@ export default function VideoAnalysis({
               <div className="prose prose-sm max-w-none">
                 <ReactMarkdown
                   components={{
-                    h1: ({ node, ...props }) => (
+                    h1: ({ node: _node, ...props }) => (
                       <h1
                         className="text-2xl font-bold text-gray-900"
                         {...props}
                       />
                     ),
-                    h2: ({ node, ...props }) => (
+                    h2: ({ node: _node, ...props }) => (
                       <h2
                         className="text-xl font-semibold text-gray-800"
                         {...props}
                       />
                     ),
-                    h3: ({ node, ...props }) => (
+                    h3: ({ node: _node, ...props }) => (
                       <h3
                         className="text-lg font-semibold text-gray-800"
                         {...props}
                       />
                     ),
-                    p: ({ node, ...props }) => (
+                    p: ({ node: _node, ...props }) => (
                       <p className="text-gray-700" {...props} />
                     ),
-                    code: ({ node, inline, ...props }) =>
+                    code: ({ node: _node, inline, ...props }) =>
                       inline ? (
                         <code
                           className="rounded bg-gray-100 px-1.5 py-0.5 text-sm text-purple-700"
@@ -201,16 +201,16 @@ export default function VideoAnalysis({
                           {...props}
                         />
                       ),
-                    ul: ({ node, ...props }) => (
+                    ul: ({ node: _node, ...props }) => (
                       <ul className="list-disc space-y-1 pl-5" {...props} />
                     ),
-                    ol: ({ node, ...props }) => (
+                    ol: ({ node: _node, ...props }) => (
                       <ol className="list-decimal space-y-1 pl-5" {...props} />
                     ),
-                    li: ({ node, ...props }) => (
+                    li: ({ node: _node, ...props }) => (
                       <li className="text-gray-700" {...props} />
                     ),
-                    strong: ({ node, ...props }) => (
+                    strong: ({ node: _node, ...props }) => (
                       <strong
                         className="font-semibold text-gray-900"
                         {...props}
@@ -225,7 +225,7 @@ export default function VideoAnalysis({
               {/* Regenerate Button */}
               <div className="mt-6 flex justify-center border-t border-gray-200 pt-6">
                 <button
-                  onClick={handleAnalyze}
+                  onClick={() => void handleAnalyze()}
                   disabled={analyzeVideoMutation.isLoading}
                   className="inline-flex items-center gap-2 rounded-lg border border-purple-600 bg-white px-4 py-2 text-sm font-medium text-purple-600 transition-all hover:bg-purple-50 disabled:opacity-50"
                 >

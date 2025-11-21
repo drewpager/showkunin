@@ -133,14 +133,26 @@ const VideoList: NextPage = () => {
         </div>
         <div className="flex h-full w-full grow flex-col items-center justify-start overflow-auto bg-[#fbfbfb]">
           <div className="flex max-h-[calc(100vh_-_169px)] w-full justify-center bg-black 2xl:max-h-[1160px]">
-            {video?.video_url && (
+            {video?.fileDeletedAt ? (
+              <div className="flex h-full w-full flex-col items-center justify-center bg-gray-900 text-white">
+                <div className="rounded-lg bg-gray-800 p-8 text-center shadow-lg">
+                  <h3 className="mb-2 text-xl font-semibold text-red-400">Video Unavailable</h3>
+                  <p className="text-gray-300">
+                    This video was deleted according to our retention policy.
+                  </p>
+                  <p className="mt-2 text-sm text-gray-500">
+                    (30 days for free plans, 60 days for paid plans)
+                  </p>
+                </div>
+              </div>
+            ) : video?.video_url ? (
               <div className="aspect-video h-full">
                 <VideoPlayer
                   thumbnailUrl={video.thumbnailUrl}
                   video_url={video.video_url}
                 />
               </div>
-            )}
+            ) : null}
           </div>
           <div className="mb-10 mt-4 w-full max-w-[1800px] pl-[24px]">
             <div>

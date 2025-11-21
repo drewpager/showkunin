@@ -34,7 +34,7 @@ export default function VideoPlayer({ video_url, thumbnailUrl }: Props) {
 
   function onProviderChange(
     provider: MediaProviderAdapter | null,
-    nativeEvent: MediaProviderChangeEvent
+    _nativeEvent: MediaProviderChangeEvent
   ) {
     // We can configure provider's here.
     if (isHLSProvider(provider)) {
@@ -44,8 +44,8 @@ export default function VideoPlayer({ video_url, thumbnailUrl }: Props) {
 
   // We can listen for the `can-play` event to be notified when the player is ready.
   function onCanPlay(
-    detail: MediaCanPlayDetail,
-    nativeEvent: MediaCanPlayEvent
+    _detail: MediaCanPlayDetail,
+    _nativeEvent: MediaCanPlayEvent
   ) {
     // ...
   }

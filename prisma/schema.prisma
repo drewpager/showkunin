@@ -28,6 +28,7 @@ model Video {
   linkShareSeo              Boolean   @default(false)
   aiAnalysis                String?   @db.Text
   aiAnalysisGeneratedAt     DateTime?
+  fileDeletedAt             DateTime?
   user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

@@ -39,6 +39,7 @@ yarn-error.log*
 .env*.local
 # dotenvx encrypted keys - NEVER commit this file
 .env.keys
+!.env.production
 
 # vercel
 .vercel
