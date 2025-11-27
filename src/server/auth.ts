@@ -7,7 +7,7 @@ import {
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import "@dotenvx/dotenvx/config";
+import "~/dotenv-config";
 import { prisma } from "~/server/db";
 import { PostHog } from "posthog-node";
 

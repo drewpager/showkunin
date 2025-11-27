@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import "@dotenvx/dotenvx/config";
+import "~/dotenv-config";
 
 const apiKey = process.env.GEMINI_API_KEY;
 

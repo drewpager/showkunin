@@ -1,5 +1,5 @@
 import { S3 } from "@aws-sdk/client-s3";
-import "@dotenvx/dotenvx/config";
+import "~/dotenv-config";
 
 const rawEndpoint = process.env.AWS_ENDPOINT?.trim?.() ?? "";
 const endpoint = rawEndpoint

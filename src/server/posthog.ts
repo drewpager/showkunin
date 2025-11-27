@@ -1,5 +1,5 @@
 import { PostHog } from "posthog-node";
-import "@dotenvx/dotenvx/config";
+import "~/dotenv-config";
 
 export const posthog =
   !!process.env.NEXT_PUBLIC_POSTHOG_KEY && !!process.env.NEXT_PUBLIC_POSTHOG_HOST

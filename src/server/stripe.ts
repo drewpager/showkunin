@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import "@dotenvx/dotenvx/config";
+import "~/dotenv-config";
 
 export const stripe = !!process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {

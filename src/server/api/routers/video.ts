@@ -10,7 +10,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
-import "@dotenvx/dotenvx/config";
+import "~/dotenv-config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { TRPCError } from "@trpc/server";
 import { genAI, fileManager } from "~/server/gemini";

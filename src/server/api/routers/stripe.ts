@@ -1,4 +1,4 @@
-import "@dotenvx/dotenvx/config";
+import "~/dotenv-config";
 import { getOrCreateStripeCustomerIdForUser } from "~/server/stripe-webhook-handlers";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
