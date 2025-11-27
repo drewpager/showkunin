@@ -5,4 +5,4 @@ import { config } from "@dotenvx/dotenvx";
 // because it defaults to .env
 const envFile = process.env.NODE_ENV === "production" ? ".env.production" : ".env";
 
-config({ path: envFile });
+config({ path: envFile, override: true });
