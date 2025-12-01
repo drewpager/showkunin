@@ -57,7 +57,7 @@ export default function VideoUploadModal() {
       })
       .then(() => {
         setOpen(false);
-        void router.push("share/" + id);
+        void router.push("share/" + id + "?analyze=true");
       })
       .catch((err) => {
         console.error(err);

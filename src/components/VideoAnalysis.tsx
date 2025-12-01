@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import ReactMarkdown from "react-markdown";
 
@@ -28,6 +29,29 @@ export default function VideoAnalysis({
     // Invalidate the video query to refresh the data
     await utils.video.get.invalidate({ videoId });
   };
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (
+      router.query.analyze === "true" &&
+      !analysis &&
+      !analyzeVideoMutation.isLoading &&
+      !analyzeVideoMutation.data
+    ) {
+      void handleAnalyze();
+      // Remove the query param to prevent re-triggering
+      const { analyze, ...rest } = router.query;
+      void router.replace(
+        {
+          pathname: router.pathname,
+          query: rest,
+        },
+        undefined,
+        { shallow: true }
+      );
+    }
+  }, [router.query.analyze, analysis, analyzeVideoMutation.isLoading, analyzeVideoMutation.data]);
 
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return "";

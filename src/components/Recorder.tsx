@@ -259,7 +259,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
           );
         })
         .then(() => {
-          void router.push("share/" + id);
+          void router.push("share/" + id + "?analyze=true");
           setRecordOpen(false);
           posthog?.capture("recorder: video uploaded");
         })
