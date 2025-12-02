@@ -400,8 +400,40 @@ export const videoRouter = createTRPCRouter({
         deleteThumbnailObject,
       };
     }),
+  setSolved: protectedProcedure
+    .input(z.object({ videoId: z.string(), solved: z.boolean().nullable() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const updateVideo = await prisma.video.updateMany({
+        where: {
+          id: input.videoId,
+          userId: session.user.id,
+        },
+        data: {
+          solved: input.solved,
+        },
+      });
+
+      if (updateVideo.count === 0) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "update video solved",
+        properties: {
+          videoId: input.videoId,
+          solved: input.solved,
+        },
+      });
+      void posthog?.shutdownAsync();
+
+      return {
+        success: true,
+        updateVideo,
+      };
+    }),
   analyzeVideo: publicProcedure
-    .input(z.object({ videoId: z.string() }))
+    .input(z.object({ videoId: z.string(), refinementPrompt: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const { s3, prisma, session } = ctx;
       
@@ -468,7 +500,17 @@ export const videoRouter = createTRPCRouter({
             },
           },
           {
-            text: `You are an AI automation expert analyzing a screen recording. The user is showing you a task they want automated.
+            text: input.refinementPrompt 
+              ? `You are an AI automation expert analyzing a screen recording.
+              
+Previous Analysis:
+${video.aiAnalysis ?? "No previous analysis."}
+
+User Refinement Request:
+${input.refinementPrompt}
+
+Please provide an updated analysis and response based on the video and the user's specific request above. Maintain the same structured format (Task Summary, Automation Approach, Implementation Steps, Code Example, Tools/Technologies) unless the user's request specifically implies a different format.`
+              : `You are an AI automation expert analyzing a screen recording. The user is showing you a task they want automated.
 
 Please analyze this video and provide:
 
@@ -478,7 +520,7 @@ Please analyze this video and provide:
 4. **Code Example**: If applicable, provide code snippets with clear instructions on where to use them
 5. **Tools/Technologies**: List any tools, libraries, or services that would be helpful
 
-Format your response in a clear, structured way that's easy for the user to follow.`,
+Format your response in a clear, concise, and structured way that's easy for the user to follow.`,
           },
         ]);
 

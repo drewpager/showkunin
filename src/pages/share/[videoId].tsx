@@ -200,6 +200,7 @@ const VideoList: NextPage = () => {
                 videoId={video.id}
                 initialAnalysis={video.aiAnalysis}
                 initialGeneratedAt={video.aiAnalysisGeneratedAt}
+                initialSolved={video.solved}
               />
             )}
           </div>

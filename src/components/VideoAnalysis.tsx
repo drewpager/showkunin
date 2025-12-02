@@ -7,15 +7,20 @@ interface VideoAnalysisProps {
   videoId: string;
   initialAnalysis?: string | null;
   initialGeneratedAt?: Date | null;
+  initialSolved?: boolean | null;
 }
 
 export default function VideoAnalysis({
   videoId,
   initialAnalysis,
   initialGeneratedAt,
+  initialSolved,
 }: VideoAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(!!initialAnalysis);
+  const [refinementInput, setRefinementInput] = useState("");
+  const [solved, setSolvedState] = useState<boolean | null>(initialSolved ?? null);
   const analyzeVideoMutation = api.video.analyzeVideo.useMutation();
+  const setSolvedMutation = api.video.setSolved.useMutation();
   const utils = api.useContext();
 
   // Use saved analysis or mutation data
@@ -30,6 +35,26 @@ export default function VideoAnalysis({
     await utils.video.get.invalidate({ videoId });
   };
 
+  const handleRefine = async () => {
+    if (!refinementInput.trim()) return;
+    await analyzeVideoMutation.mutateAsync({
+      videoId,
+      refinementPrompt: refinementInput
+    });
+    setRefinementInput("");
+    await utils.video.get.invalidate({ videoId });
+  };
+
+  const handleSolved = async (value: boolean) => {
+    // Toggle off if clicking the same button
+    const newValue = solved === value ? null : value;
+    setSolvedState(newValue);
+    await setSolvedMutation.mutateAsync({
+      videoId,
+      solved: newValue,
+    });
+  };
+
   const router = useRouter();
 
   useEffect(() => {
@@ -41,7 +66,8 @@ export default function VideoAnalysis({
     ) {
       void handleAnalyze();
       // Remove the query param to prevent re-triggering
-      const { analyze, ...rest } = router.query;
+      const { ...rest } = router.query;
+      delete rest.analyze;
       void router.replace(
         {
           pathname: router.pathname,
@@ -51,6 +77,7 @@ export default function VideoAnalysis({
         { shallow: true }
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.analyze, analysis, analyzeVideoMutation.isLoading, analyzeVideoMutation.data]);
 
   const formatDate = (date: Date | null | undefined) => {
@@ -164,13 +191,74 @@ export default function VideoAnalysis({
         </button>
       )}
 
+      {/* Thumbs Up/Down Buttons - Always visible when analysis exists */}
+      {analysis && (
+        <div className="border-t border-gray-200 px-6 py-4 bg-gray-50">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700">
+              Did this analysis solve your problem?
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => void handleSolved(true)}
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${solved === true
+                    ? "bg-green-600 text-white shadow-md"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-green-50 hover:border-green-300"
+                  }`}
+                title="Thumbs up - This solved my problem"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill={solved === true ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                  />
+                </svg>
+                <span>Yes</span>
+              </button>
+              <button
+                onClick={() => void handleSolved(false)}
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${solved === false
+                    ? "bg-red-600 text-white shadow-md"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-red-50 hover:border-red-300"
+                  }`}
+                title="Thumbs down - This didn't solve my problem"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill={solved === false ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
+                  />
+                </svg>
+                <span>No</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isExpanded && (
         <div className="border-t border-gray-200 p-6">
           {analyzeVideoMutation.isLoading && (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600" />
               <p className="text-gray-600">
-                Analyzing your video with Gemini AI...
+                {analyzeVideoMutation.variables?.refinementPrompt
+                  ? "Refining analysis based on your request..."
+                  : "Analyzing your video with Gemini AI..."}
               </p>
               <p className="mt-2 text-sm text-gray-500">
                 This may take a minute
@@ -246,29 +334,55 @@ export default function VideoAnalysis({
                 </ReactMarkdown>
               </div>
 
-              {/* Regenerate Button */}
-              <div className="mt-6 flex justify-center border-t border-gray-200 pt-6">
-                <button
-                  onClick={() => void handleAnalyze()}
-                  disabled={analyzeVideoMutation.isLoading}
-                  className="inline-flex items-center gap-2 rounded-lg border border-purple-600 bg-white px-4 py-2 text-sm font-medium text-purple-600 transition-all hover:bg-purple-50 disabled:opacity-50"
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              {/* Refinement Input */}
+              <div className="mt-8 border-t border-gray-200 pt-6">
+                <h2 className="mb-3 text-md font-medium text-gray-900">Refine Analysis</h2>
+                <div className="flex gap-3">
+                  <textarea
+                    value={refinementInput}
+                    onChange={(e) => setRefinementInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        void handleRefine();
+                      }
+                    }}
+                    placeholder="Ask a follow-up question or request changes (e.g., 'Focus on the API calls', 'Convert code to Python')"
+                    className="flex-1 min-h-600 rounded-lg p-4 border-2 border-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+                    disabled={analyzeVideoMutation.isLoading}
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => void handleRefine()}
+                    disabled={analyzeVideoMutation.isLoading || !refinementInput.trim()}
+                    className="inline-flex items-center rounded-lg mt-3 bg-purple-600 px-4 py-2 text-md font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                  Regenerate Analysis
-                </button>
+                    {analyzeVideoMutation.isLoading ? (
+                      <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    )}
+                    <span className="ml-2">Refine</span>
+                  </button>
+                  {/* Regenerate Button (Secondary) */}
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      onClick={() => void handleAnalyze()}
+                      disabled={analyzeVideoMutation.isLoading}
+                      className="text-sm text-gray-500 hover:text-purple-600 hover:underline"
+                    >
+                      Regenerate completely
+                    </button>
+                  </div>
+                </div>
               </div>
+
             </>
           )}
         </div>
