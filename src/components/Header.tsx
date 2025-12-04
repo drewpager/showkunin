@@ -27,19 +27,22 @@ export default function Header() {
   return (
     <div
       style={{ borderColor: attop ? "#5d594b" : "#5d594b" }}
-      className="header sticky top-0 z-10 flex h-[64px] border-b bg-custom-white bg-opacity-40 backdrop-blur-sm backdrop-saturate-200"
+      className="header sticky top-0 z-10 flex h-[64px] border-b bg-custom-white"
     >
       <div className="m-auto flex w-[1048px] items-center justify-between px-[24px]">
-        <Link href="/">
-          <Image
-            className="cursor-pointer p-2"
-            src={logo}
-            alt="logo"
-            width={42}
-            height={42}
-            unoptimized
-          />
-        </Link>
+        <div className="flex flex-start items-center">
+          <Link href="/" className="flex items-center">
+            <Image
+              className="cursor-pointer p-2"
+              src={logo}
+              alt="logo"
+              width={42}
+              height={42}
+              unoptimized
+            />
+            <p className="text-xl font-bold text-custom-black">Greadings</p>
+          </Link>
+        </div>
 
         <div className="hidden md:block">
           {navigation.map(({ href, name }) => (

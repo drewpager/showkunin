@@ -19,6 +19,7 @@ import { usePostHog } from "posthog-js/react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import logo from "~/assets/logo.png";
 
 
 const VideoList: NextPage = () => {
@@ -116,9 +117,19 @@ const VideoList: NextPage = () => {
       </Head>
       <main className="flex h-screen min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="flex min-h-[62px] w-full items-center justify-between border-b border-solid border-b-[#E7E9EB] bg-custom-white px-6">
-          <Link href="/">
-            <span>Greadings</span>
-          </Link>
+          <div className="flex flex-start items-center">
+            <Link href="/" className="flex items-center">
+              <Image
+                className="cursor-pointer p-2"
+                src={logo}
+                alt="logo"
+                width={42}
+                height={42}
+                unoptimized
+              />
+              <p className="text-xl font-bold text-custom-black">Greadings</p>
+            </Link>
+          </div>
           <div className="flex flex-row items-center justify-center">
             <VideoRecordModal />
             <VideoUploadModal />

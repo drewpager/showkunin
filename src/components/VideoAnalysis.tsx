@@ -92,12 +92,12 @@ export default function VideoAnalysis({
   };
 
   return (
-    <div className="mt-6 rounded-lg border border-gray-200 bg-white">
+    <div className="mt-6 mr-5 rounded-lg border border-gray-200 bg-white">
       {!analysis ? (
         <button
           onClick={() => void handleAnalyze()}
           disabled={analyzeVideoMutation.isLoading}
-          className="flex w-full items-center justify-between rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 text-left text-white transition-all hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
+          className="flex w-full items-center justify-between rounded-lg bg-gradient-to-r from-fuchsia-600 to-red-600 px-6 py-4 text-left text-white transition-all hover:from-fuchsia-700 hover:to-red-700 disabled:opacity-50"
         >
           <div className="flex items-center gap-3">
             <svg
@@ -150,7 +150,7 @@ export default function VideoAnalysis({
       ) : (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex w-full items-center justify-between rounded-t-lg bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 text-left text-white transition-all hover:from-purple-700 hover:to-blue-700"
+          className="flex w-full items-center justify-between rounded-t-lg bg-gradient-to-r from-[#eb4a3a] to-[#eb9737] px-6 py-4 text-left text-white transition-all hover:from-[#eb4a3a] hover:to-[#eb9737]"
         >
           <div className="flex items-center gap-3">
             <svg
@@ -202,8 +202,8 @@ export default function VideoAnalysis({
               <button
                 onClick={() => void handleSolved(true)}
                 className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${solved === true
-                    ? "bg-green-600 text-white shadow-md"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-green-50 hover:border-green-300"
+                  ? "bg-green-600 text-white shadow-md"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-green-50 hover:border-green-300"
                   }`}
                 title="Thumbs up - This solved my problem"
               >
@@ -225,8 +225,8 @@ export default function VideoAnalysis({
               <button
                 onClick={() => void handleSolved(false)}
                 className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${solved === false
-                    ? "bg-red-600 text-white shadow-md"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-red-50 hover:border-red-300"
+                  ? "bg-red-600 text-white shadow-md"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-red-50 hover:border-red-300"
                   }`}
                 title="Thumbs down - This didn't solve my problem"
               >
@@ -348,7 +348,7 @@ export default function VideoAnalysis({
                       }
                     }}
                     placeholder="Ask a follow-up question or request changes (e.g., 'Focus on the API calls', 'Convert code to Python')"
-                    className="flex-1 min-h-600 rounded-lg p-4 border-2 border-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+                    className="flex-1 min-h-600 rounded-lg p-4 border-2 border-[#eb4a3a] shadow-sm focus:border-[#eb4a3a] focus:ring-[#eb4a3a] focus:ring-offset-2 sm:text-sm"
                     disabled={analyzeVideoMutation.isLoading}
                   />
                 </div>
@@ -356,7 +356,7 @@ export default function VideoAnalysis({
                   <button
                     onClick={() => void handleRefine()}
                     disabled={analyzeVideoMutation.isLoading || !refinementInput.trim()}
-                    className="inline-flex items-center rounded-lg mt-3 bg-purple-600 px-4 py-2 text-md font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50"
+                    className="inline-flex items-center rounded-lg mt-3 bg-[#eb4a3a] px-4 py-2 text-md font-medium text-white hover:bg-[#eb9737] focus:outline-none focus:ring-2 focus:ring-[#eb4a3a] focus:ring-offset-2 disabled:opacity-50"
                   >
                     {analyzeVideoMutation.isLoading ? (
                       <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -375,7 +375,7 @@ export default function VideoAnalysis({
                     <button
                       onClick={() => void handleAnalyze()}
                       disabled={analyzeVideoMutation.isLoading}
-                      className="text-sm text-gray-500 hover:text-purple-600 hover:underline"
+                      className="text-sm text-gray-500 hover:text-[#eb4a3a] hover:underline"
                     >
                       Regenerate completely
                     </button>

@@ -2,7 +2,6 @@ import { api, type RouterOutputs } from "~/utils/api";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
 import {
-  DotsHorizontalIcon,
   DownloadIcon,
   Pencil1Icon,
   TrashIcon,
@@ -105,10 +104,10 @@ export default function VideoMoreMenu({ video }: Props) {
   return (
     <>
       {/* More options menu */}
-      <Menu as="div" className="relative mr-4 inline-block text-left">
+      <Menu as="div" className="relative mr-2 inline-block text-left">
         <div>
-          <Menu.Button className="inline-flex h-full w-full justify-center rounded-full px-4 py-2 text-sm font-medium text-[#292D34] hover:bg-[#fafbfc] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
-            <DotsHorizontalIcon />
+          <Menu.Button className="inline-flex h-full w-full justify-center rounded-full px-4 py-2s text-[#292D34] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
+            <Pencil1Icon />
           </Menu.Button>
         </div>
         <Transition

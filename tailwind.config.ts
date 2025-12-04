@@ -33,7 +33,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
-        "custom-white": "#F9FEFF",
+        "custom-white": "#fafafa",
         "custom-orange": "#b24432",
         "custom-black": "#080703",
         "custom-dark": "#5d594b",

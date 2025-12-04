@@ -30,6 +30,8 @@ model Video {
   aiAnalysisGeneratedAt     DateTime?
   solved                    Boolean?
   fileDeletedAt             DateTime?
+  thumbnailUrl              String?   @db.Text
+  thumbnailUrlExpiresAt     DateTime?
   user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

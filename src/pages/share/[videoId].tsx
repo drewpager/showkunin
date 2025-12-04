@@ -17,6 +17,7 @@ import VideoRecordModal from "~/components/VideoRecordModal";
 import defaultProfileIcon from "~/assets/default profile icon.jpg";
 import VideoPlayer from "~/components/VideoPlayer";
 import VideoAnalysis from "~/components/VideoAnalysis";
+import logo from "~/assets/logo.png";
 
 const VideoList: NextPage = () => {
   const router = useRouter();
@@ -100,9 +101,19 @@ const VideoList: NextPage = () => {
       </Head>
       <main className="flex h-screen w-screen flex-col items-center justify-center">
         <div className="flex min-h-[62px] w-full items-center justify-between border-b border-solid border-b-[#E7E9EB] bg-white px-6">
-          <Link href="/">
-            <span>Greadings</span>
-          </Link>
+          <div className="flex flex-start items-center">
+            <Link href="/" className="flex items-center">
+              <Image
+                className="cursor-pointer p-2"
+                src={logo}
+                alt="logo"
+                width={42}
+                height={42}
+                unoptimized
+              />
+              <p className="text-xl font-bold text-custom-black">Greadings</p>
+            </Link>
+          </div>
           <div className="flex items-center justify-center">
             {video && video.userId === session?.user.id ? (
               <>

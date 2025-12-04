@@ -25,7 +25,7 @@ export default function CTA() {
       <div className="mx-auto max-w-7xl py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="relative isolate overflow-hidden bg-custom-black px-6 py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
           <h2 className="mx-auto max-w-2xl text-4xl font-bold tracking-tight text-custom-white">
-            Ready to improve how your team communicates?
+            Ready to prompt more efficiently?
           </h2>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <button

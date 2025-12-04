@@ -120,7 +120,7 @@ export function ShareModal({ video }: Props) {
                 <Dialog.Panel className="w-full max-w-md transform rounded bg-white p-6 text-left align-middle text-[#292D34] shadow-xl transition-all">
                   <div className="flex flex-col items-start">
                     <span className="text-lg font-medium">
-                      Share this recording
+                      Share this automation
                     </span>
                     <div className="mt-6 flex w-full items-center justify-between">
                       <span className="text-sm font-medium">

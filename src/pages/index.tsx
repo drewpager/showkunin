@@ -4,9 +4,10 @@ import { useFeatureFlagEnabled, usePostHog } from "posthog-js/react";
 import { useAtom } from "jotai";
 import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
 import VideoRecordModal from "~/components/VideoRecordModal";
-import { ShareIcon } from "@heroicons/react/24/solid";
+import { CogIcon } from "@heroicons/react/24/solid";
 import { CheckIcon } from "@heroicons/react/20/solid";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { TvIcon } from "@heroicons/react/20/solid";
+import { ForwardIcon } from "@heroicons/react/24/solid";
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
 import Image from "next/image";
@@ -69,16 +70,15 @@ const Home: NextPage = () => {
               <h1 className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
                 Show AI What You Want Automated.
               </h1>
-              <p className="mt-6 text-lg leading-8 text-custom-dark">
-                Self-hosted or hosted by us. You are in control of your own
-                data.
+              <p className="mt-6 text-xl leading-8 text-custom-dark">
+                Screencast video prompts for AI process automation.
               </p>
               <div className="mt-10 flex flex-col items-center justify-center gap-6">
                 <button
                   onClick={openRecordModal}
                   className="inline-flex h-[70px] flex-col items-center justify-between rounded-md border border-transparent bg-custom-orange px-8 py-4 text-sm font-medium text-white shadow-sm hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:ring-offset-2"
                 >
-                  <span>Record a video</span>
+                  <span>Record a task</span>
                   <span className="text-xs">(no account required)</span>
                 </button>
                 <div className="flex flex-col gap-6 sm:flex-row">
@@ -87,7 +87,7 @@ const Home: NextPage = () => {
                       posthog?.capture("clicked watch recorded demo")
                     }
                     target="_blank"
-                    href="https://snapify.it/share/clk3mpgnu0003mj0f042964wg"
+                    href=""
                     className="text-sm font-semibold leading-6"
                   >
                     Watch demo <span aria-hidden="true">→</span>
@@ -176,7 +176,7 @@ const Home: NextPage = () => {
               <span className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
                 How does Greadings work?
               </span>
-              <span className="mt-4 text-custom-dark">
+              <span className="mt-4 text-xl text-custom-dark">
                 Show off your tasks. Get them automated easily.
               </span>
             </div>
@@ -184,30 +184,31 @@ const Home: NextPage = () => {
               <div className="mt-24 flex flex-1 flex-col items-center justify-center gap-8 xl:flex-row xl:items-start xl:gap-12">
                 {[
                   {
-                    icon: (
-                      <Image
-                        src={logo}
-                        alt="logo"
-                        width={48}
-                        height={48}
-                        unoptimized
-                      />
-                    ),
-                    title: "1. Record a video message",
+                    // icon: (
+                    //   <Image
+                    //     src={logo}
+                    //     alt="logo"
+                    //     width={48}
+                    //     height={48}
+                    //     unoptimized
+                    //   />
+                    // ),
+                    icon: <TvIcon className="h-12 w-12" />,
+                    title: "1. Screen-record your problem",
                     description:
-                      "Record a short video of your screen with just a few clicks. No installations required.",
+                      "Record a short video of your screen describing the workflow you want to automate.",
                   },
                   {
-                    icon: <ShareIcon className="h-12 w-12" />,
-                    title: "2. Share with a link",
+                    icon: <CogIcon className="h-12 w-12" />,
+                    title: "2. AI Analyzes & Automates",
                     description:
-                      "Simply share a link to your video message. Your recipients can watch it right then and there without the need to create an account or sign in.",
+                      "AI will analyze your screen-recording & voice over and generate a workflow for you.",
                   },
                   {
-                    icon: <CheckCircleIcon className="h-12 w-12" />,
-                    title: "3. Get work done",
+                    icon: <ForwardIcon className="h-12 w-12" />,
+                    title: "3. Fast Forward Your Workflows",
                     description:
-                      "Get feedback, gather opinions, make decisions and more.",
+                      "Refine, iterate, and get your work done faster.",
                   },
                 ].map(({ title, description, icon }) => (
                   <div
@@ -238,13 +239,13 @@ const Home: NextPage = () => {
             <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2">
               {[
                 {
-                  title: "Engineering",
+                  title: "Process Automation",
                   description:
-                    "Review, document, and collaborate across engineering teams using async video.",
+                    "Repetitive tasks within the browser, like data entry, form filling, and more.",
                   features: [
-                    "To improve code reviews",
-                    "To centralize team knowledge",
-                    "To collaborate asynchronously",
+                    "Automate workflows",
+                    "Share automations",
+                    "Collaborate asynchronously",
                   ],
                   image: engineeringUsecase,
                 },
@@ -253,9 +254,9 @@ const Home: NextPage = () => {
                   description:
                     "Discover a whole new way to delight customers and reach resolutions faster.",
                   features: [
-                    "To provide visual support",
-                    "To improve self-serve content",
-                    "To accelerate team onboarding",
+                    "Provide visual support",
+                    "Improve self-serve content",
+                    "Accelerate team onboarding",
                   ],
                   image: supportUsecase,
                 },
