@@ -5,7 +5,7 @@ import { SessionProvider, useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
-import CrispChat from "~/components/CrispChat";
+// import CrispChat from "~/components/CrispChat";
 import posthog from "posthog-js";
 import { PostHogProvider, usePostHog } from "posthog-js/react";
 
@@ -36,7 +36,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <PostHogIdentificationWrapper>
           <Component {...pageProps} />
         </PostHogIdentificationWrapper>
-        <CrispChat />
+        {/* <CrispChat /> */}
       </PostHogProvider>
     </SessionProvider>
   );

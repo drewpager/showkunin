@@ -4,6 +4,7 @@ import { Bars3Icon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 import logo from "~/assets/logo.png";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 const navigation = [
   { name: "Overview", href: "/" },
@@ -14,6 +15,7 @@ export default function Header() {
   const [attop, setAtTop] = useState(true);
   const [navbarOpen, setNavbarOpen] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
   const closeNav = () => {
     setNavbarOpen(false);
@@ -57,20 +59,38 @@ export default function Header() {
           ))}
         </div>
 
-        <Link
-          href="/sign-in"
-          className="hidden text-sm font-semibold leading-6 text-custom-black md:block"
-        >
-          Log in <span aria-hidden="true">&rarr;</span>
-        </Link>
-
-        <div className="flex flex-row items-center md:hidden">
+        {session ? (
+          <Link
+            href="/videos"
+            className="hidden text-sm font-semibold leading-6 text-custom-black md:block"
+          >
+            Dashboard <span aria-hidden="true">&rarr;</span>
+          </Link>
+        ) : (
           <Link
             href="/sign-in"
-            className="text-sm font-semibold leading-6 text-custom-black"
+            className="hidden text-sm font-semibold leading-6 text-custom-black md:block"
           >
             Log in <span aria-hidden="true">&rarr;</span>
           </Link>
+        )}
+
+        <div className="flex flex-row items-center md:hidden">
+          {session ? (
+            <Link
+              href="/videos"
+              className="text-sm font-semibold leading-6 text-custom-black"
+            >
+              Dashboard <span aria-hidden="true">&rarr;</span>
+            </Link>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="text-sm font-semibold leading-6 text-custom-black"
+            >
+              Log in <span aria-hidden="true">&rarr;</span>
+            </Link>
+          )}
           <div
             className="flex h-[42px] w-[42px] cursor-pointer items-center justify-center"
             onClick={() => setNavbarOpen(!navbarOpen)}
