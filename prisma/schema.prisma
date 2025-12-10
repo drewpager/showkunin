@@ -27,6 +27,7 @@ model Video {
   shareLinkExpiresAt        DateTime?
   linkShareSeo              Boolean   @default(false)
   aiAnalysis                String?   @db.Text
+  userContext               String?   @db.Text
   aiAnalysisGeneratedAt     DateTime?
   solved                    Boolean?
   fileDeletedAt             DateTime?

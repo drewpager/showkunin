@@ -184,9 +184,9 @@ export const videoRouter = createTRPCRouter({
       return { ...video, video_url: signedUrl, thumbnailUrl };
     }),
   getUploadUrl: protectedProcedure
-    .input(z.object({ key: z.string() }))
+    .input(z.object({ key: z.string(), userContext: z.string().optional() }))
     .mutation(async ({ ctx: { prisma, session, s3, posthog }, input }) => {
-      const { key } = input;
+      const { key, userContext } = input;
 
       const videos = await prisma.video.findMany({
         where: {
@@ -229,6 +229,7 @@ export const videoRouter = createTRPCRouter({
         data: {
           userId: session.user.id,
           title: key,
+          userContext,
         },
       });
 
@@ -546,6 +547,9 @@ export const videoRouter = createTRPCRouter({
             text: input.refinementPrompt 
               ? `You are an AI automation expert analyzing a screen recording.
               
+User Context:
+${video.userContext ?? "None"}
+
 Previous Analysis:
 ${video.aiAnalysis ?? "No previous analysis."}
 
@@ -554,6 +558,9 @@ ${input.refinementPrompt}
 
 Please provide an updated analysis and response based on the video and the user's specific request above. Maintain the same structured format (Task Summary, Automation Approach, Implementation Steps, Code Example, Tools/Technologies) unless the user's request specifically implies a different format.`
               : `You are an AI automation expert analyzing a screen recording. The user is showing you a task they want automated.
+
+User Context:
+${video.userContext ?? "None"}
 
 Please analyze this video and provide:
 

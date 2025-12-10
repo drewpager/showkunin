@@ -39,6 +39,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
   const [blob, setBlob] = useState<null | Blob>(null);
   const recorderRef = useRef<null | RecordRTC>(null);
   const [pause, setPause] = useState<boolean>(false);
+  const [userContext, setUserContext] = useState<string | undefined>(undefined);
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<MediaDeviceInfo | null>(
     null
@@ -242,6 +243,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
       const { signedVideoUrl, signedThumbnailUrl, id } =
         await getSignedUrl.mutateAsync({
           key: dateString,
+          userContext: userContext || undefined,
         });
 
       await axios
@@ -293,7 +295,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
   };
 
   return (
-    <div>
+    <div className="min-w-[400px]">
       {step === "pre" ? (
         <div className="w-full">
           <Listbox value={selectedDevice} onChange={setSelectedDevice}>
@@ -357,6 +359,12 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
               </Transition>
             </div>
           </Listbox>
+          <textarea
+            value={userContext}
+            onChange={(e) => setUserContext(e.target.value)}
+            placeholder="Additional context (e.g. documentation, data, etc.)"
+            className="mt-4 block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500"
+          />
           <button
             type="button"
             className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[#5d594b] px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-[#5d594b]/80 disabled:cursor-not-allowed"
