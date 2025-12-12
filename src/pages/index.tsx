@@ -48,7 +48,7 @@ const Home: NextPage = () => {
         <title>Greadings | AI Process Automation Framework</title>
         <meta
           name="description"
-          content="Share high-quality videos asynchronously and collaborate on your own schedule"
+          content="Greadings is a platform to show (and tell) AI what you want automated via screencast video prompts to stop doing repetitive tasks."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>

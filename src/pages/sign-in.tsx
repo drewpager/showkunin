@@ -18,7 +18,7 @@ const SignIn = ({
         <title>Sign in to Greadings</title>
         <meta
           name="description"
-          content="Share high-quality videos asynchronously and collaborate on your own schedule"
+          content="Sign in page for Greadings, a platform to show (and tell) AI what you want automated and stop doing repetitive tasks."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>

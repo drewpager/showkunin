@@ -111,7 +111,7 @@ const VideoList: NextPage = () => {
         <title>Library | Greadings</title>
         <meta
           name="description"
-          content="Share high-quality videos asynchronously and collaborate on your own schedule"
+          content="Greadings library of screencast video prompts to stop doing repetitive tasks."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -304,7 +304,7 @@ const VideoCardSkeleton = () => {
 
 const VideoCard = ({ title, id, createdAt, thumbnailUrl }: VideoCardProps) => {
   return (
-    <Link href={`/share/${id}`}>
+    <Link href={`/task/${id}`}>
       <div className="h-[240px] w-[250px] cursor-pointer overflow-hidden rounded-lg border border-[#6c668533] text-sm font-normal">
         <figure>
           <Image
