@@ -8,6 +8,8 @@ import { getProviders, signIn } from "next-auth/react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
 import Link from "next/link";
+import Footer from "~/components/Footer";
+import Header from "~/components/Header";
 
 const SignIn = ({
   providers,
@@ -22,6 +24,7 @@ const SignIn = ({
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <Header />
       <main className="flex min-h-screen flex-col items-center justify-center bg-custom-white">
         <div className="bg-custom-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
           <div className="animate-fade-in flex flex-col justify-center text-center">
@@ -54,6 +57,7 @@ const SignIn = ({
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 };

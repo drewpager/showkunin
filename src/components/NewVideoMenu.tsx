@@ -52,7 +52,7 @@ export default function NewVideoMenu() {
     <Menu as="div" className="relative inline-block text-left">
       <Menu.Button>
         <span className="cursor-pointer rounded border border-[#0000001a] px-2 py-2 text-sm text-[#292d34] hover:bg-[#fafbfc]">
-          New video
+          New task
         </span>
       </Menu.Button>
       <Transition

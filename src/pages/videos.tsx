@@ -218,10 +218,10 @@ const VideoList: NextPage = () => {
                 <div className="flex items-center justify-center px-8">
                   <div className="flex flex-col">
                     <span className="text-lg font-semibold text-zinc-700">
-                      No videos found
+                      No automations found
                     </span>
                     <span className="mt-1 text-base text-zinc-500">
-                      Videos you record will show up here. Already got videos?
+                      Tasks you record will show up here. Already got videos?
                       Upload them!
                     </span>
                     <div className="mt-4 flex flex-wrap gap-4">

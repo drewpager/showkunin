@@ -57,7 +57,7 @@ export default function Pricing() {
             >
               <span>Annually</span>
               <span className="ml-2 rounded-lg bg-neutral-200 p-1 text-xs font-normal">
-                -20%
+                -33%
               </span>
             </button>
           </div>
@@ -68,25 +68,49 @@ export default function Pricing() {
         <div className="absolute left-[calc(50%_-_calc(min(75vw,500px)_/_2))] h-[min(75vw,500px)] w-[min(75vw,500px)] bg-[radial-gradient(circle_at_center,#666_0,#fff_100%)] opacity-80 blur-[calc(0.5_*_min(75vw,500px))]"></div>
         {[
           {
-            name: "Pro",
-            price: { monthly: "$20", annual: "$10" },
+            name: "Free",
+            price: { monthly: "$0", annual: "$0" },
             features: [
               {
-                feature: "Unlimited recordings",
+                feature: "10 Tasks Per Month",
                 description:
-                  "Make and store unlimited recordings of your tab, desktop, and any application.",
+                  "Automate up to 10 tasks per month.",
                 included: true,
               },
               {
-                feature: "Video download",
+                feature: "Limited Data Retention",
                 description:
-                  "Download your recorded videos for offline viewing or sharing with others.",
+                  "Recordings are stored for 5 days.",
                 included: true,
               },
               {
-                feature: "External video upload",
+                feature: "Early Access to New Features",
                 description:
-                  "Upload videos recorded using other tools or platforms to your Greadings library.",
+                  "We have an aggressive product roadmap and will be releasing for Pro subscriptions and above.",
+                included: false,
+              },
+            ],
+          },
+          {
+            name: "Pro",
+            price: { monthly: "$30", annual: "$20" },
+            features: [
+              {
+                feature: "100 Tasks Per Month",
+                description:
+                  "Automate and store up to 100 tasks per month.",
+                included: true,
+              },
+              {
+                feature: "Share Workflows",
+                description:
+                  "Share your workflows with other members of your team or consultancy.",
+                included: true,
+              },
+              {
+                feature: "Early Access to New Features",
+                description:
+                  "We have an aggressive product roadmap and will be releasing for Pro subscriptions and above.",
                 included: true,
               },
             ],
@@ -98,7 +122,7 @@ export default function Pricing() {
           >
             {name === "Pro" ? (
               <div className="absolute -top-6 left-2/4 z-[1] mt-0 -translate-x-2/4 cursor-default select-none rounded-3xl border-0 border-solid border-[#eaeaea] bg-[linear-gradient(180deg,rgba(0,0,0,.8),#000)] px-[22px] py-3.5 text-white shadow-[0_8px_30px_rgb(0_0_0/6%)] backdrop-blur-[2px]">
-                <span className="text-xs font-bold">Most Popular</span>
+                <span className="text-xs font-bold">Recommended</span>
               </div>
             ) : null}
             <div className="hero relative flex flex-col items-start rounded-3xl px-6 py-6 shadow-sm">
@@ -113,13 +137,21 @@ export default function Pricing() {
                 {billedAnnually ? "billed annually" : "billed monthly"}
               </div>
               <div className="mt-2 flex-grow" />
-              <button
+              {name === "Pro" ? (
+                <button
+                  onClick={() => void signIn()}
+                  type="submit"
+                  className="btn mt-4 block w-full appearance-none rounded-lg bg-black px-4 py-2.5 text-center text-sm font-medium text-white shadow-lg shadow-black/50 duration-100 focus:outline-transparent disabled:opacity-80"
+                >
+                  Get started
+                </button>
+              ) : <button
                 onClick={() => void signIn()}
                 type="submit"
                 className="btn mt-4 block w-full appearance-none rounded-lg bg-black px-4 py-2.5 text-center text-sm font-medium text-white shadow-lg shadow-black/50 duration-100 focus:outline-transparent disabled:opacity-80"
               >
-                Get started
-              </button>
+                Get started free
+              </button>}
             </div>
             <div className="mt-4 flex flex-col gap-2 pb-8">
               {features.map(({ feature, description, included }) => (
@@ -178,16 +210,16 @@ export default function Pricing() {
             {
               question: "What are my payment options?",
               answer:
-                "You can be billed monthly, but save 20% if you pay annually. We currently accept credit card payment. Contact us at drew@greadings.com if you need an alternative payment method.",
+                "You can be billed monthly, but save 33% if you pay annually. We currently accept credit card payment. Contact us at drew@greadings.com if you need an alternative payment method.",
             },
             {
-              question: "Can I import videos I already recorded?",
-              answer: "Yes! Greadings allows you to import your existing videos.",
+              question: "Can I upload videos I already recorded?",
+              answer: "Yes! Greadings allows you to import your existing videos and automate.",
             },
             {
               question: "How do I contact Support?",
               answer:
-                "If you need to contact our Support, click the menu on the bottom right to start a chat.",
+                "If you need to contact our Support, email drew@greadings.com.",
             },
           ].map(({ answer, question }) => (
             <Disclosure

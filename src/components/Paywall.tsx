@@ -92,8 +92,7 @@ export default function Paywall() {
                           Upgrade your plan
                         </h1>
                         <p className="mt-4 pr-8 text-lg text-gray-500">
-                          Replace unnecessary meetings that leave you with
-                          limited time to focus on more valuable things.
+                          Keep automating your workflows with Greadings.
                         </p>
                       </div>
                       <p className="mt-6 text-base text-gray-500">
@@ -131,7 +130,7 @@ export default function Paywall() {
                             Pro
                           </div>
                           <div className="mb-2 mt-4 flex items-end text-5xl font-extrabold tracking-tight">
-                            {billedAnnually ? "$8" : "$10"}
+                            {billedAnnually ? "$20" : "$30"}
                             <span className="mb-1 text-sm opacity-80">
                               / mo.
                             </span>
@@ -153,19 +152,19 @@ export default function Paywall() {
                         <div className="mt-4 flex flex-col gap-2 pb-8">
                           {[
                             {
-                              feature: "Unlimited recordings",
+                              feature: "100 Tasks Per Month",
                               description:
-                                "Make and store unlimited recordings of your tab, desktop, and any application.",
+                                "Automate and store up to 100 tasks per month.",
                             },
                             {
-                              feature: "Video download",
+                              feature: "Share Workflows",
                               description:
-                                "Download your recorded videos for offline viewing or sharing with others.",
+                                "Share your workflows with other members of your team or consultancy.",
                             },
                             {
-                              feature: "External video upload",
+                              feature: "Early Access to New Features",
                               description:
-                                "Upload videos recorded using other tools or platforms to your Greadings library.",
+                                "We have an aggressive product roadmap and will be releasing for Pro subscriptions and above.",
                             },
                           ].map(({ feature, description }) => (
                             <div
