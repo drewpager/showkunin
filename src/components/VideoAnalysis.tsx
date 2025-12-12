@@ -377,7 +377,7 @@ export default function VideoAnalysis({
                     p: ({ node: _node, ...props }) => (
                       <p className="text-gray-700" {...props} />
                     ),
-                    code: ({ node: _node, inline, className, children, ...props }) =>
+                    code: ({ node: _node, inline, className, children, ...props }: { node?: any; inline?: boolean; className?: string; children?: React.ReactNode } & Record<string, any>) =>
                       inline ? (
                         <code
                           className="rounded bg-gray-100 px-1.5 py-0.5 text-sm text-purple-700"
