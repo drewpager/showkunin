@@ -60,14 +60,14 @@ const VideoList: NextPage = () => {
     });
   };
 
-  if (!isLoading && !video) {
+  if (!isLoading && (!video || (!video.video_url && !video.fileDeletedAt))) {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center">
         <span className="max-w-[80%] text-center text-2xl font-medium">
-          This recording is currently unavailable
+          This task is currently private or unavailable
         </span>
         <span className="mt-3 max-w-[80%] text-center text-sm">
-          To create your own public recordings,{" "}
+          To create your own automations,{" "}
           <Link
             onClick={() =>
               posthog?.capture("click sign-up from video error page")
@@ -125,7 +125,7 @@ const VideoList: NextPage = () => {
               <>
                 <Link href="/videos">
                   <span className="cursor-pointer rounded border border-[#0000001a] px-2 py-2 text-sm text-[#292d34] hover:bg-[#fafbfc]">
-                    My Library
+                    My Tasks
                   </span>
                 </Link>
                 <div className="ml-4 flex items-center justify-center">
@@ -137,7 +137,7 @@ const VideoList: NextPage = () => {
                 onClick={openRecordModal}
                 className="inline-flex max-h-[35px] items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
-                Record a video
+                Record a task
               </button>
             )}
           </div>
@@ -149,7 +149,7 @@ const VideoList: NextPage = () => {
                 <div className="rounded-lg bg-gray-800 p-8 text-center shadow-lg">
                   <h3 className="mb-2 text-xl font-semibold text-red-400">Video Unavailable</h3>
                   <p className="text-gray-300">
-                    This video was deleted according to our retention policy.
+                    This video was deleted according to our retention policy. You can still access the task solution!
                   </p>
                   <p className="mt-2 text-sm text-gray-500">
                     (30 days for free plans, 60 days for paid plans)
@@ -157,7 +157,7 @@ const VideoList: NextPage = () => {
                 </div>
               </div>
             ) : video?.video_url ? (
-              <div className="aspect-video h-full">
+              <div className="aspect-video h-full max-h-[calc(100vh*0.6)]">
                 <VideoPlayer
                   thumbnailUrl={video.thumbnailUrl}
                   video_url={video.video_url}

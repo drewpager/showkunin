@@ -221,7 +221,7 @@ const VideoList: NextPage = () => {
                       No automations found
                     </span>
                     <span className="mt-1 text-base text-zinc-500">
-                      Tasks you record will show up here. Already got videos?
+                      Tasks you record will show up here. Already got tasks recorded?
                       Upload them!
                     </span>
                     <div className="mt-4 flex flex-wrap gap-4">

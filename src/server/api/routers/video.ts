@@ -48,60 +48,23 @@ export const videoRouter = createTRPCRouter({
         nextCursor = nextItem?.id;
       }
 
-      // Check which videos need thumbnail URL refresh (expired or missing)
-      const now = new Date();
-      const videosNeedingRefresh = videos.filter(
-        (video) =>
-          !video.thumbnailUrl ||
-          !video.thumbnailUrlExpiresAt ||
-          video.thumbnailUrlExpiresAt <= now
+      // Generate signed URLs for all videos
+      const videosWithUrls = await Promise.all(
+        videos.map(async (video) => {
+          const thumbnailUrl = await getSignedUrl(
+            s3,
+            new GetObjectCommand({
+              Bucket: process.env.AWS_BUCKET_NAME,
+              Key: video.userId + "/" + video.id + "-thumbnail",
+            }),
+            { expiresIn: 7 * 24 * 60 * 60 }
+          );
+          return {
+            ...video,
+            thumbnailUrl,
+          };
+        })
       );
-
-      // Generate new signed URLs for videos that need refresh (7 day expiration)
-      const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60;
-      const expiresAt = new Date(now.getTime() + SEVEN_DAYS_IN_SECONDS * 1000);
-
-      if (videosNeedingRefresh.length > 0) {
-        const urlUpdates = await Promise.all(
-          videosNeedingRefresh.map(async (video) => {
-            const thumbnailUrl = await getSignedUrl(
-              s3,
-              new GetObjectCommand({
-                Bucket: process.env.AWS_BUCKET_NAME,
-                Key: video.userId + "/" + video.id + "-thumbnail",
-              }),
-              { expiresIn: SEVEN_DAYS_IN_SECONDS }
-            );
-
-            return {
-              id: video.id,
-              thumbnailUrl,
-            };
-          })
-        );
-
-        // Batch update all videos that needed refresh
-        await Promise.all(
-          urlUpdates.map((update) =>
-            prisma.video.update({
-              where: { id: update.id },
-              data: {
-                thumbnailUrl: update.thumbnailUrl,
-                thumbnailUrlExpiresAt: expiresAt,
-              },
-            })
-          )
-        );
-
-        // Update local video objects with new URLs
-        for (const update of urlUpdates) {
-          const video = videos.find((v) => v.id === update.id);
-          if (video) {
-            video.thumbnailUrl = update.thumbnailUrl;
-            video.thumbnailUrlExpiresAt = expiresAt;
-          }
-        }
-      }
 
       // Track analytics asynchronously (don't block response)
       void (async () => {
@@ -119,10 +82,7 @@ export const videoRouter = createTRPCRouter({
       })();
 
       return {
-        items: videos.map((video) => ({
-          ...video,
-          thumbnailUrl: video.thumbnailUrl ?? "",
-        })),
+        items: videosWithUrls,
         nextCursor,
       };
     }),
@@ -440,6 +400,59 @@ export const videoRouter = createTRPCRouter({
       return {
         success: true,
         deleteVideo,
+        deleteVideoObject,
+        deleteThumbnailObject,
+      };
+    }),
+  deleteVideoFile: protectedProcedure
+    .input(
+      z.object({
+        videoId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session, s3, posthog }, input }) => {
+      // 1. Update DB to mark file as deleted
+      const updateVideo = await prisma.video.updateMany({
+        where: {
+          id: input.videoId,
+          userId: session.user.id,
+        },
+        data: {
+          fileDeletedAt: new Date(),
+        },
+      });
+
+      if (updateVideo.count === 0) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "video file delete (retention)",
+        properties: {
+          videoId: input.videoId,
+        },
+      });
+      void posthog?.shutdownAsync();
+
+      // 2. Delete objects from S3
+      const deleteVideoObject = await s3.send(
+        new DeleteObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: session.user.id + "/" + input.videoId,
+        })
+      );
+
+      const deleteThumbnailObject = await s3.send(
+        new DeleteObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: session.user.id + "/" + input.videoId + "-thumbnail",
+        })
+      );
+
+      return {
+        success: true,
+        updateVideo,
         deleteVideoObject,
         deleteThumbnailObject,
       };
