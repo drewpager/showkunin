@@ -87,7 +87,7 @@ const VideoList: NextPage = () => {
     <>
       <Head>
         <title>
-          {video?.title ?? "Greadings | The AI Process Automation Guide"}
+          {video?.title ?? "Greadings | Show AI What You Want Automated"}
         </title>
         <meta property="og:image" content={video?.thumbnailUrl} />
         <meta property="og:image:type" content="image/png" />
@@ -95,7 +95,7 @@ const VideoList: NextPage = () => {
         <meta property="og:image:height" content="600" />
         <meta
           name="description"
-          content="Share high-quality videos asynchronously and collaborate on your own schedule"
+          content="Record your workflows, tasks and problems to give AI the context it needs to help you automate your processes and resolve your issues."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -144,12 +144,17 @@ const VideoList: NextPage = () => {
         </div>
         <div className="flex h-full w-full grow flex-col items-center justify-start overflow-auto bg-[#fbfbfb]">
           <div className="flex max-h-[calc(100vh_-_169px)] w-full justify-center bg-black 2xl:max-h-[1160px]">
-            {video?.fileDeletedAt ? (
+            {isLoading ? (
+              <div className="aspect-video h-full w-full max-h-[calc(100vh*0.6)] animate-pulse bg-gray-900" />
+            ) : video?.fileDeletedAt ? (
               <div className="flex h-full w-full flex-col items-center justify-center bg-gray-900 text-white">
                 <div className="rounded-lg bg-gray-800 p-8 text-center shadow-lg">
-                  <h3 className="mb-2 text-xl font-semibold text-[#eb4a3a]">Video No Longer Available</h3>
+                  <h3 className="mb-2 text-xl font-semibold text-[#eb4a3a]">
+                    Video No Longer Available
+                  </h3>
                   <p className="text-gray-300">
-                    This video was deleted according to our retention policy. You can still access the task solution!
+                    This video was deleted according to our retention policy. You
+                    can still access the task solution!
                   </p>
                   <p className="mt-2 text-sm text-gray-500">
                     (30 days for free plans, 60 days for paid plans)
@@ -159,8 +164,8 @@ const VideoList: NextPage = () => {
             ) : video?.video_url ? (
               <div className="aspect-video h-full max-h-[calc(100vh*0.6)]">
                 <VideoPlayer
-                  thumbnailUrl={video.thumbnailUrl}
                   video_url={video.video_url}
+                  thumbnailUrl={video.thumbnailUrl}
                 />
               </div>
             ) : null}
@@ -178,8 +183,8 @@ const VideoList: NextPage = () => {
                 </div>
               ) : (
                 <div className="mb-4 flex flex-col">
-                  <div className="h-5 w-[300px] animate-pulse rounded bg-slate-200"></div>
-                  <div className="mt-2 h-4 w-[50px] animate-pulse rounded bg-slate-200"></div>
+                  <div className="h-7 w-[40%] animate-pulse rounded bg-slate-200"></div>
+                  <div className="mt-2 h-4 w-[20%] animate-pulse rounded bg-slate-200"></div>
                 </div>
               )}
             </div>
@@ -188,31 +193,35 @@ const VideoList: NextPage = () => {
                 <>
                   <div className="h-10 w-10 overflow-hidden rounded-full">
                     <Image
-                      src={video.user.image ?? defaultProfileIcon}
+                      src={video?.user.image ?? defaultProfileIcon}
                       alt="profile icon"
                       width={40}
                       height={40}
                       unoptimized
                     />
                   </div>
-                  <span className="ml-3 font-medium">{video.user.name}</span>
+                  <span className="ml-3 font-medium">{video?.user.name}</span>
                 </>
               ) : (
                 <>
                   <div className="h-10 w-10 animate-pulse overflow-hidden rounded-full bg-slate-200"></div>
-                  <div className="ml-3 h-4 w-[100px] animate-pulse rounded bg-slate-200 font-medium"></div>
+                  <div className="ml-3 h-4 w-[150px] animate-pulse rounded bg-slate-200 font-medium"></div>
                 </>
               )}
             </div>
 
             {/* AI Analysis Section */}
-            {video && (
+            {video ? (
               <VideoAnalysis
                 videoId={video.id}
                 initialAnalysis={video.aiAnalysis}
                 initialGeneratedAt={video.aiAnalysisGeneratedAt}
                 initialSolved={video.solved}
               />
+            ) : (
+              <div className="mt-6 mr-5">
+                <div className="h-[80px] w-full animate-pulse rounded-lg bg-slate-200"></div>
+              </div>
             )}
           </div>
         </div>

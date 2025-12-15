@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import ReactMarkdown from "react-markdown";
@@ -243,7 +243,7 @@ export default function VideoAnalysis({
             </svg>
             <div>
               <h3 className="text-lg font-semibold">AI Automation Analysis</h3>
-              <p className="text-sm text-purple-100">
+              <p className="text-sm text-white">
                 Generated {formatDate(generatedAt)} • Click to{" "}
                 {isExpanded ? "collapse" : "expand"}
               </p>

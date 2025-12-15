@@ -156,7 +156,8 @@ export const videoRouter = createTRPCRouter({
 
       if (
         session.user.stripeSubscriptionStatus !== "active" &&
-        !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY &&
+        videos.length >= 10
       ) {
         posthog?.capture({
           distinctId: session.user.id,
