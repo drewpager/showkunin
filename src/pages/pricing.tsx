@@ -4,7 +4,7 @@ import Head from "next/head";
 import { useState } from "react";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import Tooltip from "~/components/Tooltip";
-import { Disclosure, Transition } from "@headlessui/react";
+import { Disclosure, DisclosureButton, DisclosurePanel, Transition } from "@headlessui/react";
 import { ChevronUpIcon } from "@heroicons/react/20/solid";
 import CTA from "~/components/CTA";
 import VideoRecordModal from "~/components/VideoRecordModal";
@@ -72,15 +72,15 @@ export default function Pricing() {
             price: { monthly: "$0", annual: "$0" },
             features: [
               {
-                feature: "10 Tasks Per Month",
+                feature: "10 Tasks Automated",
                 description:
-                  "Automate up to 10 tasks per month.",
+                  "Automate up to 10 tasks for free.",
                 included: true,
               },
               {
                 feature: "Limited Data Retention",
                 description:
-                  "Recordings are stored for 5 days.",
+                  "Recordings are stored for 5 days. Resolutions are stored until deleted.",
                 included: true,
               },
               {
@@ -229,13 +229,13 @@ export default function Pricing() {
             >
               {({ open }) => (
                 <>
-                  <Disclosure.Button className="flex h-12 w-full items-center justify-between border-t border-[#eaeaea] px-4 py-8 text-left text-sm font-medium">
+                  <DisclosureButton className="flex h-12 w-full items-center justify-between border-t border-[#eaeaea] px-4 py-8 text-left text-sm font-medium">
                     <span>{question}</span>
                     <ChevronUpIcon
                       className={`transition-transform ${open ? "rotate-180" : ""
                         } h-5 w-5`}
                     />
-                  </Disclosure.Button>
+                  </DisclosureButton>
                   <Transition
                     enter="transition duration-100 ease-out"
                     enterFrom="transform scale-95 opacity-0"
@@ -244,9 +244,9 @@ export default function Pricing() {
                     leaveFrom="transform scale-100 opacity-100"
                     leaveTo="transform scale-95 opacity-0"
                   >
-                    <Disclosure.Panel className="px-4 pb-2 pt-0 text-sm text-gray-500">
+                    <DisclosurePanel className="px-4 pb-2 pt-0 text-sm text-gray-500">
                       {answer}
-                    </Disclosure.Panel>
+                    </DisclosurePanel>
                   </Transition>
                 </>
               )}

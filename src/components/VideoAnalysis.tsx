@@ -33,7 +33,7 @@ const CodeBlock = ({
   };
 
   return (
-    <div className="group relative my-4 rounded-lg border-2 border-dotted border-purple-500 bg-gray-900">
+    <div className="group relative my-4 rounded-lg bg-gray-900">
       <div className="absolute right-2 top-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         <button
           onClick={() => void copyToClipboard()}

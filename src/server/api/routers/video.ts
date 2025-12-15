@@ -560,30 +560,30 @@ export const videoRouter = createTRPCRouter({
             text: input.refinementPrompt 
               ? `You are an AI automation expert analyzing a screen recording.
               
-User Context:
-${video.userContext ?? "None"}
+              User Context:
+              ${video.userContext ?? "None"}
 
-Previous Analysis:
-${video.aiAnalysis ?? "No previous analysis."}
+              Previous Analysis:
+              ${video.aiAnalysis ?? "No previous analysis."}
 
-User Refinement Request:
-${input.refinementPrompt}
+              User Refinement Request:
+              ${input.refinementPrompt}
 
-Please provide an updated analysis and response based on the video and the user's specific request above. Maintain the same structured format (Task Summary, Automation Approach, Implementation Steps, Code Example, Tools/Technologies) unless the user's request specifically implies a different format.`
-              : `You are an AI automation expert analyzing a screen recording. The user is showing you a task they want automated.
+              Please provide an updated analysis and response based on the video and the user's specific request above. Maintain the same structured format (Task Summary, Automation Approach, Implementation Steps, Code Example, Tools/Technologies) unless the user's request specifically implies a different format.`
+                            : `You are an AI problem solving and automation expert analyzing a screen recording. The user is showing you a task they want automated or a problem they want resolved.
 
-User Context:
-${video.userContext ?? "None"}
+              User Context:
+              ${video.userContext ?? "None"}
 
-Please analyze this video and provide:
+              Please analyze this video and provide:
 
-1. **Task Summary**: A clear description of what the user is trying to accomplish
-2. **Automation Approach**: How this task could be automated (e.g., using browser automation, API calls, scripts, etc.)
-3. **Implementation Steps**: Step-by-step instructions for implementing the automation
-4. **Code Example**: If applicable, provide code snippets with clear instructions on where to use them
-5. **Tools/Technologies**: List any tools, libraries, or services that would be helpful
+              1. **Code Example**: If applicable, provide code snippets with clear instructions on where to use them
+              2. **Task Summary**: A clear description of what the user is trying to accomplish
+              3. **Automation Approach**: How this task could be automated (e.g., using browser automation, API calls, scripts, etc.)
+              4. **Implementation Steps**: Step-by-step instructions for implementing the automation
+              5. **Tools/Technologies**: List any tools, libraries, or services that would be helpful
 
-Format your response in a clear, concise, and structured way that's easy for the user to follow.`,
+              Format your response in a clear, concise, and structured way that's easy for the user to follow.`,
           },
         ]);
 

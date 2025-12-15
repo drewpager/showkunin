@@ -33,7 +33,7 @@ export default function ProfileMenu() {
   };
 
   const openVideoLibrary = () => {
-    void push("/videos");
+    void push("/tasks");
   };
 
   return (
@@ -70,7 +70,7 @@ export default function ProfileMenu() {
                       }`}
                   >
                     <p className="leading-2 text-sm leading-4">
-                      Video Library
+                      Task Library
                     </p>
                   </div>
                 )}

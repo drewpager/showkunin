@@ -60,17 +60,29 @@ const VideoList: NextPage = () => {
     ) {
       return alert("Your browser is currently NOT supported.");
     }
-    setRecordOpen(true);
+    if (
+      session?.user.stripeSubscriptionStatus === "active" || videos.length < 10 ||
+      !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    ) {
+      setRecordOpen(true);
 
-    posthog?.capture("open record video modal", {
-      stripeSubscriptionStatus: session?.user.stripeSubscriptionStatus,
-      cta: "empty video list page",
-    });
+      posthog?.capture("open record video modal", {
+        stripeSubscriptionStatus: session?.user.stripeSubscriptionStatus,
+        cta: "empty video list page",
+      });
+    } else {
+      setPaywallOpen(true);
+
+      posthog?.capture("hit video record paywall", {
+        stripeSubscriptionStatus: session?.user.stripeSubscriptionStatus,
+        cta: "empty video list page",
+      });
+    }
   };
 
   const openUploadModal = () => {
     if (
-      session?.user.stripeSubscriptionStatus === "active" ||
+      session?.user.stripeSubscriptionStatus === "active" || videos.length < 10 ||
       !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
     ) {
       setUploadOpen(true);
@@ -100,7 +112,7 @@ const VideoList: NextPage = () => {
   useEffect(() => {
     if (checkoutCanceledQueryParam && closeQueryParam === "false") {
       setTimeout(() => {
-        void router.push("/videos").then(() => router.reload());
+        void router.push("/tasks").then(() => router.reload());
       }, 5000);
     }
   }, [checkoutCanceledQueryParam, closeQueryParam, router]);
@@ -108,7 +120,7 @@ const VideoList: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Library | Greadings</title>
+        <title>Task Library | Greadings</title>
         <meta
           name="description"
           content="Greadings library of screencast video prompts to stop doing repetitive tasks."
@@ -136,10 +148,9 @@ const VideoList: NextPage = () => {
             <Paywall />
 
             {videos?.length &&
-              session?.user?.stripeSubscriptionStatus !== "active" &&
-              1 + 1 === 3 ? (
+              session?.user?.stripeSubscriptionStatus !== "active" ? (
               <div className="mr-4 flex max-h-[35px] flex-col items-center justify-center rounded px-2 py-2 text-sm text-[#6c6685]">
-                <span>{videos.length}/10 videos</span>
+                <span>{videos.length}/10 tasks</span>
                 <div className="mt-1 h-[3px] w-full rounded-full bg-gray-200">
                   <div
                     className={`h-[3px] w-[45%] rounded-full ${videos.length >= 7 ? "bg-red-600" : "bg-blue-600"
@@ -151,7 +162,7 @@ const VideoList: NextPage = () => {
                 </div>
               </div>
             ) : null}
-            <NewVideoMenu />
+            <NewVideoMenu videos={videos} />
             {status === "authenticated" && (
               <div className="ml-4 flex items-center justify-center">
                 <ProfileMenu />
@@ -229,7 +240,7 @@ const VideoList: NextPage = () => {
                         onClick={openRecordModal}
                         className="inline-flex items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                       >
-                        Record a video
+                        Record a task
                       </button>
                       <button
                         onClick={openUploadModal}
@@ -255,6 +266,10 @@ const VideoList: NextPage = () => {
 
                   {isLoading || isFetchingNextPage ? (
                     <>
+                      <VideoCardSkeleton />
+                      <VideoCardSkeleton />
+                      <VideoCardSkeleton />
+                      <VideoCardSkeleton />
                       <VideoCardSkeleton />
                       <VideoCardSkeleton />
                       <VideoCardSkeleton />

@@ -2,7 +2,6 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
 import { useAtom } from "jotai";
 import paywallAtom from "~/atoms/paywallAtom";
-// import { XMarkIcon } from "next/dist/client/components/react-dev-overlay/internal/icons/XMarkIcon";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/20/solid";
@@ -17,6 +16,7 @@ export default function Paywall() {
     api.stripe.createCheckoutSession.useMutation();
   const router = useRouter();
   const [open, setOpen] = useAtom(paywallAtom);
+  const [loading, setLoading] = useState<boolean>(false);
   const [billedAnnually, setBilledAnnually] = useState<boolean>(true);
   const posthog = usePostHog();
 
@@ -27,15 +27,18 @@ export default function Paywall() {
   }
 
   const handleCheckout = async () => {
+    setLoading(true);
     const { checkoutUrl } = await createCheckoutSession({
       billedAnnually,
       recordModalOpen,
     });
     if (checkoutUrl) {
       if (recordModalOpen) {
+        setLoading(false);
         setOpen(false);
         window.open(checkoutUrl, "_blank", "noreferrer,width=500,height=500");
       } else {
+        setLoading(false);
         void router.push(checkoutUrl);
       }
     }
@@ -79,7 +82,7 @@ export default function Paywall() {
                   className="absolute right-6 top-6 text-gray-600"
                   tabIndex={0}
                 >
-                  <XMarkIcon />
+                  <XMarkIcon width={24} height={24} />
                 </button>
                 <div className="mx-auto h-full max-w-7xl overflow-auto px-8 pb-8 pt-20">
                   <section className="relative mx-auto flex max-w-4xl flex-col justify-between gap-8 md:flex-row md:items-center ">
@@ -117,7 +120,7 @@ export default function Paywall() {
                           </label>
                           <span className="opacity-50">Annually</span>
                           <span className="rounded-md bg-[#cbf4c9] px-2 py-1 text-xs text-[#0e6245]">
-                            20% Off
+                            33% Off
                           </span>
                         </div>
                       </div>
@@ -145,8 +148,32 @@ export default function Paywall() {
                             onClick={() => void handleCheckout()}
                             type="submit"
                             className="btn mt-4 block w-full appearance-none rounded-lg bg-black px-4 py-2.5 text-center text-sm font-medium text-white shadow-lg shadow-black/50 duration-100 focus:outline-transparent disabled:opacity-80"
+                            disabled={loading}
                           >
-                            Upgrade
+                            {loading ? (
+                              <p className="flex items-center justify-center">Upgrade
+                                <svg
+                                  className="ml-2 h-4 w-4 animate-spin text-white"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                              </p>
+                            ) : "Upgrade"}
                           </button>
                         </div>
                         <div className="mt-4 flex flex-col gap-2 pb-8">

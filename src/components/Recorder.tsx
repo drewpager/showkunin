@@ -225,7 +225,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
   const handleSave = () => {
     if (blob) {
       const dateString =
-        "Greadings Recording - " + dayjs().format("MMM DD YYYY") + ".webm";
+        "Greadings Task - " + dayjs().format("MMM DD YYYY") + ".webm";
       invokeSaveAsDialog(blob, dateString);
     }
 
@@ -236,7 +236,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
     if (!blob || !videoRef.current) return;
 
     const dateString =
-      "Greadings Recording - " + dayjs().format("MMM DD YYYY") + ".webm";
+      "Greadings Task - " + dayjs().format("MMM DD YYYY") + ".webm";
     setSubmitting(true);
 
     try {
@@ -261,7 +261,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
           );
         })
         .then(() => {
-          void router.push("share/" + id + "?analyze=true");
+          void router.push("task/" + id + "?analyze=true");
           setRecordOpen(false);
           posthog?.capture("recorder: video uploaded");
         })

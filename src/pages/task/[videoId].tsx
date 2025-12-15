@@ -123,7 +123,7 @@ const VideoList: NextPage = () => {
             ) : null}
             {status === "authenticated" ? (
               <>
-                <Link href="/videos">
+                <Link href="/tasks">
                   <span className="cursor-pointer rounded border border-[#0000001a] px-2 py-2 text-sm text-[#292d34] hover:bg-[#fafbfc]">
                     My Tasks
                   </span>
@@ -147,7 +147,7 @@ const VideoList: NextPage = () => {
             {video?.fileDeletedAt ? (
               <div className="flex h-full w-full flex-col items-center justify-center bg-gray-900 text-white">
                 <div className="rounded-lg bg-gray-800 p-8 text-center shadow-lg">
-                  <h3 className="mb-2 text-xl font-semibold text-red-400">Video Unavailable</h3>
+                  <h3 className="mb-2 text-xl font-semibold text-[#eb4a3a]">Video No Longer Available</h3>
                   <p className="text-gray-300">
                     This video was deleted according to our retention policy. You can still access the task solution!
                   </p>

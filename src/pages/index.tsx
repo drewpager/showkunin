@@ -24,7 +24,7 @@ const Home: NextPage = () => {
 
   // useEffect(() => {
   //   if (session.status === "authenticated" && !recordModalOpen) {
-  //     void router.push("/videos");
+  //     void router.push("/tasks");
   //   }
   // }, [session, router]);
 
@@ -76,10 +76,9 @@ const Home: NextPage = () => {
               <div className="mt-10 flex flex-col items-center justify-center gap-6">
                 <button
                   onClick={openRecordModal}
-                  className="inline-flex h-[70px] flex-col items-center justify-between rounded-md border border-transparent bg-custom-orange px-8 py-4 text-sm font-medium text-white shadow-sm hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:ring-offset-2"
+                  className="inline-flex h-[55px] flex-col items-center justify-between rounded-md border border-transparent bg-custom-orange px-8 py-4 text-sm font-medium text-white shadow-sm hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:ring-offset-2"
                 >
                   <span>Record a task</span>
-                  <span className="text-xs">(no account required)</span>
                 </button>
                 <div className="flex flex-col gap-6 sm:flex-row">
                   <a
@@ -241,7 +240,7 @@ const Home: NextPage = () => {
                 {
                   title: "Process Automation",
                   description:
-                    "Repetitive tasks within the browser, like data entry, form filling, and more.",
+                    "Repetitive tasks within the browser, like spreadsheets,data entry, form filling, and more.",
                   features: [
                     "Automate workflows",
                     "Share automations",
@@ -250,13 +249,13 @@ const Home: NextPage = () => {
                   image: engineeringUsecase,
                 },
                 {
-                  title: "Support",
+                  title: "Problem Solving",
                   description:
-                    "Discover a whole new way to delight customers and reach resolutions faster.",
+                    "Instead of spending time trying to figure out how to do something, let Greadings help you get it done.",
                   features: [
-                    "Provide visual support",
-                    "Improve self-serve content",
-                    "Accelerate team onboarding",
+                    "Give Greadings context using a screen recording of your problem",
+                    "Greadings will analyze your screen recording and provide a solution",
+                    "You can move on with your day",
                   ],
                   image: supportUsecase,
                 },
@@ -298,7 +297,7 @@ const Home: NextPage = () => {
             {[
               { stat: "Tasks Automated", value: "10,000+" },
               { stat: "Hours Saved", value: "20,000+" },
-              { stat: "uptime", value: "99.99%" },
+              { stat: "Task Resolution", value: "98%" },
             ].map(({ stat, value }) => (
               <div
                 key={stat}

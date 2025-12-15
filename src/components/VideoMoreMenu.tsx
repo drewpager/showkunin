@@ -80,7 +80,7 @@ export default function VideoMoreMenu({ video }: Props) {
     },
     onSettled: () => {
       void utils.video.getAll.invalidate();
-      void router.push("/videos");
+      void router.push("/tasks");
     },
   });
 

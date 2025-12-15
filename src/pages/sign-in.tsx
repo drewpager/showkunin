@@ -71,7 +71,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // Note: Make sure not to redirect to the same page
   // To avoid an infinite loop!
   if (session) {
-    return { redirect: { destination: "/videos" } };
+    return { redirect: { destination: "/tasks" } };
   }
 
   const providers = await getProviders();

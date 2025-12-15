@@ -61,7 +61,7 @@ export default function Header() {
 
         {session ? (
           <Link
-            href="/videos"
+            href="/tasks"
             className="hidden text-sm font-semibold leading-6 text-custom-black md:block"
           >
             Dashboard <span aria-hidden="true">&rarr;</span>
@@ -78,7 +78,7 @@ export default function Header() {
         <div className="flex flex-row items-center md:hidden">
           {session ? (
             <Link
-              href="/videos"
+              href="/tasks"
               className="text-sm font-semibold leading-6 text-custom-black"
             >
               Dashboard <span aria-hidden="true">&rarr;</span>

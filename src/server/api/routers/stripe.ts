@@ -48,11 +48,11 @@ export const stripeRouter = createTRPCRouter({
             },
           ],
           success_url: input.recordModalOpen
-            ? `${baseUrl}/videos?checkoutCanceled=false&close=true`
-            : `${baseUrl}/videos?checkoutCanceled=false&close=false`,
+            ? `${baseUrl}/tasks?checkoutCanceled=false&close=true`
+            : `${baseUrl}/tasks?checkoutCanceled=false&close=false`,
           cancel_url: input.recordModalOpen
-            ? `${baseUrl}/videos?checkoutCanceled=true&close=true`
-            : `${baseUrl}/videos?checkoutCanceled=true&close=false`,
+            ? `${baseUrl}/tasks?checkoutCanceled=true&close=true`
+            : `${baseUrl}/tasks?checkoutCanceled=true&close=false`,
           subscription_data: {
             trial_settings: {
               end_behavior: {
@@ -106,7 +106,7 @@ export const stripeRouter = createTRPCRouter({
       const stripeBillingPortalSession =
         await stripe.billingPortal.sessions.create({
           customer: customerId,
-          return_url: `${baseUrl}/videos`,
+          return_url: `${baseUrl}/tasks`,
         });
 
       if (!stripeBillingPortalSession) {
