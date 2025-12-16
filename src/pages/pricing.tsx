@@ -229,7 +229,7 @@ export default function Pricing() {
             >
               {({ open }) => (
                 <>
-                  <DisclosureButton className="flex h-12 w-full items-center justify-between border-t border-[#eaeaea] px-4 py-8 text-left text-sm font-medium">
+                  <DisclosureButton className="flex h-12 w-full items-center justify-between border-t border-[#eaeaea] px-4 py-8 text-left text-md font-medium">
                     <span>{question}</span>
                     <ChevronUpIcon
                       className={`transition-transform ${open ? "rotate-180" : ""
@@ -244,7 +244,7 @@ export default function Pricing() {
                     leaveFrom="transform scale-100 opacity-100"
                     leaveTo="transform scale-95 opacity-0"
                   >
-                    <DisclosurePanel className="px-4 pb-2 pt-0 text-sm text-gray-500">
+                    <DisclosurePanel className="px-4 pb-2 pt-0 text-md text-gray-500">
                       {answer}
                     </DisclosurePanel>
                   </Transition>

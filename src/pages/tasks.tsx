@@ -20,7 +20,34 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import logo from "~/assets/logo.png";
+import superjson from "superjson";
+import { type InfiniteData } from "@tanstack/react-query";
+import { type RouterOutputs } from "~/utils/api";
 
+const CACHE_KEY = "tasks_page_data_cache";
+const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+type VideoGetAllOutput = RouterOutputs["video"]["getAll"];
+
+const getCachedData = (): { timestamp: number; data: InfiniteData<VideoGetAllOutput> } | undefined => {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const cachedString = localStorage.getItem(CACHE_KEY);
+    if (!cachedString) return undefined;
+
+    const cached = superjson.parse<{
+      timestamp: number;
+      data: InfiniteData<VideoGetAllOutput>;
+    }>(cachedString);
+
+    if (Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached;
+    }
+  } catch (e) {
+    console.error("Failed to load cached data", e);
+  }
+  return undefined;
+};
 
 const VideoList: NextPage = () => {
   const [, setRecordOpen] = useAtom(recordVideoModalOpen);
@@ -28,18 +55,36 @@ const VideoList: NextPage = () => {
   const [, setPaywallOpen] = useAtom(paywallAtom);
   const router = useRouter();
   const { status, data: session } = useSession();
+
+  // Memoize the initial load to avoid re-reading from localStorage on every render
+  const initialDataInfo = useState(() => getCachedData())[0];
+
   const {
     data,
     isLoading,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    dataUpdatedAt
   } = api.video.getAll.useInfiniteQuery(
     { limit: 20 },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
+      initialData: initialDataInfo?.data,
+      initialDataUpdatedAt: initialDataInfo?.timestamp,
+      staleTime: CACHE_DURATION,
     }
   );
+
+  useEffect(() => {
+    if (data) {
+      const cacheData = {
+        timestamp: dataUpdatedAt,
+        data,
+      };
+      localStorage.setItem(CACHE_KEY, superjson.stringify(cacheData));
+    }
+  }, [data, dataUpdatedAt]);
 
   const videos = data?.pages.flatMap((page) => page.items) ?? [];
   const posthog = usePostHog();
@@ -165,6 +210,7 @@ const VideoList: NextPage = () => {
             <NewVideoMenu videos={videos} />
             {status === "authenticated" && (
               <div className="ml-4 flex items-center justify-center">
+
                 <ProfileMenu />
               </div>
             )}

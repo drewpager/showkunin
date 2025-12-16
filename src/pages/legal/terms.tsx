@@ -6,7 +6,7 @@ const Terms: NextPage = () => {
   return (
     <Legal name="Terms of Service">
       <div className="mb-8 px-8 pt-[100px] lg:px-0">
-        <p className="mb-5">Effective: May 1, 2023</p>
+        <p className="mb-5">Effective: December 16, 2025</p>
         <p className="mb-5">
           These Terms of Service (“Terms”) govern access to and use of the
           Services made available by Greadings, Inc. By using our Services, you

@@ -1,6 +1,6 @@
 import React, { useState, useRef, Fragment, useEffect } from "react";
 import RecordRTC, { invokeSaveAsDialog } from "recordrtc";
-import { Listbox, Transition } from "@headlessui/react";
+import { Listbox, Transition, ListboxButton, ListboxOptions, ListboxOption } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { MicrophoneIcon, PauseIcon } from "@heroicons/react/24/outline";
 import { ResumeIcon, TrashIcon } from "@radix-ui/react-icons";
@@ -300,7 +300,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
         <div className="w-full">
           <Listbox value={selectedDevice} onChange={setSelectedDevice}>
             <div className="relative mt-1">
-              <Listbox.Button className="relative flex w-full cursor-default flex-row items-center justify-start rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-[#5d594b]-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 sm:text-sm">
+              <ListboxButton className="relative flex w-full cursor-default flex-row items-center justify-start rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-black focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 sm:text-sm">
                 <MicrophoneIcon
                   className="mr-2 h-5 w-5 text-gray-400"
                   aria-hidden="true"
@@ -315,7 +315,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
                     aria-hidden="true"
                   />
                 </span>
-              </Listbox.Button>
+              </ListboxButton>
               <Transition
                 as={Fragment}
                 enter="ease-out duration-300"
@@ -325,9 +325,9 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                   {audioDevices.map((audioDevice, i) => (
-                    <Listbox.Option
+                    <ListboxOption
                       key={i}
                       className={({ active }) =>
                         `relative cursor-default select-none py-2 pl-10 pr-4 text-gray-900 ${active ? "bg-gray-200" : ""
@@ -353,9 +353,9 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
                           ) : null}
                         </>
                       )}
-                    </Listbox.Option>
+                    </ListboxOption>
                   ))}
-                </Listbox.Options>
+                </ListboxOptions>
               </Transition>
             </div>
           </Listbox>
@@ -363,11 +363,11 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
             value={userContext}
             onChange={(e) => setUserContext(e.target.value)}
             placeholder="Additional context (e.g. documentation, data, etc.)"
-            className="mt-4 block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-4 block w-full rounded-md border border-gray-300 px-4 py-2 font-sans text-gray-900 focus:border-indigo-500 focus:ring-indigo-500"
           />
           <button
             type="button"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[#5d594b] px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-[#5d594b]/80 disabled:cursor-not-allowed"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-custom-orange px-4 py-2 text-sm font-sans font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-gray-800 disabled:cursor-not-allowed"
             onClick={() => void handleRecording()}
           >
             <span>Start recording</span>
@@ -381,7 +381,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
               onClick={handleStop}
               className="flex cursor-pointer flex-row items-center justify-center rounded pr-2 text-lg hover:bg-gray-200"
             >
-              <StopIcon className="h-8 w-8 text-[#ff623f]" aria-hidden="true" />
+              <StopIcon className="h-8 w-8 text-red-600" aria-hidden="true" />
               <StopTime
                 running={!pause}
                 duration={duration}
@@ -435,7 +435,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
           <div className="flex items-center justify-center">
             <button
               type="button"
-              className="inline-flex items-center rounded-md bg-[#5d594b] px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-[#5d594b]/80 disabled:cursor-not-allowed"
+              className="inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-gray-800 disabled:cursor-not-allowed"
               disabled={submitting}
               onClick={() => void handleUpload()}
             >
@@ -476,7 +476,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
             </button>
             <button
               type="button"
-              className="ml-auto inline-flex items-center rounded-md bg-[#ff623f] px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:opacity-80 disabled:cursor-not-allowed"
+              className="ml-auto inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:opacity-80 disabled:cursor-not-allowed"
               onClick={() => {
                 posthog?.capture("recorder: closed post-modal");
                 void closeModal();

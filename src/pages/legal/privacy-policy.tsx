@@ -6,7 +6,7 @@ const Terms: NextPage = () => {
   return (
     <Legal name="Privacy Policy">
       <div className="px-8 pb-8 pt-[100px] lg:px-0">
-        <p className="mb-5">Effective: May 1, 2023</p>
+        <p className="mb-5">Effective: December 16, 2025</p>
         <p className="mb-5">
           This Privacy Policy describes how Greadings collects, uses, and shares
           your personal information, as well as your choices and rights with
@@ -456,14 +456,14 @@ const Terms: NextPage = () => {
           >
             email us
           </a>{" "}
-          or contact one of our appointed representatives in the EU and UK below
+          to contact one of our appointed representatives in the EU and UK below
           if you have questions or issues relating to your personal data:
         </p>
-        <p className="mb-5">
-          <span>tbd</span>
+        {/* <p className="mb-5">
+          <span>EU AGENT TBD</span>
           <br />
-          <span>Phone: +49 15679 222108</span>
-        </p>
+          <span>Phone: 1-(619)518-3357</span>
+        </p> */}
         <p className="mb-5">
           If you feel we have not adequately addressed an issue, you have the
           right to lodge a complaint with your local data protection authority
@@ -755,16 +755,6 @@ const Terms: NextPage = () => {
           direct communication before the updates take effect. Any other
           revisions will become effective on the date the updates are posted by
           Greadings.
-        </p>
-        <p className="mb-5">
-          View the{" "}
-          <a
-            className="text-blurple hover:text-purple-hover thd-focus-thin cursor-pointer pb-1 underline"
-            href="/previous-privacy-policy-2021"
-          >
-            previous version
-          </a>{" "}
-          of this Privacy Policy.
         </p>
         <h2 className="my-5 text-lg font-bold">Questions?</h2>
         <p className="mb-5">

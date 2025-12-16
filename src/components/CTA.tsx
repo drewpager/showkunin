@@ -30,9 +30,9 @@ export default function CTA() {
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <button
               onClick={openRecordModal}
-              className="inline-flex max-h-[40px] items-center rounded-md border border-transparent bg-custom-orange px-4 py-2 text-sm font-medium text-custom-white shadow-sm hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:ring-offset-2"
+              className="inline-flex max-h-[40px] items-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-black shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-custom-black"
             >
-              Record a video
+              Record a task
             </button>
             <a
               onClick={() => {

@@ -147,7 +147,7 @@ export default function Paywall() {
                           <button
                             onClick={() => void handleCheckout()}
                             type="submit"
-                            className="btn mt-4 block w-full appearance-none rounded-lg bg-black px-4 py-2.5 text-center text-sm font-medium text-white shadow-lg shadow-black/50 duration-100 focus:outline-transparent disabled:opacity-80"
+                            className="btn mt-4 block w-full appearance-none rounded-lg bg-black px-4 py-2.5 text-center text-sm font-medium text-white shadow-lg shadow-black/20 duration-100 focus:outline-transparent disabled:opacity-80"
                             disabled={loading}
                           >
                             {loading ? (

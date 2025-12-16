@@ -1,4 +1,5 @@
 import { type Config } from "tailwindcss";
+import { fontFamily } from "tailwindcss/defaultTheme";
 
 export default {
   darkMode: ["class"],
@@ -33,10 +34,15 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
-        "custom-white": "#fafafa",
-        "custom-orange": "#b24432",
-        "custom-black": "#080703",
-        "custom-dark": "#5d594b",
+        "custom-white": "#ffffff",
+        "custom-orange": "#000000",
+        "custom-black": "#0a0a0a",
+        "custom-dark": "#666666",
+        "custom-border": "#EAEAEA",
+        "custom-dark-orange": "#eb4a3a",
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)", ...fontFamily.sans],
       },
     },
   },

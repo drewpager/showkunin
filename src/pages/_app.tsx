@@ -26,15 +26,29 @@ if (
   });
 }
 
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
   return (
     <SessionProvider session={session}>
+      <style jsx global>{`
+        :root {
+          --font-sans: ${inter.style.fontFamily};
+        }
+      `}</style>
       <PostHogProvider client={posthog}>
         <PostHogIdentificationWrapper>
-          <Component {...pageProps} />
+          <main className={`font-sans ${inter.variable}`}>
+            <Component {...pageProps} />
+          </main>
         </PostHogIdentificationWrapper>
         {/* <CrispChat /> */}
       </PostHogProvider>

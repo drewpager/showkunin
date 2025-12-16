@@ -5,10 +5,15 @@
 @layer base {
   :root {
     --radius: 0.5rem;
-    --custom-white: #c9c4b1;
-    --custom-orange: #b24432;
-    --custom-black: #080703;
-    --custom-dark: #5d594b;
+    --custom-white: #ffffff;
+    --custom-orange: #000000;
+    --custom-black: #0a0a0a;
+    --custom-dark: #666666;
+    --custom-dark-orange: #eb4a3a;
+  }
+
+  body {
+    @apply font-sans;
   }
 }
 

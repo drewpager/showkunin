@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 import logo from "~/assets/logo.png";
@@ -12,7 +12,6 @@ const navigation = [
 ];
 
 export default function Header() {
-  const [attop, setAtTop] = useState(true);
   const [navbarOpen, setNavbarOpen] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
@@ -20,16 +19,10 @@ export default function Header() {
   const closeNav = () => {
     setNavbarOpen(false);
   };
-  useEffect(() => {
-    document.addEventListener("scroll", () => {
-      setAtTop(window.scrollY <= 1);
-    });
-  }, []);
 
   return (
     <div
-      style={{ borderColor: attop ? "#5d594b" : "#5d594b" }}
-      className="header sticky top-0 z-10 flex h-[64px] border-b bg-custom-white"
+      className="header sticky top-0 z-10 flex h-[64px] border-b border-custom-border bg-custom-white/80 backdrop-blur-md"
     >
       <div className="m-auto flex w-[1048px] items-center justify-between px-[24px]">
         <div className="flex flex-start items-center">
