@@ -172,7 +172,7 @@ export default function VideoAnalysis({
         <button
           onClick={() => void handleAnalyze()}
           disabled={analyzeVideoMutation.isLoading}
-          className="flex w-full items-center justify-between rounded-lg bg-gradient-to-r from-fuchsia-600 to-red-600 px-6 py-4 text-left text-white transition-all hover:from-fuchsia-700 hover:to-red-700 disabled:opacity-50"
+          className="flex w-full items-center justify-between rounded-lg bg-gradient-to-r from-black to-gray-600 px-6 py-4 text-left text-white transition-all hover:from-fuchsia-700 hover:to-red-700 disabled:opacity-50"
         >
           <div className="flex items-center gap-3">
             <svg
@@ -329,7 +329,7 @@ export default function VideoAnalysis({
         <div className="border-t border-gray-200 p-6">
           {analyzeVideoMutation.isLoading && (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600" />
+              <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600" />
               <p className="text-gray-600">
                 {analyzeVideoMutation.variables?.refinementPrompt
                   ? "Refining analysis based on your request..."
