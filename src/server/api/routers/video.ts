@@ -138,7 +138,8 @@ export const videoRouter = createTRPCRouter({
         new GetObjectCommand({
           Bucket: process.env.AWS_BUCKET_NAME,
           Key: video.userId + "/" + video.id + "-thumbnail",
-        })
+        }),
+        { expiresIn: 7 * 24 * 60 * 60 }
       );
 
       return { ...video, video_url: signedUrl, thumbnailUrl };

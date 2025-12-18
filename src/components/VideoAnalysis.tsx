@@ -85,6 +85,8 @@ const CodeBlock = ({
   );
 };
 
+import { updateTaskInCache } from "~/utils/cacheUtils";
+
 export default function VideoAnalysis({
   videoId,
   initialAnalysis,
@@ -124,6 +126,7 @@ export default function VideoAnalysis({
     // Toggle off if clicking the same button
     const newValue = solved === value ? null : value;
     setSolvedState(newValue);
+    updateTaskInCache(videoId, { solved: newValue });
     await setSolvedMutation.mutateAsync({
       videoId,
       solved: newValue,

@@ -9,6 +9,8 @@ import { usePostHog } from "posthog-js/react";
 import { useSession } from "next-auth/react";
 import generateThumbnail from "~/utils/generateThumbnail";
 
+import { invalidateTasksCache } from "~/utils/cacheUtils";
+
 export default function VideoUploadModal() {
   const [open, setOpen] = useAtom(uploadVideoModalOpen);
   const router = useRouter();
@@ -57,6 +59,7 @@ export default function VideoUploadModal() {
       })
       .then(() => {
         setOpen(false);
+        invalidateTasksCache();
         void router.push("task/" + id + "?analyze=true");
       })
       .catch((err) => {
