@@ -1,5 +1,4 @@
-import { Menu, Transition } from "@headlessui/react";
-import { api } from "~/utils/api";
+import { Menu, Transition, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Fragment } from "react";
 import uploadVideoModalOpen from "~/atoms/uploadVideoModalOpen";
 import { useAtom } from "jotai";
@@ -7,7 +6,7 @@ import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
 import paywallAtom from "~/atoms/paywallAtom";
 import { useSession } from "next-auth/react";
 import { usePostHog } from "posthog-js/react";
-import { Video } from "@prisma/client";
+import { type Video } from "@prisma/client";
 
 
 export default function NewVideoMenu({ videos }: { videos?: Video[] }) {
@@ -57,11 +56,11 @@ export default function NewVideoMenu({ videos }: { videos?: Video[] }) {
         videos && videos.length <= 10 ||
         !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? (
         <Menu as="div" className="relative inline-block text-left">
-          <Menu.Button>
+          <MenuButton>
             <span className="cursor-pointer rounded-md border border-gray-200 px-3 py-2 text-sm font-medium text-black hover:bg-gray-50 transition-colors">
               New task
             </span>
-          </Menu.Button>
+          </MenuButton>
           <Transition
             as={Fragment}
             enter="transition ease-out duration-100"
@@ -71,9 +70,9 @@ export default function NewVideoMenu({ videos }: { videos?: Video[] }) {
             leaveFrom="transform opacity-100 scale-100"
             leaveTo="transform opacity-0 scale-95"
           >
-            <Menu.Items className="absolute right-0 z-10 mt-2 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+            <MenuItems className="absolute right-0 z-10 mt-2 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
               <div className="px-1 py-1 ">
-                <Menu.Item>
+                <MenuItem>
                   {({ active }) => (
                     <div
                       onClick={openRecordModal}
@@ -83,8 +82,8 @@ export default function NewVideoMenu({ videos }: { videos?: Video[] }) {
                       <p className="leading-2 text-sm leading-4">Record a video</p>
                     </div>
                   )}
-                </Menu.Item>
-                <Menu.Item>
+                </MenuItem>
+                <MenuItem>
                   {({ active }) => (
                     <div
                       onClick={openUploadModal}
@@ -94,9 +93,9 @@ export default function NewVideoMenu({ videos }: { videos?: Video[] }) {
                       <p className="leading-2 text-sm leading-4">Upload a video</p>
                     </div>
                   )}
-                </Menu.Item>
+                </MenuItem>
               </div>
-            </Menu.Items>
+            </MenuItems>
           </Transition>
         </Menu>
       ) : (

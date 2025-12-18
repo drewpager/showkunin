@@ -11,6 +11,17 @@ interface VideoAnalysisProps {
   initialSolved?: boolean | null;
 }
 
+interface ComputerUseStep {
+  action?: string;
+  coordinate?: { x: number; y: number };
+  [key: string]: unknown;
+}
+
+interface ComputerUsePlan {
+  steps?: ComputerUseStep[];
+  [key: string]: unknown;
+}
+
 const CodeBlock = ({
   children,
   className,
@@ -158,16 +169,16 @@ export default function VideoAnalysis({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.analyze, analysis, analyzeVideoMutation.isLoading, analyzeVideoMutation.data]);
 
-  /* imports are at the top, I will handle imports in a separate edit if needed, but I assume React imports are clean enough to just add useMemo to the list or use React.useMemo */
-  const { displayAnalysis, computerUsePlan } = React.useMemo(() => {
-    if (!analysis) return { displayAnalysis: "", computerUsePlan: null };
+  const { displayAnalysis, computerUsePlan } = useMemo(() => {
+    if (!analysis) return { displayAnalysis: "", computerUsePlan: null as ComputerUsePlan | null };
     const parts = analysis.split("---COMPUTER_USE_PLAN---");
-    const [mainBody, planString] = parts;
+    const mainBody = parts[0] ?? "";
+    const planString = parts[1];
 
-    let plan = null;
+    let plan: ComputerUsePlan | null = null;
     if (planString) {
       try {
-        plan = JSON.parse(planString.trim());
+        plan = JSON.parse(planString.trim()) as ComputerUsePlan;
       } catch (e) {
         console.error("Failed to parse computer use plan", e);
       }
@@ -448,7 +459,7 @@ export default function VideoAnalysis({
                     p: ({ node: _node, ...props }) => (
                       <p className="text-gray-700" {...props} />
                     ),
-                    code: ({ node: _node, inline, className, children, ...props }: { node?: any; inline?: boolean; className?: string; children?: React.ReactNode } & Record<string, any>) =>
+                    code: ({ node: _node, inline, className, children, ...props }: { node?: unknown; inline?: boolean; className?: string; children?: React.ReactNode } & Record<string, unknown>) =>
                       inline ? (
                         <code
                           className="rounded bg-gray-100 px-1.5 py-0.5 text-sm text-purple-700"

@@ -67,6 +67,13 @@ const Home: NextPage = () => {
             {/*  </div>*/}
             {/*</div>*/}
             <div className="text-center">
+              <Image
+                src={logo}
+                alt="Logo"
+                width={150}
+                height={150}
+                className="mx-auto mb-6"
+              />
               <h1 className="text-4xl font-bold tracking-tight text-custom-black sm:text-6xl">
                 Show AI What You Want Automated.
               </h1>
