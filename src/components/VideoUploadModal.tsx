@@ -39,9 +39,10 @@ export default function VideoUploadModal() {
   const handleSubmit = async (): Promise<void> => {
     if (!file) return;
     setSubmitting(true);
+    const title = file.name.replace(/\.[^/.]+$/, "");
     const { signedVideoUrl, signedThumbnailUrl, id } =
       await getSignedUrl.mutateAsync({
-        key: file.name,
+        key: title,
       });
     await axios
       .put(signedVideoUrl, file.slice(), {

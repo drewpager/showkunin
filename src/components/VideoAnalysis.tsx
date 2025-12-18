@@ -178,7 +178,12 @@ export default function VideoAnalysis({
     let plan: ComputerUsePlan | null = null;
     if (planString) {
       try {
-        plan = JSON.parse(planString.trim()) as ComputerUsePlan;
+        let cleaned = planString.trim();
+        // Remove markdown code fences if present
+        if (cleaned.startsWith("```")) {
+          cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+        }
+        plan = JSON.parse(cleaned.trim()) as ComputerUsePlan;
       } catch (e) {
         console.error("Failed to parse computer use plan", e);
       }
@@ -221,7 +226,7 @@ export default function VideoAnalysis({
         <button
           onClick={() => void handleAnalyze()}
           disabled={analyzeVideoMutation.isLoading}
-          className="flex w-full items-center justify-between rounded-lg bg-gradient-to-r from-black to-gray-600 px-6 py-4 text-left text-white transition-all hover:from-fuchsia-700 hover:to-red-700 disabled:opacity-50"
+          className="flex w-full items-center justify-between rounded-lg bg-gradient-to-r from-black to-gray-600 px-6 py-4 text-left text-white transition-all hover:from-gray-600 hover:to-black disabled:opacity-50"
         >
           <div className="flex items-center gap-3">
             <svg
@@ -402,16 +407,17 @@ export default function VideoAnalysis({
           {analysis && !analyzeVideoMutation.isLoading && (
             <>
               {computerUsePlan && (
-                <div className="mb-6 rounded-lg bg-purple-50 p-4 border border-purple-100">
+                <div className="mb-6 rounded-lg bg-gray-50 p-4 border border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-md font-bold text-purple-900">Automation Available</h3>
-                      <p className="text-sm text-purple-700">Detailed instructions generated for Computer Use Model ({computerUsePlan.steps?.length || 0} steps).</p>
+                      <h3 className="text-md font-bold text-gray-900">Implementation Coming Soon to Pro Plans!</h3>
+                      <p className="text-sm text-gray-700">Detailed instructions generated for Computer Use Model ({computerUsePlan.steps?.length || 0} steps).</p>
                     </div>
                     <button
                       onClick={() => void handleImplementAutomation()}
-                      disabled={isAutomating}
-                      className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50"
+                      // disabled={isAutomating}
+                      disabled={true}
+                      className="flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
                     >
                       {isAutomating ? (
                         <>

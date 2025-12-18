@@ -573,7 +573,9 @@ export const videoRouter = createTRPCRouter({
 
               Please provide an updated analysis and response based on the video and the user's specific request above. 
               
-              Maintain the two-section format:
+              Maintain this format:
+              TITLE: [A 5-word or less descriptive title for the task]
+              ---ANALYSIS_START---
               1. User Analysis (Markdown)
               2. "---COMPUTER_USE_PLAN---" separator
               3. Computer Use Instructions (JSON) - Please update the JSON plan to reflect any changes in the workflow requested by the user.`
@@ -582,7 +584,11 @@ export const videoRouter = createTRPCRouter({
               User Context:
               ${video.userContext ?? "None"}
 
-              Please analyze this video and provide two distinct sections separated by "---COMPUTER_USE_PLAN---":
+              Please analyze this video and provide your response in the following format:
+
+              TITLE: [A 5-word or less descriptive title for the task]
+
+              ---ANALYSIS_START---
 
               Section 1: User Analysis (Markdown)
               1. **Code Example**: If applicable, provide code snippets with clear instructions on where to use them
@@ -615,7 +621,28 @@ export const videoRouter = createTRPCRouter({
           },
         ]);
 
-        const analysisText = result.response.text();
+        const rawResponse = result.response.text();
+        let analysisText = rawResponse;
+        let title = video.title;
+
+        // Parse title if present
+        if (rawResponse.includes("TITLE:")) {
+          const parts = rawResponse.split("---ANALYSIS_START---");
+          if (parts.length > 1) {
+            const titleMatch = parts[0]?.match(/TITLE:\s*(.*)/i);
+            if (titleMatch?.[1]) {
+              title = titleMatch[1].trim();
+            }
+            analysisText = parts[1]?.trim() ?? "";
+          } else {
+            // Fallback parsing if separator is missing
+            const titleMatch = rawResponse.match(/TITLE:\s*(.*)/i);
+            if (titleMatch?.[1]) {
+              title = titleMatch[1].trim();
+              analysisText = rawResponse.replace(/TITLE:.*\n?/i, "").trim();
+            }
+          }
+        }
 
         // Clean up temporary file
         fs.unlinkSync(tempFilePath);
@@ -623,10 +650,11 @@ export const videoRouter = createTRPCRouter({
         // Delete the file from Gemini
         await fileManager.deleteFile(uploadResult.file.name);
 
-        // Save analysis to database
+        // Save analysis and update title in database
         const updatedVideo = await prisma.video.update({
           where: { id: input.videoId },
           data: {
+            title: title,
             aiAnalysis: analysisText,
             aiAnalysisGeneratedAt: new Date(),
           },
