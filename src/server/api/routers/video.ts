@@ -559,7 +559,7 @@ export const videoRouter = createTRPCRouter({
           },
           {
             text: input.refinementPrompt 
-              ? `You are an AI automation expert analyzing a screen recording.
+              ? `You are an AI problem solving and automation expert analyzing a screen recording.
               
               User Context:
               ${video.userContext ?? "None"}
@@ -570,21 +570,47 @@ export const videoRouter = createTRPCRouter({
               User Refinement Request:
               ${input.refinementPrompt}
 
-              Please provide an updated analysis and response based on the video and the user's specific request above. Maintain the same structured format (Task Summary, Automation Approach, Implementation Steps, Code Example, Tools/Technologies) unless the user's request specifically implies a different format.`
+              Please provide an updated analysis and response based on the video and the user's specific request above. 
+              
+              Maintain the two-section format:
+              1. User Analysis (Markdown)
+              2. "---COMPUTER_USE_PLAN---" separator
+              3. Computer Use Instructions (JSON) - Please update the JSON plan to reflect any changes in the workflow requested by the user.`
                             : `You are an AI problem solving and automation expert analyzing a screen recording. The user is showing you a task they want automated or a problem they want resolved.
 
               User Context:
               ${video.userContext ?? "None"}
 
-              Please analyze this video and provide:
+              Please analyze this video and provide two distinct sections separated by "---COMPUTER_USE_PLAN---":
 
+              Section 1: User Analysis (Markdown)
               1. **Code Example**: If applicable, provide code snippets with clear instructions on where to use them
               2. **Task Summary**: A clear description of what the user is trying to accomplish
               3. **Automation Approach**: How this task could be automated (e.g., using browser automation, API calls, scripts, etc.)
               4. **Implementation Steps**: Step-by-step instructions for implementing the automation
               5. **Tools/Technologies**: List any tools, libraries, or services that would be helpful
 
-              Format your response in a clear, concise, and structured way that's easy for the user to follow.`,
+              Verify that the output of Section 1 is valid Markdown.
+
+              ---COMPUTER_USE_PLAN---
+
+              Section 2: Computer Use Instructions (JSON)
+              Provide a valid JSON object immediately following the separator. Do not include markdown code blocks.
+              The JSON should contain a step-by-step plan for a Computer Use agent to replicate the workflow shown in the video.
+              
+              Format:
+              {
+                "task_description": "Brief description of the task",
+                "steps": [
+                  {
+                    "action": "click" | "type" | "scroll" | "wait",
+                    "coordinate": [x, y], // Estimate coordinates based on a 1024x768 resolution grid.
+                    "text": "...", // For type actions
+                    "description": "Explanation of the step",
+                    "element_description": "Visual description of the element to interact with"
+                  }
+                ]
+              }`,
           },
         ]);
 

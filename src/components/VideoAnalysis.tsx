@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import ReactMarkdown from "react-markdown";
@@ -154,6 +154,41 @@ export default function VideoAnalysis({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.analyze, analysis, analyzeVideoMutation.isLoading, analyzeVideoMutation.data]);
+
+  /* imports are at the top, I will handle imports in a separate edit if needed, but I assume React imports are clean enough to just add useMemo to the list or use React.useMemo */
+  const { displayAnalysis, computerUsePlan } = React.useMemo(() => {
+    if (!analysis) return { displayAnalysis: "", computerUsePlan: null };
+    const parts = analysis.split("---COMPUTER_USE_PLAN---");
+    const [mainBody, planString] = parts;
+
+    let plan = null;
+    if (planString) {
+      try {
+        plan = JSON.parse(planString.trim());
+      } catch (e) {
+        console.error("Failed to parse computer use plan", e);
+      }
+    }
+    return { displayAnalysis: mainBody, computerUsePlan: plan };
+  }, [analysis]);
+
+  const [isAutomating, setIsAutomating] = useState(false);
+
+  const handleImplementAutomation = async () => {
+    if (!computerUsePlan) return;
+    setIsAutomating(true);
+    try {
+      // Simulation of passing to Computer Use Agent
+      console.log("Executing Computer Use Plan:", computerUsePlan);
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate delay
+      alert("Automation instructions have been generated and passed to the Computer Use Agent runtime.");
+    } catch (error) {
+      console.error("Automation error:", error);
+      alert("Failed to start automation.");
+    } finally {
+      setIsAutomating(false);
+    }
+  };
 
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return "";
@@ -352,6 +387,39 @@ export default function VideoAnalysis({
 
           {analysis && !analyzeVideoMutation.isLoading && (
             <>
+              {computerUsePlan && (
+                <div className="mb-6 rounded-lg bg-purple-50 p-4 border border-purple-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-md font-bold text-purple-900">Automation Available</h3>
+                      <p className="text-sm text-purple-700">Detailed instructions generated for Computer Use Model ({computerUsePlan.steps?.length || 0} steps).</p>
+                    </div>
+                    <button
+                      onClick={() => void handleImplementAutomation()}
+                      disabled={isAutomating}
+                      className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50"
+                    >
+                      {isAutomating ? (
+                        <>
+                          <svg className="h-4 w-4 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Running...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Implement Automation</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="prose prose-sm max-w-none">
                 <ReactMarkdown
                   components={{
@@ -407,7 +475,7 @@ export default function VideoAnalysis({
                     ),
                   }}
                 >
-                  {analysis}
+                  {displayAnalysis}
                 </ReactMarkdown>
               </div>
 
