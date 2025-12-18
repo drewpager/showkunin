@@ -20,34 +20,8 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import logo from "~/assets/logo.png";
-import superjson from "superjson";
-import { type InfiniteData } from "@tanstack/react-query";
-import { type RouterOutputs } from "~/utils/api";
 
-const CACHE_KEY = "tasks_page_data_cache";
-const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-type VideoGetAllOutput = RouterOutputs["video"]["getAll"];
-
-const getCachedData = (): { timestamp: number; data: InfiniteData<VideoGetAllOutput> } | undefined => {
-  if (typeof window === "undefined") return undefined;
-  try {
-    const cachedString = localStorage.getItem(CACHE_KEY);
-    if (!cachedString) return undefined;
-
-    const cached = superjson.parse<{
-      timestamp: number;
-      data: InfiniteData<VideoGetAllOutput>;
-    }>(cachedString);
-
-    if (Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached;
-    }
-  } catch (e) {
-    console.error("Failed to load cached data", e);
-  }
-  return undefined;
-};
+import { getTasksCache, setTasksCache } from "~/utils/cacheUtils";
 
 const VideoList: NextPage = () => {
   const [, setRecordOpen] = useAtom(recordVideoModalOpen);
@@ -57,7 +31,7 @@ const VideoList: NextPage = () => {
   const { status, data: session } = useSession();
 
   // Memoize the initial load to avoid re-reading from localStorage on every render
-  const initialDataInfo = useState(() => getCachedData())[0];
+  const initialDataInfo = useState(() => getTasksCache())[0];
 
   const {
     data,
@@ -72,17 +46,13 @@ const VideoList: NextPage = () => {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       initialData: initialDataInfo?.data,
       initialDataUpdatedAt: initialDataInfo?.timestamp,
-      staleTime: CACHE_DURATION,
+      staleTime: 0, // Always refresh in background while showing cache
     }
   );
 
   useEffect(() => {
     if (data) {
-      const cacheData = {
-        timestamp: dataUpdatedAt,
-        data,
-      };
-      localStorage.setItem(CACHE_KEY, superjson.stringify(cacheData));
+      setTasksCache(data, dataUpdatedAt);
     }
   }, [data, dataUpdatedAt]);
 
@@ -300,15 +270,18 @@ const VideoList: NextPage = () => {
               ) : (
                 <div className="flex-start grid w-full max-w-[1300px] grid-cols-[repeat(auto-fill,250px)] flex-row flex-wrap items-center justify-center gap-14 px-4 pb-16">
                   {videos &&
-                    videos.map(({ title, id, createdAt, thumbnailUrl }) => (
-                      <VideoCard
-                        title={title}
-                        id={id}
-                        createdAt={createdAt}
-                        thumbnailUrl={thumbnailUrl}
-                        key={id}
-                      />
-                    ))}
+                    videos.map(
+                      ({ title, id, createdAt, thumbnailUrl, fileDeletedAt }) => (
+                        <VideoCard
+                          title={title}
+                          id={id}
+                          createdAt={createdAt}
+                          thumbnailUrl={thumbnailUrl}
+                          fileDeletedAt={fileDeletedAt}
+                          key={id}
+                        />
+                      )
+                    )}
 
                   {isLoading || isFetchingNextPage ? (
                     <>
@@ -349,12 +322,13 @@ interface VideoCardProps {
   id: string;
   thumbnailUrl: string;
   createdAt: Date;
+  fileDeletedAt?: Date | null;
 }
 
 const VideoCardSkeleton = () => {
   return (
     <div className="h-[240px] w-[250px] animate-pulse overflow-hidden rounded-lg border border-[#6c668533] text-sm font-normal">
-      <figure className="relative aspect-video w-full bg-slate-200"></figure>
+      <figure className="relative aspect-video w-full bg-slate-200" />
       <div className="m-4 flex flex-col">
         <span className="h-4 rounded bg-slate-200"></span>
         <span className="mt-4 h-4 rounded bg-slate-200"></span>
@@ -363,23 +337,60 @@ const VideoCardSkeleton = () => {
   );
 };
 
-const VideoCard = ({ title, id, createdAt, thumbnailUrl }: VideoCardProps) => {
+const VideoCard = ({
+  title,
+  id,
+  createdAt,
+  thumbnailUrl,
+  fileDeletedAt,
+}: VideoCardProps) => {
+  const [imgError, setImgError] = useState(!!fileDeletedAt);
+
   return (
     <Link href={`/task/${id}`}>
-      <div className="h-[240px] w-[250px] cursor-pointer overflow-hidden rounded-lg border border-[#6c668533] text-sm font-normal">
-        <figure>
-          <Image
-            src={thumbnailUrl}
-            className="max-h-[139.5px] max-w-[248px]"
-            alt="video thumbnail"
-            width={248}
-            height={139.5}
-            unoptimized
-          />
+      <div className="group h-[240px] w-[250px] cursor-pointer overflow-hidden rounded-lg border border-[#6c668533] bg-white transition-all hover:border-[#6c668566] hover:shadow-md">
+        <figure className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-slate-50">
+          {!imgError && !fileDeletedAt ? (
+            <Image
+              src={thumbnailUrl}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              alt={title || "video thumbnail"}
+              width={248}
+              height={139.5}
+              unoptimized
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center text-slate-300">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-10 w-10"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+              {fileDeletedAt && (
+                <span className="mt-1 text-[10px] uppercase tracking-wider text-slate-400">
+                  Video unavailable
+                </span>
+              )}
+            </div>
+          )}
         </figure>
         <div className="m-4 flex flex-col">
-          <span className="line-clamp-2 font-bold text-[0f0f0f]">{title}</span>
-          <span className="mt-2 text-[#606060]">{getTime(createdAt)}</span>
+          <span className="line-clamp-2 text-sm font-semibold text-[#0f0f0f]">
+            {title}
+          </span>
+          <span className="mt-2 text-xs text-[#606060]">
+            {getTime(createdAt)}
+          </span>
         </div>
       </div>
     </Link>

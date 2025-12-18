@@ -1,5 +1,5 @@
 import { api, type RouterOutputs } from "~/utils/api";
-import { Dialog, Menu, Transition } from "@headlessui/react";
+import { Dialog, Menu, Transition, MenuButton, DialogPanel, TransitionChild, MenuItems, MenuItem } from "@headlessui/react";
 import { Fragment, useState } from "react";
 import {
   DownloadIcon,
@@ -8,6 +8,8 @@ import {
 } from "@radix-ui/react-icons";
 import { useRouter } from "next/router";
 import { usePostHog } from "posthog-js/react";
+
+import { removeTaskFromCache, updateTaskInCache } from "~/utils/cacheUtils";
 
 interface Props {
   video: RouterOutputs["video"]["get"];
@@ -69,6 +71,7 @@ export default function VideoMoreMenu({ video }: Props) {
       if (previousValue) {
         utils.video.get.setData({ videoId }, { ...previousValue, title });
       }
+      removeTaskFromCache(videoId);
       void utils.video.getAll.invalidate();
       return { previousValue };
     },
@@ -91,7 +94,11 @@ export default function VideoMoreMenu({ video }: Props) {
       if (previousValue) {
         utils.video.get.setData({ videoId }, { ...previousValue, title });
       }
+      updateTaskInCache(videoId, { title });
       return { previousValue };
+    },
+    onSuccess: () => {
+      void utils.video.getAll.invalidate();
     },
     onError: (err, { videoId }, context) => {
       if (context?.previousValue) {
@@ -106,9 +113,9 @@ export default function VideoMoreMenu({ video }: Props) {
       {/* More options menu */}
       <Menu as="div" className="relative mr-2 inline-block text-left">
         <div>
-          <Menu.Button className="inline-flex h-full w-full justify-center rounded-full px-4 py-2s text-[#292D34] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
+          <MenuButton className="inline-flex h-full w-full justify-center rounded-full px-4 py-2s text-[#292D34] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
             <Pencil1Icon />
-          </Menu.Button>
+          </MenuButton>
         </div>
         <Transition
           as={Fragment}
@@ -119,11 +126,11 @@ export default function VideoMoreMenu({ video }: Props) {
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="absolute right-0 z-20 mt-2 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <MenuItems className="absolute right-0 z-20 mt-2 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="px-1 py-1 ">
               {items.map((item) => (
                 <div className="h-8" key={item.name} {...item.props}>
-                  <Menu.Item>
+                  <MenuItem>
                     {({ active }) => (
                       <div
                         className={`mx-2 flex h-8 w-40 cursor-pointer flex-row content-center rounded-md p-2 ${active ? "bg-gray-100" : ""
@@ -137,11 +144,11 @@ export default function VideoMoreMenu({ video }: Props) {
                         </p>
                       </div>
                     )}
-                  </Menu.Item>
+                  </MenuItem>
                 </div>
               ))}
             </div>
-          </Menu.Items>
+          </MenuItems>
         </Transition>
       </Menu>
 
@@ -152,7 +159,7 @@ export default function VideoMoreMenu({ video }: Props) {
           className="relative z-10"
           onClose={() => setRenameMenuOpen(false)}
         >
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter="ease-out duration-300"
             enterFrom="opacity-0"
@@ -162,11 +169,11 @@ export default function VideoMoreMenu({ video }: Props) {
             leaveTo="opacity-0"
           >
             <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
+          </TransitionChild>
 
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
+              <TransitionChild
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0 scale-95"
@@ -175,7 +182,7 @@ export default function VideoMoreMenu({ video }: Props) {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -213,8 +220,8 @@ export default function VideoMoreMenu({ video }: Props) {
                       Save
                     </button>
                   </form>
-                </Dialog.Panel>
-              </Transition.Child>
+                </DialogPanel>
+              </TransitionChild>
             </div>
           </div>
         </Dialog>

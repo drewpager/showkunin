@@ -20,6 +20,7 @@ import generateThumbnail from "~/utils/generateThumbnail";
 import * as EBML from "ts-ebml";
 import VideoPlayer from "~/components/VideoPlayer";
 import { useSession } from "next-auth/react";
+import { invalidateTasksCache } from "~/utils/cacheUtils";
 
 
 interface Props {
@@ -261,6 +262,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
           );
         })
         .then(() => {
+          invalidateTasksCache();
           void router.push("task/" + id + "?analyze=true");
           setRecordOpen(false);
           posthog?.capture("recorder: video uploaded");
