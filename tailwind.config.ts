@@ -40,6 +40,7 @@ export default {
         "custom-dark": "#666666",
         "custom-border": "#EAEAEA",
         "custom-dark-orange": "#eb4a3a",
+        "custom-green": "#228B22",
       },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],

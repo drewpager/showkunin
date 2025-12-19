@@ -177,7 +177,7 @@ const VideoList: NextPage = () => {
                   <span className="text-[18px] text-lg font-medium">
                     {video.title}
                   </span>
-                  <span className="text-[18px] text-sm text-gray-800">
+                  <span className="text-[18px] text-sm text-gray-800" suppressHydrationWarning>
                     {getTime(video.createdAt)}
                   </span>
                 </div>

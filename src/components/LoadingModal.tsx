@@ -14,7 +14,7 @@ const LoadingModal = ({ isLoading }: { isLoading: boolean }) => {
             <div className="flex flex-col items-center justify-center">
               <div className="mb-4">
                 <svg
-                  className="h-12 w-12 animate-spin text-indigo-600"
+                  className="h-12 w-12 animate-spin text-black"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"

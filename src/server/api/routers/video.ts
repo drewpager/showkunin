@@ -13,11 +13,12 @@ import {
 import "~/dotenv-config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { TRPCError } from "@trpc/server";
-import { genAI, fileManager } from "~/server/gemini";
+import { genAI } from "~/server/gemini";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
 import os from "os";
+
 
 export const videoRouter = createTRPCRouter({
   getAll: protectedProcedure
@@ -532,16 +533,23 @@ export const videoRouter = createTRPCRouter({
         fs.writeFileSync(tempFilePath, new Uint8Array(response.data as ArrayBuffer));
 
         // Upload to Gemini
-        const uploadResult = await fileManager.uploadFile(tempFilePath, {
-          mimeType: "video/webm",
-          displayName: video.title,
+        const uploadResult = await genAI.files.upload({
+          file: tempFilePath,
+          config: {
+            mimeType: "video/webm",
+            displayName: video.title,
+          },
         });
 
+        if (!uploadResult.name) {
+          throw new Error("Upload failed: No file name returned from Gemini");
+        }
+
         // Wait for file to be processed
-        let file = await fileManager.getFile(uploadResult.file.name);
+        let file = await genAI.files.get({ name: uploadResult.name });
         while (file.state === "PROCESSING") {
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          file = await fileManager.getFile(uploadResult.file.name);
+          file = await genAI.files.get({ name: uploadResult.name });
         }
 
         if (file.state === "FAILED") {
@@ -549,17 +557,19 @@ export const videoRouter = createTRPCRouter({
         }
 
         // Analyze the video
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        
-        const result = await model.generateContent([
-          {
-            fileData: {
-              mimeType: uploadResult.file.mimeType,
-              fileUri: uploadResult.file.uri,
-            },
-          },
-          {
-            text: input.refinementPrompt 
+        const result = await genAI.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: [
+            {
+              parts: [
+                {
+                  fileData: {
+                    mimeType: uploadResult.mimeType,
+                    fileUri: uploadResult.uri,
+                  },
+                },
+                {
+                  text: input.refinementPrompt 
               ? `You are an AI problem solving and automation expert analyzing a screen recording.
               
               User Context:
@@ -617,30 +627,49 @@ export const videoRouter = createTRPCRouter({
                     "element_description": "Visual description of the element to interact with"
                   }
                 ]
-              }`,
-          },
-        ]);
+              }`
+                },
+              ],
+            },
+          ],
+          config: {
+            tools: [
+              { urlContext: {} }
+            ]
+          }
+        });
 
-        const rawResponse = result.response.text();
+        const rawResponse = result.text ?? "";
         let analysisText = rawResponse;
         let title = video.title;
 
-        // Parse title if present
-        if (rawResponse.includes("TITLE:")) {
-          const parts = rawResponse.split("---ANALYSIS_START---");
-          if (parts.length > 1) {
-            const titleMatch = parts[0]?.match(/TITLE:\s*(.*)/i);
+        // Parse title and main analysis text
+        const analysisStartMarkers = ["---ANALYSIS_START---", "---ANALYSIS_START"];
+        let foundStart = false;
+        
+        for (const marker of analysisStartMarkers) {
+          if (rawResponse.includes(marker)) {
+            const parts = rawResponse.split(marker);
+            const preStart = parts[0] ?? "";
+            
+            // Extract title from before the start marker
+            const titleMatch = preStart.match(/TITLE:\s*(.*)/i);
             if (titleMatch?.[1]) {
               title = titleMatch[1].trim();
             }
+            
             analysisText = parts[1]?.trim() ?? "";
-          } else {
-            // Fallback parsing if separator is missing
-            const titleMatch = rawResponse.match(/TITLE:\s*(.*)/i);
-            if (titleMatch?.[1]) {
-              title = titleMatch[1].trim();
-              analysisText = rawResponse.replace(/TITLE:.*\n?/i, "").trim();
-            }
+            foundStart = true;
+            break;
+          }
+        }
+
+        if (!foundStart) {
+          // Fallback parsing if separator is missing
+          const titleMatch = rawResponse.match(/TITLE:\s*(.*)/i);
+          if (titleMatch?.[1]) {
+            title = titleMatch[1].trim();
+            analysisText = rawResponse.replace(/TITLE:.*\n?/i, "").trim();
           }
         }
 
@@ -648,7 +677,9 @@ export const videoRouter = createTRPCRouter({
         fs.unlinkSync(tempFilePath);
 
         // Delete the file from Gemini
-        await fileManager.deleteFile(uploadResult.file.name);
+        if (uploadResult.name) {
+          await genAI.files.delete({ name: uploadResult.name });
+        }
 
         // Save analysis and update title in database
         const updatedVideo = await prisma.video.update({

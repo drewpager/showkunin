@@ -171,9 +171,34 @@ export default function VideoAnalysis({
 
   const { displayAnalysis, computerUsePlan } = useMemo(() => {
     if (!analysis) return { displayAnalysis: "", computerUsePlan: null as ComputerUsePlan | null };
-    const parts = analysis.split("---COMPUTER_USE_PLAN---");
-    const mainBody = parts[0] ?? "";
-    const planString = parts[1];
+
+    // Handle split with various separator formats
+    let mainBody = analysis;
+    let planString = "";
+
+    const separators = ["---COMPUTER_USE_PLAN---", "---COMPUTER_USE_PLAN", "Section 2: Computer Use Instructions (JSON)"];
+    for (const sep of separators) {
+      if (analysis.includes(sep)) {
+        const parts = analysis.split(sep);
+        mainBody = parts[0] ?? "";
+        planString = parts[1] ?? "";
+        break;
+      }
+    }
+
+    // Clean up markers from the main body
+    const markersToStrip = [
+      /^---ANALYSIS_START---/i,
+      /^---ANALYSIS_START/i,
+      /^TITLE:.*\n?/i,
+      /Section 1: User Analysis \(Markdown\)/i,
+      /Section 2: Computer Use Instructions \(JSON\)/i,
+    ];
+
+    let cleanedBody = mainBody;
+    for (const marker of markersToStrip) {
+      cleanedBody = cleanedBody.replace(marker, "").trim();
+    }
 
     let plan: ComputerUsePlan | null = null;
     if (planString) {
@@ -183,12 +208,20 @@ export default function VideoAnalysis({
         if (cleaned.startsWith("```")) {
           cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
         }
+
+        // Extremely robust: find the first { and last }
+        const firstBrace = cleaned.indexOf("{");
+        const lastBrace = cleaned.lastIndexOf("}");
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+        }
+
         plan = JSON.parse(cleaned.trim()) as ComputerUsePlan;
       } catch (e) {
         console.error("Failed to parse computer use plan", e);
       }
     }
-    return { displayAnalysis: mainBody, computerUsePlan: plan };
+    return { displayAnalysis: cleanedBody, computerUsePlan: plan };
   }, [analysis]);
 
   const [isAutomating, setIsAutomating] = useState(false);
@@ -297,7 +330,7 @@ export default function VideoAnalysis({
             </svg>
             <div>
               <h3 className="text-lg font-semibold">AI Automation Analysis</h3>
-              <p className="text-sm text-white">
+              <p className="text-sm text-white" suppressHydrationWarning>
                 Generated {formatDate(generatedAt)} • Click to{" "}
                 {isExpanded ? "collapse" : "expand"}
               </p>

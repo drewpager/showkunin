@@ -16,6 +16,7 @@ export default function VideoUploadModal() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [file, setFile] = useState<File>();
+  const [userContext, setUserContext] = useState<string | undefined>(undefined);
   const getSignedUrl = api.video.getUploadUrl.useMutation();
   const apiUtils = api.useContext();
   const videoRef = useRef<null | HTMLVideoElement>(null);
@@ -43,6 +44,7 @@ export default function VideoUploadModal() {
     const { signedVideoUrl, signedThumbnailUrl, id } =
       await getSignedUrl.mutateAsync({
         key: title,
+        userContext: userContext || undefined,
       });
     await axios
       .put(signedVideoUrl, file.slice(), {
@@ -91,7 +93,7 @@ export default function VideoUploadModal() {
               <DialogPanel className="w-fit transform rounded-lg bg-custom-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="flex flex-col items-center gap-2">
                   <label className="flex h-32 w-full min-w-[300px] cursor-pointer appearance-none justify-center rounded-md border-2 border-dashed border-gray-300 px-4 transition hover:border-gray-400 focus:outline-none">
-                    <span className="mx-6 flex items-center space-x-2 text-[#292D34]">
+                    <span className="mx-6 flex items-center space-x-2 text-black">
                       {file ? (
                         <video
                           src={URL.createObjectURL(file)}
@@ -133,9 +135,17 @@ export default function VideoUploadModal() {
                       className="hidden"
                     />
                   </label>
+                  <textarea
+                    name="user_context"
+                    value={userContext}
+                    onChange={(e) => setUserContext(e.target.value)}
+                    placeholder="Additional context (e.g. documentation, data, etc.)"
+                    className="mt-2 block w-full rounded-md border border-gray-300 px-4 py-2 font-sans text-gray-900 focus:border-black focus:ring-black"
+                    maxLength={100000}
+                  />
                   <button
                     type="button"
-                    className="mt-4 inline-flex items-center rounded-md bg-[#eb4a3a] px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-[#eb9737] disabled:cursor-not-allowed"
+                    className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-semibold leading-6 text-white shadow transition duration-150 ease-in-out hover:bg-gray-600 disabled:cursor-not-allowed"
                     disabled={submitting}
                     onClick={() => void handleSubmit()}
                   >

@@ -346,7 +346,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
                             {audioDevice.label}
                           </span>
                           {selected ? (
-                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-custom-green">
                               <CheckIcon
                                 className="h-5 w-5"
                                 aria-hidden="true"
@@ -362,10 +362,12 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
             </div>
           </Listbox>
           <textarea
+            name="user_context"
             value={userContext}
             onChange={(e) => setUserContext(e.target.value)}
             placeholder="Additional context (e.g. documentation, data, etc.)"
-            className="mt-4 block w-full rounded-md border border-gray-300 px-4 py-2 font-sans text-gray-900 focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-4 block w-full rounded-md border border-gray-300 px-4 py-2 font-sans text-gray-900 focus:border-black focus:ring-black"
+            maxLength={100000}
           />
           <button
             type="button"
@@ -466,7 +468,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
                   Uploading...
                 </>
               ) : (
-                <>Save to cloud</>
+                <>Save & Analyze</>
               )}
             </button>
             <button

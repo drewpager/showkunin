@@ -30,8 +30,18 @@ const VideoList: NextPage = () => {
   const router = useRouter();
   const { status, data: session } = useSession();
 
-  // Memoize the initial load to avoid re-reading from localStorage on every render
-  const initialDataInfo = useState(() => getTasksCache())[0];
+  // Use a state to track mount status to avoid hydration mismatches
+  const [hasMounted, setHasMounted] = useState(false);
+  const utils = api.useContext();
+
+  useEffect(() => {
+    setHasMounted(true);
+    const cached = getTasksCache();
+    if (cached) {
+      // Inject cached data into the query client after mounting
+      utils.video.getAll.setInfiniteData({ limit: 20 }, cached.data);
+    }
+  }, [utils]);
 
   const {
     data,
@@ -44,8 +54,6 @@ const VideoList: NextPage = () => {
     { limit: 20 },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      initialData: initialDataInfo?.data,
-      initialDataUpdatedAt: initialDataInfo?.timestamp,
       staleTime: 0, // Always refresh in background while showing cache
     }
   );
@@ -388,7 +396,7 @@ const VideoCard = ({
           <span className="line-clamp-2 text-sm font-semibold text-[#0f0f0f]">
             {title}
           </span>
-          <span className="mt-2 text-xs text-[#606060]">
+          <span className="mt-2 text-xs text-[#606060]" suppressHydrationWarning>
             {getTime(createdAt)}
           </span>
         </div>

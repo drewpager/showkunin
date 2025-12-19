@@ -10,6 +10,29 @@
     --custom-black: #0a0a0a;
     --custom-dark: #666666;
     --custom-dark-orange: #eb4a3a;
+    --custom-green: #228B22;
+    --global-focus-color: #0a0a0a;
+  }
+
+  /* Target text inputs and textareas */
+  input[type="text"],
+  textarea {
+    @apply border-gray-300;
+    /* Your default border color */
+    @apply transition-colors duration-200;
+  }
+
+  /* Global Hover State */
+  input[type="text"]:hover,
+  textarea:hover {
+    @apply border-black;
+  }
+
+  /* Global Focus State (the blue ring in your screenshot) */
+  input[type="text"]:focus,
+  textarea:focus {
+    @apply border-black outline-none ring-0;
+    /* ring-0 and outline-none remove the default blue glow */
   }
 
   body {
