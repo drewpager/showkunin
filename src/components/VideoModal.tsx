@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import "@vidstack/react/player/styles/base.css";
 
@@ -24,16 +24,20 @@ interface VideoModalProps {
 }
 
 const VideoModal = ({ isOpen, onClose, videoUrl, thumbnailUrl }: VideoModalProps) => {
-  if (!isOpen) return null;
   const player = useRef<MediaPlayerInstance>(null);
+  const [posterError, setPosterError] = React.useState(false);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     // Subscribe to state updates.
     return player.current?.subscribe(({ paused, viewType }) => {
       console.log('is paused?', '->', paused);
       console.log('is audio view?', '->', viewType === 'audio');
     });
-  }, []);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   function onProviderChange(
     provider: MediaProviderAdapter | null,
@@ -52,8 +56,6 @@ const VideoModal = ({ isOpen, onClose, videoUrl, thumbnailUrl }: VideoModalProps
   ) {
     // ...
   }
-
-  const [posterError, setPosterError] = React.useState(false);
 
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="video-modal-title" role="dialog" aria-modal="true">
