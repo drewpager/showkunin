@@ -189,7 +189,11 @@ export default function VideoAnalysis({
     // Clean up markers from the main body
     const markersToStrip = [
       /^---ANALYSIS_START---/i,
+      /^---/i,
+      /^[[:punct:]]/i,
       /^---ANALYSIS_START/i,
+      /^---ANALYSIS_END---/i,
+      /---ANALYSIS_END/i,
       /^TITLE:.*\n?/i,
       /Section 1: User Analysis \(Markdown\)/i,
       /Section 2: Computer Use Instructions \(JSON\)/i,
