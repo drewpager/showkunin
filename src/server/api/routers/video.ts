@@ -581,14 +581,14 @@ export const videoRouter = createTRPCRouter({
               User Refinement Request:
               ${input.refinementPrompt}
 
-              Please provide an updated analysis and response based on the video and the user's specific request above. 
+              Please provide a refined analysis and updated response based on the video and the user's specific request above. 
               
               Maintain this format:
               TITLE: [A 5-word or less descriptive title for the task]
               ---ANALYSIS_START---
-              1. User Analysis (Markdown)
+              1. User Analysis (Markdown) - Provide ONLY the new insights, answers to follow-up questions, or changed instructions. Do NOT repeat the previous analysis, as this response will be appended to it.
               2. "---COMPUTER_USE_PLAN---" separator
-              3. Computer Use Instructions (JSON) - Please update the JSON plan to reflect any changes in the workflow requested by the user.`
+              3. Computer Use Instructions (JSON) - Provide the FULL, complete, and updated JSON plan that incorporates all changes. This replaces the previous plan.`
                             : `You are an AI problem solving and automation expert analyzing a screen recording. The user is showing you a task they want automated or a problem they want resolved.
 
               User Context:
@@ -681,19 +681,61 @@ export const videoRouter = createTRPCRouter({
           await genAI.files.delete({ name: uploadResult.name });
         }
 
+        // For refinements, append the new analysis to the old one
+        let finalAnalysis = analysisText;
+        if (input.refinementPrompt && video.aiAnalysis) {
+          const planSeparator = "---COMPUTER_USE_PLAN---";
+          const separators = [planSeparator, "---COMPUTER_USE_PLAN", "Section 2: Computer Use Instructions (JSON)"];
+          
+          let oldDisplay = video.aiAnalysis;
+          let oldPlan = "";
+          for (const sep of separators) {
+            if (video.aiAnalysis.includes(sep)) {
+              const parts = video.aiAnalysis.split(sep);
+              oldDisplay = parts[0]?.trim() ?? "";
+              oldPlan = parts[1]?.trim() ?? "";
+              break;
+            }
+          }
+
+          let newDisplay = analysisText;
+          let newPlan = "";
+          for (const sep of separators) {
+            if (analysisText.includes(sep)) {
+              const parts = analysisText.split(sep);
+              newDisplay = parts[0]?.trim() ?? "";
+              newPlan = parts[1]?.trim() ?? "";
+              break;
+            }
+          }
+
+          if (newDisplay) {
+            const timestamp = new Date().toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            });
+            const separatorWithHeader = `\n\n---\n\n### Refined Analysis (${timestamp})\n\n`;
+            const planToUse = newPlan || oldPlan;
+            
+            finalAnalysis = `${oldDisplay}${separatorWithHeader}${newDisplay}${planToUse ? `\n\n${planSeparator}\n${planToUse}` : ""}`;
+          }
+        }
+
         // Save analysis and update title in database
         const updatedVideo = await prisma.video.update({
           where: { id: input.videoId },
           data: {
             title: title,
-            aiAnalysis: analysisText,
+            aiAnalysis: finalAnalysis,
             aiAnalysisGeneratedAt: new Date(),
           },
         });
 
         return {
           success: true,
-          analysis: analysisText,
+          analysis: finalAnalysis,
           generatedAt: updatedVideo.aiAnalysisGeneratedAt,
         };
       } catch (error) {

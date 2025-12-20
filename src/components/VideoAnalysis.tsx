@@ -418,13 +418,11 @@ export default function VideoAnalysis({
 
       {isExpanded && (
         <div className="border-t border-gray-200 p-6">
-          {analyzeVideoMutation.isLoading && (
+          {analyzeVideoMutation.isLoading && !analyzeVideoMutation.variables?.refinementPrompt && (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600" />
               <p className="text-gray-600">
-                {analyzeVideoMutation.variables?.refinementPrompt
-                  ? "Refining analysis based on your request..."
-                  : "Analyzing your video with Gemini AI..."}
+                Analyzing your video with Gemini AI...
               </p>
               <p className="mt-2 text-sm text-gray-500">
                 This may take a minute
@@ -441,7 +439,7 @@ export default function VideoAnalysis({
             </div>
           )}
 
-          {analysis && !analyzeVideoMutation.isLoading && (
+          {analysis && (!analyzeVideoMutation.isLoading || analyzeVideoMutation.variables?.refinementPrompt) && (
             <>
               {computerUsePlan && (
                 <div className="mb-6 rounded-lg bg-gray-50 p-4 border border-gray-200">
@@ -570,7 +568,11 @@ export default function VideoAnalysis({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     )}
-                    <span className="ml-2">Refine</span>
+                    <span className="ml-2">
+                      {analyzeVideoMutation.isLoading && analyzeVideoMutation.variables?.refinementPrompt
+                        ? "Refining..."
+                        : "Refine"}
+                    </span>
                   </button>
                   {/* Regenerate Button (Secondary) */}
                   <div className="mt-4 flex justify-center">
