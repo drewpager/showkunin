@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useAtom } from "jotai/index";
 import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
 import { usePostHog } from "posthog-js/react";
+import VideoModal from "./VideoModal";
 
 export default function CTA() {
   const [, setRecordOpen] = useAtom(recordVideoModalOpen);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
   const posthog = usePostHog();
 
   const openRecordModal = () => {
@@ -20,6 +23,13 @@ export default function CTA() {
     });
   };
 
+  const openVideoModal = () => {
+    setVideoModalOpen(true);
+  };
+
+  const demoVideoUrl = "https://storage.googleapis.com/greadings/welcome-to-greadings.mp4";
+  const demoThumbnailUrl = "https://storage.googleapis.com/greadings/welcome-to-greadings.png";
+
   return (
     <div className="bg-custom-white">
       <div className="mx-auto max-w-7xl py-12 sm:px-6 sm:py-16 lg:px-8">
@@ -34,7 +44,16 @@ export default function CTA() {
             >
               Record a task
             </button>
-            <a
+            <button
+              onClick={() => {
+                openVideoModal();
+                posthog?.capture("clicked watch recorded demo");
+              }}
+              className="text-sm font-semibold leading-6 text-custom-white"
+            >
+              Watch demo <span aria-hidden="true">→</span>
+            </button>
+            {/* <a
               onClick={() => {
                 alert("Not implemented");
                 posthog?.capture("clicked schedule demo", { cta: true });
@@ -43,7 +62,13 @@ export default function CTA() {
               className="text-sm font-semibold leading-6 text-custom-white"
             >
               Schedule Demo <span aria-hidden="true">→</span>
-            </a>
+            </a> */}
+            <VideoModal
+              isOpen={videoModalOpen}
+              onClose={() => setVideoModalOpen(false)}
+              videoUrl={demoVideoUrl}
+              thumbnailUrl={demoThumbnailUrl}
+            />
           </div>
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import { useFeatureFlagEnabled, usePostHog } from "posthog-js/react";
@@ -16,11 +17,13 @@ import engineeringUsecase from "~/assets/engineering usecase.png";
 import supportUsecase from "~/assets/support usecase.png";
 import logo from "~/assets/logo.png";
 import Paywall from "~/components/Paywall";
+import VideoModal from "~/components/VideoModal";
 
 const Home: NextPage = () => {
   const [, setRecordOpen] = useAtom(recordVideoModalOpen);
   const posthog = usePostHog();
   const showDemoButton = useFeatureFlagEnabled("show-demo-button");
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
 
   // useEffect(() => {
   //   if (session.status === "authenticated" && !recordModalOpen) {
@@ -41,6 +44,13 @@ const Home: NextPage = () => {
       cta: "landing page",
     });
   };
+
+  const openVideoModal = () => {
+    setVideoModalOpen(true);
+  };
+
+  const demoVideoUrl = "https://storage.googleapis.com/greadings/welcome-to-greadings.mp4";
+  const demoThumbnailUrl = "https://storage.googleapis.com/greadings/welcome-to-greadings.png";
 
   return (
     <>
@@ -88,16 +98,15 @@ const Home: NextPage = () => {
                   <span>Record a task</span>
                 </button>
                 <div className="flex flex-col gap-6 sm:flex-row">
-                  <a
-                    onClick={() =>
-                      posthog?.capture("clicked watch recorded demo")
-                    }
-                    target="_blank"
-                    href=""
-                    className="text-sm font-semibold leading-6"
+                  <button
+                    onClick={() => {
+                      openVideoModal();
+                      posthog?.capture("clicked watch recorded demo");
+                    }}
+                    className="text-sm font-semibold leading-6 text-custom-black hover:text-custom-orange transition-colors"
                   >
                     Watch demo <span aria-hidden="true">→</span>
-                  </a>
+                  </button>
                   {showDemoButton ? (
                     <a
                       onClick={() => { alert("Not implemented"); posthog?.capture("clicked schedule demo") }}
@@ -322,9 +331,15 @@ const Home: NextPage = () => {
         <CTA />
 
         <Footer />
-      </div>
+      </div >
 
       <VideoRecordModal />
+      <VideoModal
+        isOpen={videoModalOpen}
+        onClose={() => setVideoModalOpen(false)}
+        videoUrl={demoVideoUrl}
+        thumbnailUrl={demoThumbnailUrl}
+      />
       <Paywall />
     </>
   );
