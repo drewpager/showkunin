@@ -30,12 +30,10 @@ const VideoList: NextPage = () => {
   const router = useRouter();
   const { status, data: session } = useSession();
 
-  // Use a state to track mount status to avoid hydration mismatches
-  const [hasMounted, setHasMounted] = useState(false);
+  // Use any state to track mount status to avoid hydration mismatches
   const utils = api.useContext();
 
   useEffect(() => {
-    setHasMounted(true);
     if (status !== "authenticated") return;
 
     const cached = getTasksCache(session?.user?.id);

@@ -3,6 +3,7 @@ import {
   getServerSession,
   type NextAuthOptions,
   type DefaultSession,
+  type Session,
 } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -62,8 +63,8 @@ export const authOptions: NextAuthOptions = {
       ...session,
       user: {
         ...session.user,
-        stripeSubscriptionStatus: (token.stripeSubscriptionStatus as string) || "trialing",
-        id: token.id as string,
+        stripeSubscriptionStatus: token.stripeSubscriptionStatus ?? "trialing",
+        id: token.id,
       },
     }),
   },
@@ -99,14 +100,12 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email },
         });
 
-        // @ts-expect-error Password field added to schema but types may lag
         if (!user || !user.password) {
           throw new Error("User not found or password incorrect");
         }
 
         const isValid = await bcrypt.compare(
           credentials.password,
-          // @ts-expect-error Password field added to schema but types may lag
           user.password
         );
 
@@ -151,8 +150,10 @@ export const authOptions: NextAuthOptions = {
     },
     async signOut(message) {
       if (!!process.env.NEXT_PUBLIC_POSTHOG_KEY && !!process.env.NEXT_PUBLIC_POSTHOG_HOST) {
-        // @ts-expect-error message can be session or token depending on strategy
-        const userId = message.session?.userId || message.token?.sub || message.token?.id;
+        // Extract userId safely without 'any' to satisfy ESLint
+        const session = message.session as Session | null;
+        const token = message.token as { sub?: string; id?: string } | null;
+        const userId = session?.user?.id || token?.sub || token?.id;
         
         if (!userId) return;
 

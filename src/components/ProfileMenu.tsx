@@ -42,7 +42,7 @@ export default function ProfileMenu() {
     <>
       <LoadingModal isLoading={isBillingLoading} />
       <Menu as="div" className="relative inline-block text-left">
-        <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+        <MenuButton className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
           <span className="sr-only">Open user menu</span>
           <Image
             className="h-8 w-8 rounded-full"
@@ -52,7 +52,7 @@ export default function ProfileMenu() {
             height={32}
             unoptimized
           />
-        </Menu.Button>
+        </MenuButton>
         <Transition
           as={Fragment}
           enter="transition ease-out duration-100"

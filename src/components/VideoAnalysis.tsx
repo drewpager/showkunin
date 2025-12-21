@@ -100,7 +100,7 @@ const CodeBlock = ({
 import { updateTaskInCache } from "~/utils/cacheUtils";
 
 const Skeleton = ({ className }: { className?: string }) => (
-  <div className={`animate-pulse rounded bg-gray-200 ${className}`} />
+  <div className={`animate-pulse rounded bg-gray-200 ${className ?? ""}`} />
 );
 
 const AnalysisSkeleton = () => (
