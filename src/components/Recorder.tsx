@@ -262,7 +262,7 @@ export default function Recorder({ closeModal, step, setStep }: Props) {
           );
         })
         .then(() => {
-          invalidateTasksCache();
+          invalidateTasksCache(session?.user?.id);
           void router.push("task/" + id + "?analyze=true");
           setRecordOpen(false);
           posthog?.capture("recorder: video uploaded");

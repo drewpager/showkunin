@@ -62,7 +62,7 @@ export default function VideoUploadModal() {
       })
       .then(() => {
         setOpen(false);
-        invalidateTasksCache();
+        invalidateTasksCache(session?.user?.id);
         void router.push("task/" + id + "?analyze=true");
       })
       .catch((err) => {

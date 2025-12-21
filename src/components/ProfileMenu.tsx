@@ -1,4 +1,4 @@
-import { Menu, Transition } from "@headlessui/react";
+import { Menu, Transition, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Fragment } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -7,6 +7,7 @@ import { usePostHog } from "posthog-js/react";
 import defaultProfileIcon from "~/assets/default profile icon.jpg";
 import Image from "next/image";
 import LoadingModal from "./LoadingModal";
+import { invalidateTasksCache } from "~/utils/cacheUtils";
 
 export default function ProfileMenu() {
   const { mutateAsync: createBillingPortalSession, isLoading: isBillingLoading } =
@@ -29,6 +30,7 @@ export default function ProfileMenu() {
 
   const handleSignOut = () => {
     if (posthog?.__loaded) posthog?.reset();
+    invalidateTasksCache(session?.user?.id);
     void signOut();
   };
 
@@ -60,9 +62,9 @@ export default function ProfileMenu() {
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="absolute right-0 z-10 mt-2 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <MenuItems className="absolute right-0 z-10 mt-2 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="px-1 py-1 ">
-              <Menu.Item>
+              <MenuItem>
                 {({ active }) => (
                   <div
                     onClick={openVideoLibrary}
@@ -74,8 +76,8 @@ export default function ProfileMenu() {
                     </p>
                   </div>
                 )}
-              </Menu.Item>
-              <Menu.Item>
+              </MenuItem>
+              <MenuItem>
                 {({ active }) => (
                   <div
                     onClick={openBillingSettings}
@@ -87,8 +89,8 @@ export default function ProfileMenu() {
                     </p>
                   </div>
                 )}
-              </Menu.Item>
-              <Menu.Item>
+              </MenuItem>
+              <MenuItem>
                 {({ active }) => (
                   <div
                     onClick={handleSignOut}
@@ -98,9 +100,9 @@ export default function ProfileMenu() {
                     <p className="leading-2 text-sm leading-4">Sign out</p>
                   </div>
                 )}
-              </Menu.Item>
+              </MenuItem>
             </div>
-          </Menu.Items>
+          </MenuItems>
         </Transition>
       </Menu>
     </>

@@ -2,7 +2,7 @@ import superjson from "superjson";
 import { type InfiniteData } from "@tanstack/react-query";
 import { type RouterOutputs } from "~/utils/api";
 
-export const TASKS_CACHE_KEY = "tasks_page_data_cache";
+export const TASKS_CACHE_KEY_PREFIX = "tasks_page_data_cache";
 export const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 type VideoGetAllOutput = RouterOutputs["video"]["getAll"];
@@ -12,10 +12,16 @@ export interface CachedData {
   data: InfiniteData<VideoGetAllOutput>;
 }
 
-export const getTasksCache = (): CachedData | undefined => {
+const getCacheKey = (userId?: string) => {
+  if (!userId) return TASKS_CACHE_KEY_PREFIX;
+  return `${TASKS_CACHE_KEY_PREFIX}_${userId}`;
+};
+
+export const getTasksCache = (userId?: string): CachedData | undefined => {
   if (typeof window === "undefined") return undefined;
   try {
-    const cachedString = localStorage.getItem(TASKS_CACHE_KEY);
+    const key = getCacheKey(userId);
+    const cachedString = localStorage.getItem(key);
     if (!cachedString) return undefined;
 
     const cached = superjson.parse<CachedData>(cachedString);
@@ -29,29 +35,41 @@ export const getTasksCache = (): CachedData | undefined => {
   return undefined;
 };
 
-export const setTasksCache = (data: InfiniteData<VideoGetAllOutput>, timestamp = Date.now()) => {
+export const setTasksCache = (
+  data: InfiniteData<VideoGetAllOutput>,
+  timestamp = Date.now(),
+  userId?: string
+) => {
   if (typeof window === "undefined") return;
   try {
+    const key = getCacheKey(userId);
     const cacheData: CachedData = {
       timestamp,
       data,
     };
-    localStorage.setItem(TASKS_CACHE_KEY, superjson.stringify(cacheData));
+    localStorage.setItem(key, superjson.stringify(cacheData));
   } catch (e) {
     console.error("Failed to save cached data", e);
   }
 };
 
-export const invalidateTasksCache = () => {
+export const invalidateTasksCache = (userId?: string) => {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(TASKS_CACHE_KEY);
+  const key = getCacheKey(userId);
+  localStorage.removeItem(key);
+  
+  // Also clear legacy cache if it exists
+  if (userId) {
+    localStorage.removeItem(TASKS_CACHE_KEY_PREFIX);
+  }
 };
 
 export const updateTaskInCache = (
   videoId: string,
-  updates: Partial<VideoGetAllOutput["items"][0]>
+  updates: Partial<VideoGetAllOutput["items"][0]>,
+  userId?: string
 ) => {
-  const cached = getTasksCache();
+  const cached = getTasksCache(userId);
   if (!cached) return;
 
   let modified = false;
@@ -67,12 +85,12 @@ export const updateTaskInCache = (
   }));
 
   if (modified) {
-    setTasksCache({ ...cached.data, pages: newPages }, cached.timestamp);
+    setTasksCache({ ...cached.data, pages: newPages }, cached.timestamp, userId);
   }
 };
 
-export const removeTaskFromCache = (videoId: string) => {
-  const cached = getTasksCache();
+export const removeTaskFromCache = (videoId: string, userId?: string) => {
+  const cached = getTasksCache(userId);
   if (!cached) return;
 
   const newPages = cached.data.pages.map((page) => ({
@@ -80,5 +98,5 @@ export const removeTaskFromCache = (videoId: string) => {
     items: page.items.filter((item) => item.id !== videoId),
   }));
 
-  setTasksCache({ ...cached.data, pages: newPages }, cached.timestamp);
+  setTasksCache({ ...cached.data, pages: newPages }, cached.timestamp, userId);
 };

@@ -8,6 +8,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useRouter } from "next/router";
 import { usePostHog } from "posthog-js/react";
+import { useSession } from "next-auth/react";
 
 import { removeTaskFromCache, updateTaskInCache } from "~/utils/cacheUtils";
 
@@ -21,6 +22,7 @@ export default function VideoMoreMenu({ video }: Props) {
   const utils = api.useContext();
   const router = useRouter();
   const posthog = usePostHog();
+  const { data: session } = useSession();
 
   const items = [
     {
@@ -71,7 +73,7 @@ export default function VideoMoreMenu({ video }: Props) {
       if (previousValue) {
         utils.video.get.setData({ videoId }, { ...previousValue, title });
       }
-      removeTaskFromCache(videoId);
+      removeTaskFromCache(videoId, session?.user?.id);
       void utils.video.getAll.invalidate();
       return { previousValue };
     },
@@ -94,7 +96,7 @@ export default function VideoMoreMenu({ video }: Props) {
       if (previousValue) {
         utils.video.get.setData({ videoId }, { ...previousValue, title });
       }
-      updateTaskInCache(videoId, { title });
+      updateTaskInCache(videoId, { title }, session?.user?.id);
       return { previousValue };
     },
     onSuccess: () => {

@@ -36,12 +36,14 @@ const VideoList: NextPage = () => {
 
   useEffect(() => {
     setHasMounted(true);
-    const cached = getTasksCache();
+    if (status !== "authenticated") return;
+
+    const cached = getTasksCache(session?.user?.id);
     if (cached) {
       // Inject cached data into the query client after mounting
       utils.video.getAll.setInfiniteData({ limit: 20 }, cached.data);
     }
-  }, [utils]);
+  }, [utils, session?.user?.id, status]);
 
   const {
     data,
@@ -60,9 +62,9 @@ const VideoList: NextPage = () => {
 
   useEffect(() => {
     if (data) {
-      setTasksCache(data, dataUpdatedAt);
+      setTasksCache(data, dataUpdatedAt, session?.user?.id);
     }
-  }, [data, dataUpdatedAt]);
+  }, [data, dataUpdatedAt, session?.user?.id]);
 
   const videos = data?.pages.flatMap((page) => page.items) ?? [];
   const posthog = usePostHog();
@@ -262,13 +264,13 @@ const VideoList: NextPage = () => {
                     <div className="mt-4 flex flex-wrap gap-4">
                       <button
                         onClick={openRecordModal}
-                        className="inline-flex items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        className="inline-flex items-center rounded-md border border-transparent bg-black px-4 py-1 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                       >
                         Record a task
                       </button>
                       <button
                         onClick={openUploadModal}
-                        className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="inline-flex items-center rounded-md border border-black bg-white px-4 py-2 text-sm font-medium text-black shadow-sm hover:border-custom-dark-orange hover:text-custom-dark-orange focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                       >
                         Upload a video
                       </button>

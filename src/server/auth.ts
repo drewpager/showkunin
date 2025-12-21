@@ -6,6 +6,8 @@ import {
 } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import "~/dotenv-config";
 import { prisma } from "~/server/db";
@@ -32,19 +34,36 @@ declare module "next-auth" {
   }
 }
 
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    stripeSubscriptionStatus?: string;
+  }
+}
+
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
  *
  * @see https://next-auth.js.org/configuration/options
  */
 export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: "jwt",
+  },
   callbacks: {
-    session: ({ session, user }) => ({
+    jwt: ({ token, user }) => {
+      if (user) {
+        token.id = user.id;
+        token.stripeSubscriptionStatus = user.stripeSubscriptionStatus;
+      }
+      return token;
+    },
+    session: ({ session, token }) => ({
       ...session,
       user: {
         ...session.user,
-        stripeSubscriptionStatus: user.stripeSubscriptionStatus || "trialing",
-        id: user.id,
+        stripeSubscriptionStatus: (token.stripeSubscriptionStatus as string) || "trialing",
+        id: token.id as string,
       },
     }),
   },
@@ -66,6 +85,41 @@ export const authOptions: NextAuthOptions = {
           }),
         ]
       : []),
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Invalid credentials");
+        }
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        // @ts-expect-error Password field added to schema but types may lag
+        if (!user || !user.password) {
+          throw new Error("User not found or password incorrect");
+        }
+
+        const isValid = await bcrypt.compare(
+          credentials.password,
+          // @ts-expect-error Password field added to schema but types may lag
+          user.password
+        );
+
+        if (!isValid) {
+          throw new Error("User not found or password incorrect");
+        }
+
+        return {
+           ...user,
+           stripeSubscriptionStatus: user.stripeSubscriptionStatus ?? "trialing" // Provide default
+        };
+      },
+    }),
     /**
      * ...add more providers here.
      *
@@ -97,20 +151,17 @@ export const authOptions: NextAuthOptions = {
     },
     async signOut(message) {
       if (!!process.env.NEXT_PUBLIC_POSTHOG_KEY && !!process.env.NEXT_PUBLIC_POSTHOG_HOST) {
-        const session = message.session as unknown as {
-          id: string;
-          sessionToken: string;
-          userId: string;
-          expires: Date;
-        };
-        if (!session?.userId) return;
+        // @ts-expect-error message can be session or token depending on strategy
+        const userId = message.session?.userId || message.token?.sub || message.token?.id;
+        
+        if (!userId) return;
 
         const client = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
           host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
         });
 
         client.capture({
-          distinctId: session.userId,
+          distinctId: userId,
           event: "user logged out",
         });
 

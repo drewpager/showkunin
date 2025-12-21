@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 import ReactMarkdown from "react-markdown";
 
@@ -98,6 +99,62 @@ const CodeBlock = ({
 
 import { updateTaskInCache } from "~/utils/cacheUtils";
 
+const Skeleton = ({ className }: { className?: string }) => (
+  <div className={`animate-pulse rounded bg-gray-200 ${className}`} />
+);
+
+const AnalysisSkeleton = () => (
+  <div className="space-y-8 py-4">
+    {/* Header Skeleton */}
+    <div className="space-y-3">
+      <Skeleton className="h-9 w-3/4" />
+      <Skeleton className="h-5 w-1/2" />
+    </div>
+
+    {/* Section 1: Content Skeleton */}
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+      </div>
+
+      <div className="space-y-3 pl-5">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-2 w-2 rounded-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-2 w-2 rounded-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      </div>
+    </div>
+
+    {/* Code/Automation Block Skeleton */}
+    <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="h-10 w-32 rounded-lg" />
+      </div>
+      <Skeleton className="h-32 w-full rounded-lg" />
+    </div>
+
+    {/* Section 2: Further Analysis Skeleton */}
+    <div className="space-y-4">
+      <Skeleton className="h-7 w-1/3" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-4/5" />
+      </div>
+    </div>
+  </div>
+);
+
 export default function VideoAnalysis({
   videoId,
   initialAnalysis,
@@ -110,6 +167,7 @@ export default function VideoAnalysis({
   const analyzeVideoMutation = api.video.analyzeVideo.useMutation();
   const setSolvedMutation = api.video.setSolved.useMutation();
   const utils = api.useContext();
+  const { data: session } = useSession();
 
   // Use saved analysis or mutation data
   const analysis = analyzeVideoMutation.data?.analysis ?? initialAnalysis;
@@ -137,7 +195,7 @@ export default function VideoAnalysis({
     // Toggle off if clicking the same button
     const newValue = solved === value ? null : value;
     setSolvedState(newValue);
-    updateTaskInCache(videoId, { solved: newValue });
+    updateTaskInCache(videoId, { solved: newValue }, session?.user?.id);
     await setSolvedMutation.mutateAsync({
       videoId,
       solved: newValue,
@@ -333,9 +391,9 @@ export default function VideoAnalysis({
               />
             </svg>
             <div>
-              <h3 className="text-lg font-semibold">AI Automation Analysis</h3>
+              <h3 className="text-lg font-semibold">{analyzeVideoMutation.isLoading ? "Analyzing with AI..." : "AI Automation Analysis"}</h3>
               <p className="text-sm text-white" suppressHydrationWarning>
-                Generated {formatDate(generatedAt)} • Click to{" "}
+                {analyzeVideoMutation.isLoading ? "This may take a minute..." : "Generated " + formatDate(generatedAt)} • Click to{" "}
                 {isExpanded ? "collapse" : "expand"}
               </p>
             </div>
@@ -419,15 +477,7 @@ export default function VideoAnalysis({
       {isExpanded && (
         <div className="border-t border-gray-200 p-6">
           {analyzeVideoMutation.isLoading && !analyzeVideoMutation.variables?.refinementPrompt && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600" />
-              <p className="text-gray-600">
-                Analyzing your video with Gemini AI...
-              </p>
-              <p className="mt-2 text-sm text-gray-500">
-                This may take a minute
-              </p>
-            </div>
+            <AnalysisSkeleton />
           )}
 
           {analyzeVideoMutation.error && (
