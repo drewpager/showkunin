@@ -62,7 +62,7 @@ const VideoList: NextPage = () => {
 
   if (!isLoading && (!video || (!video.video_url && !video.fileDeletedAt))) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center">
+      <div className="flex min-h-screen w-full flex-col items-center justify-center">
         <span className="max-w-[80%] text-center text-2xl font-medium">
           This task is currently private or unavailable
         </span>
@@ -99,7 +99,7 @@ const VideoList: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex h-screen w-screen flex-col items-center justify-center">
+      <main className="flex min-h-screen w-full flex-col">
         <div className="flex min-h-[62px] w-full items-center justify-between border-b border-solid border-b-[#E7E9EB] bg-white px-6">
           <div className="flex flex-start items-center">
             <Link href="/" className="flex items-center">
@@ -109,7 +109,6 @@ const VideoList: NextPage = () => {
                 alt="logo"
                 width={42}
                 height={42}
-                unoptimized
               />
               <p className="text-xl font-bold text-custom-black">Greadings</p>
             </Link>
@@ -124,7 +123,7 @@ const VideoList: NextPage = () => {
             {status === "authenticated" ? (
               <>
                 <Link href="/tasks">
-                  <span className="cursor-pointer rounded border border-[#0000001a] px-2 py-2 text-sm text-[#292d34] hover:bg-[#fafbfc]">
+                  <span className="hidden md:block cursor-pointer rounded border border-black bg-black px-4 py-1.5 text-sm text-white hover:bg-gray-700">
                     My Tasks
                   </span>
                 </Link>
@@ -142,7 +141,7 @@ const VideoList: NextPage = () => {
             )}
           </div>
         </div>
-        <div className="flex h-full w-full grow flex-col items-center justify-start overflow-auto bg-[#fbfbfb]">
+        <div className="flex w-full grow flex-col items-center justify-start bg-[#fbfbfb]">
           <div className="flex max-h-[calc(100vh_-_169px)] w-full justify-center bg-black 2xl:max-h-[1160px]">
             {isLoading ? (
               <div className="aspect-video h-full w-full max-h-[calc(100vh*0.6)] animate-pulse bg-gray-900" />
@@ -170,7 +169,7 @@ const VideoList: NextPage = () => {
               </div>
             ) : null}
           </div>
-          <div className="mb-10 mt-4 w-full max-w-[1800px] pl-[24px]">
+          <div className="mb-10 mt-4 w-full max-w-[1800px] px-4 md:pl-6">
             <div>
               {video?.title ? (
                 <div className="mb-4 flex flex-col">

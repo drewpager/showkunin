@@ -33,7 +33,6 @@ export default function Header() {
               alt="logo"
               width={42}
               height={42}
-              unoptimized
             />
             <p className="text-xl font-bold text-custom-black">Greadings</p>
           </Link>

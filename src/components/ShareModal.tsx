@@ -1,4 +1,4 @@
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, DialogPanel, Transition, TransitionChild } from "@headlessui/react";
 import { Fragment, useState } from "react";
 import { ModernSwitch } from "~/components/ModernSwitch";
 import { api, type RouterOutputs } from "~/utils/api";
@@ -85,16 +85,16 @@ export function ShareModal({ video }: Props) {
 
   return (
     <>
-      <span
+      <button
         onClick={openModal}
-        className="mr-4 max-h-[35px] cursor-pointer rounded border border-[#0000001a] px-2 py-2 text-sm text-[#292d34] hover:bg-[#fafbfc]"
+        className="mr-1 md:mr-4 cursor-pointer rounded border border-black px-4 py-1 text-sm text-black hover:bg-black hover:text-white"
       >
         Share
-      </span>
+      </button>
 
       <Transition appear show={open} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeModal}>
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter="ease-out duration-300"
             enterFrom="opacity-0"
@@ -104,11 +104,11 @@ export function ShareModal({ video }: Props) {
             leaveTo="opacity-0"
           >
             <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
+          </TransitionChild>
 
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
+              <TransitionChild
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0 scale-95"
@@ -117,7 +117,7 @@ export function ShareModal({ video }: Props) {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform rounded bg-white p-6 text-left align-middle text-[#292D34] shadow-xl transition-all">
+                <DialogPanel className="w-full max-w-md transform rounded bg-white p-6 text-left align-middle text-custom-black shadow-xl transition-all">
                   <div className="flex flex-col items-start">
                     <span className="text-lg font-medium">
                       Share this automation
@@ -140,7 +140,7 @@ export function ShareModal({ video }: Props) {
                       <>
                         <button
                           onClick={handleCopy}
-                          className="my-2 h-8 w-full rounded-md bg-[#4169e1] text-sm font-medium text-white hover:bg-[#224fd7]"
+                          className="my-2 h-8 w-full rounded-md bg-custom-black text-sm font-medium text-white hover:bg-custom-black/80"
                         >
                           {linkCopied ? "Copied!" : "Copy public link"}
                         </button>
@@ -169,8 +169,8 @@ export function ShareModal({ video }: Props) {
                       </>
                     ) : null}
                   </div>
-                </Dialog.Panel>
-              </Transition.Child>
+                </DialogPanel>
+              </TransitionChild>
             </div>
           </div>
         </Dialog>

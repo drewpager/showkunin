@@ -316,7 +316,7 @@ export default function VideoAnalysis({
   };
 
   return (
-    <div className="mt-6 mr-5 rounded-lg border border-gray-200 bg-white">
+    <div className="mt-6 md:mr-5 rounded-lg border border-gray-200 bg-white">
       {!analysis ? (
         <button
           onClick={() => void handleAnalyze()}
@@ -598,7 +598,7 @@ export default function VideoAnalysis({
                       }
                     }}
                     placeholder="Ask a follow-up question or request changes (e.g., 'Focus on the API calls', 'Convert code to Python')"
-                    className="flex-1 min-h-600 rounded-lg p-4 border-2 border-black shadow-sm focus:border-black focus:ring-black focus:ring-offset-2 sm:text-sm"
+                    className="flex-1 min-h-[120px] rounded-lg p-4 border-2 border-black shadow-sm focus:border-black focus:ring-black focus:ring-offset-2 sm:text-sm"
                     disabled={analyzeVideoMutation.isLoading}
                   />
                 </div>
