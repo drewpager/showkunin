@@ -826,7 +826,7 @@ export const videoRouter = createTRPCRouter({
                   ${video.aiAnalysis ?? "No previous analysis."}
 
                   User Refinement Request:
-                  ${input.refinementPrompt}
+                  ${input.refinementPrompt ? input.refinementPrompt : "N/A"}
 
                   Additional Screencast Context:
                   The user has recorded a NEW screencast to provide additional visual context for their refinement request. Please analyze this new recording alongside the original video context.
