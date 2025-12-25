@@ -746,4 +746,201 @@ export const videoRouter = createTRPCRouter({
         });
       }
     }),
+  
+  analyzeScreencastUpdate: publicProcedure
+    .input(z.object({ 
+      videoId: z.string(), 
+      videoBlob: z.string(), // base64 encoded video
+      refinementPrompt: z.string().optional(), 
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { prisma, session } = ctx;
+      
+      // Get video from database
+      const video = await prisma.video.findUnique({
+        where: { id: input.videoId },
+      });
+
+      if (!video) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      // Check if user has access to this video
+      if (video.userId !== session?.user.id && !video.sharing) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      try {
+        // Decode base64 video blob
+        const videoBuffer = Buffer.from(input.videoBlob, 'base64');
+        
+        // Write to temporary file
+        const tempDir = os.tmpdir();
+        const tempFilePath = path.join(tempDir, `screencast-${video.id}-${Date.now()}.webm`);
+        
+        fs.writeFileSync(tempFilePath, new Uint8Array(videoBuffer));
+
+        // Upload to Gemini (temporary)
+        const uploadResult = await genAI.files.upload({
+          file: tempFilePath,
+          config: {
+            mimeType: "video/webm",
+            displayName: `Screencast Update - ${video.title}`,
+          },
+        });
+
+        if (!uploadResult.name) {
+          throw new Error("Upload failed: No file name returned from Gemini");
+        }
+
+        // Wait for file to be processed
+        let file = await genAI.files.get({ name: uploadResult.name });
+        while (file.state === "PROCESSING") {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          file = await genAI.files.get({ name: uploadResult.name });
+        }
+
+        if (file.state === "FAILED") {
+          throw new Error("Video processing failed");
+        }
+
+        // Analyze the video with refinement context
+        const result = await genAI.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: [
+            {
+              parts: [
+                {
+                  fileData: {
+                    mimeType: uploadResult.mimeType,
+                    fileUri: uploadResult.uri,
+                  },
+                },
+                {
+                  text: `You are an AI problem solving and automation expert analyzing a follow-up screen recording.
+              
+                  User Context:
+                  ${video.userContext ?? "None"}
+
+                  Previous Analysis:
+                  ${video.aiAnalysis ?? "No previous analysis."}
+
+                  User Refinement Request:
+                  ${input.refinementPrompt}
+
+                  Additional Screencast Context:
+                  The user has recorded a NEW screencast to provide additional visual context for their refinement request. Please analyze this new recording alongside the original video context.
+
+                  Please provide a refined analysis based on the new screencast and the user's specific request above. 
+                                
+                  Maintain this format:
+                  TITLE: [A 5-word or less descriptive title for the task]
+                  ---ANALYSIS_START---
+                  1. User Analysis (Markdown) - Provide ONLY the new insights, answers to follow-up questions, or changed instructions based on the new screencast. Do NOT repeat the previous analysis, as this response will be appended to it.
+                  2. "---COMPUTER_USE_PLAN---" separator
+                  3. Computer Use Instructions (JSON) - Provide the FULL, complete, and updated JSON plan that incorporates all changes. This replaces the previous plan.`
+                },
+              ],
+            },
+          ],
+          config: {
+            tools: [
+              { urlContext: {} }
+            ]
+          }
+        });
+
+        const rawResponse = result.text ?? "";
+        let analysisText = rawResponse;
+
+        // Parse title and main analysis text
+        const analysisStartMarkers = ["---ANALYSIS_START---", "---ANALYSIS_START"];
+        let foundStart = false;
+        
+        for (const marker of analysisStartMarkers) {
+          if (rawResponse.includes(marker)) {
+            const parts = rawResponse.split(marker);
+            analysisText = parts[1]?.trim() ?? "";
+            foundStart = true;
+            break;
+          }
+        }
+
+        if (!foundStart) {
+          // Fallback parsing if separator is missing
+          analysisText = rawResponse.replace(/TITLE:.*\n?/i, "").trim();
+        }
+
+        // Clean up temporary file
+        fs.unlinkSync(tempFilePath);
+
+        // Delete the file from Gemini
+        if (uploadResult.name) {
+          await genAI.files.delete({ name: uploadResult.name });
+        }
+
+        // Append the new analysis to the old one
+        let finalAnalysis = analysisText;
+        if (video.aiAnalysis) {
+          const planSeparator = "---COMPUTER_USE_PLAN---";
+          const separators = [planSeparator, "---COMPUTER_USE_PLAN", "Section 2: Computer Use Instructions (JSON)"];
+          
+          let oldDisplay = video.aiAnalysis;
+          let oldPlan = "";
+          for (const sep of separators) {
+            if (video.aiAnalysis.includes(sep)) {
+              const parts = video.aiAnalysis.split(sep);
+              oldDisplay = parts[0]?.trim() ?? "";
+              oldPlan = parts[1]?.trim() ?? "";
+              break;
+            }
+          }
+
+          let newDisplay = analysisText;
+          let newPlan = "";
+          for (const sep of separators) {
+            if (analysisText.includes(sep)) {
+              const parts = analysisText.split(sep);
+              newDisplay = parts[0]?.trim() ?? "";
+              newPlan = parts[1]?.trim() ?? "";
+              break;
+            }
+          }
+
+          if (newDisplay) {
+            const timestamp = new Date().toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            });
+            const separatorWithHeader = `\n\n---\n\n### Screencast Update (${timestamp})\n\n`;
+            const planToUse = newPlan || oldPlan;
+            
+            finalAnalysis = `${oldDisplay}${separatorWithHeader}${newDisplay}${planToUse ? `\n\n${planSeparator}\n${planToUse}` : ""}`;
+          }
+        }
+
+        // Save updated analysis in database
+        const updatedVideo = await prisma.video.update({
+          where: { id: input.videoId },
+          data: {
+            aiAnalysis: finalAnalysis,
+            aiAnalysisGeneratedAt: new Date(),
+          },
+        });
+
+        return {
+          success: true,
+          analysis: finalAnalysis,
+          generatedAt: updatedVideo.aiAnalysisGeneratedAt,
+        };
+      } catch (error) {
+        console.error("Error analyzing screencast update:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to analyze screencast update",
+        });
+      }
+    }),
 });

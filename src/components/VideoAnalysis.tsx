@@ -3,6 +3,14 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 import ReactMarkdown from "react-markdown";
+import dynamic from "next/dynamic";
+import { TrashIcon } from "@radix-ui/react-icons";
+
+// Import ScreencastRecorder dynamically with SSR disabled to prevent navigator errors
+const ScreencastRecorder = dynamic(
+  () => import("~/components/ScreencastRecorder"),
+  { ssr: false }
+);
 
 
 interface VideoAnalysisProps {
@@ -164,7 +172,10 @@ export default function VideoAnalysis({
   const [isExpanded, setIsExpanded] = useState(!!initialAnalysis);
   const [refinementInput, setRefinementInput] = useState("");
   const [solved, setSolvedState] = useState<boolean | null>(initialSolved ?? null);
+  const [isScreencastRecorderOpen, setIsScreencastRecorderOpen] = useState(false);
+  const [screencastBlob, setScreencastBlob] = useState<Blob | null>(null);
   const analyzeVideoMutation = api.video.analyzeVideo.useMutation();
+  const analyzeScreencastMutation = api.video.analyzeScreencastUpdate.useMutation();
   const setSolvedMutation = api.video.setSolved.useMutation();
   const utils = api.useContext();
   const { data: session } = useSession();
@@ -189,6 +200,38 @@ export default function VideoAnalysis({
     });
     setRefinementInput("");
     await utils.video.get.invalidate({ videoId });
+  };
+
+  const handleScreencastUpdate = async () => {
+    if (!screencastBlob) return;
+
+    // Convert blob to base64
+    const reader = new FileReader();
+    reader.readAsDataURL(screencastBlob);
+    reader.onloadend = async () => {
+      const base64data = reader.result as string;
+      // Remove the data:video/webm;base64, prefix
+      const base64Video = base64data.split(',')[1] ?? '';
+
+      await analyzeScreencastMutation.mutateAsync({
+        videoId,
+        videoBlob: base64Video,
+        refinementPrompt: refinementInput.length > 0 ? refinementInput : undefined,
+      });
+
+      setRefinementInput("");
+      setScreencastBlob(null);
+      await utils.video.get.invalidate({ videoId });
+    };
+  };
+
+  const handleScreencastRecorded = (blob: Blob) => {
+    setScreencastBlob(blob);
+    setIsScreencastRecorderOpen(false);
+  };
+
+  const handleScreencastCancel = () => {
+    setIsScreencastRecorderOpen(false);
   };
 
   const handleSolved = async (value: boolean) => {
@@ -603,29 +646,73 @@ export default function VideoAnalysis({
                   />
                 </div>
                 <div className="flex gap-3">
+                  {screencastBlob ? (
+                    <button
+                      onClick={() => void handleScreencastUpdate()}
+                      disabled={analyzeScreencastMutation.isLoading}
+                      className="inline-flex items-center rounded-lg mt-3 bg-black px-4 py-2 text-md font-medium text-white hover:bg-black/80 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+                    >
+                      {analyzeScreencastMutation.isLoading ? (
+                        <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      ) : (
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      )}
+                      <span className="ml-2">
+                        {analyzeScreencastMutation.isLoading
+                          ? "Analyzing Screencast..."
+                          : "Refine with Screencast"}
+                      </span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => void handleRefine()}
+                      disabled={analyzeVideoMutation.isLoading || !refinementInput.trim()}
+                      className="inline-flex items-center rounded-lg mt-3 bg-black px-4 py-2 text-md font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+                    >
+                      {analyzeVideoMutation.isLoading ? (
+                        <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      ) : (
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                      )}
+                      <span className="ml-2">
+                        {analyzeVideoMutation.isLoading && analyzeVideoMutation.variables?.refinementPrompt
+                          ? "Refining..."
+                          : "Refine"}
+                      </span>
+                    </button>
+                  )}
                   <button
-                    onClick={() => void handleRefine()}
-                    disabled={analyzeVideoMutation.isLoading || !refinementInput.trim()}
-                    className="inline-flex items-center rounded-lg mt-3 bg-black px-4 py-2 text-md font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+                    onClick={() => setIsScreencastRecorderOpen(true)}
+                    disabled={analyzeVideoMutation.isLoading || analyzeScreencastMutation.isLoading}
+                    className="inline-flex items-center rounded-lg mt-3 bg-white border-2 border-black px-4 py-2 text-md font-medium text-black hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+                    title="Record a new screencast for additional context"
                   >
-                    {analyzeVideoMutation.isLoading ? (
-                      <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    ) : (
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    )}
-                    <span className="ml-2">
-                      {analyzeVideoMutation.isLoading && analyzeVideoMutation.variables?.refinementPrompt
-                        ? "Refining..."
-                        : "Refine"}
-                    </span>
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span className="ml-2">Screencast Update</span>
                   </button>
+                  {screencastBlob && (
+                    <button
+                      onClick={() => setScreencastBlob(null)}
+                      className="inline-flex items-center rounded-lg mt-3 px-3 py-2 text-sm font-medium text-black hover:text-custom-dark-orange"
+                      title="Remove screencast"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  )}
                   {/* Regenerate Button (Secondary) */}
-                  <div className="mt-4 flex justify-center">
+                  {/* <div className="mt-4 flex justify-center">
                     <button
                       onClick={() => void handleAnalyze()}
                       disabled={analyzeVideoMutation.isLoading}
@@ -633,14 +720,30 @@ export default function VideoAnalysis({
                     >
                       Regenerate completely
                     </button>
-                  </div>
+                  </div> */}
                 </div>
+                {screencastBlob && (
+                  <div className="mt-3 text-sm text-black bg-black/10 border border-black/10 rounded-lg p-3 w-fit">
+                    <div className="flex items-center gap-3">
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <span>Screencast ready! Click "Refine with Screencast" to analyze.</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
             </>
           )}
         </div>
       )}
+
+      <ScreencastRecorder
+        isOpen={isScreencastRecorderOpen}
+        onRecordingComplete={handleScreencastRecorded}
+        onCancel={handleScreencastCancel}
+      />
     </div>
   );
 }

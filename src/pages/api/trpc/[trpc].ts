@@ -17,3 +17,12 @@ export default createNextApiHandler({
         }
       : undefined,
 });
+
+// Increase body size limit to support large video uploads (100MB)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '100mb',
+    },
+  },
+};
