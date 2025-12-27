@@ -40,6 +40,27 @@
   }
 }
 
+
 .controlsShadow {
   box-shadow: inset 0 calc(-9 * clamp(8px, 14px, 11px)) calc(3 * clamp(8px, 14px, 11px)) calc(-6 * clamp(8px, 14px, 11px)) hsl(0 0% 0% / 0.35), inset 0 calc(-18 * clamp(8px, 14px, 11px)) calc(6 * clamp(8px, 14px, 11px)) calc(-12 * clamp(8px, 14px, 11px)) hsl(0 0% 0% / 0.35), inset 0 calc(-27 * clamp(8px, 14px, 11px)) calc(9 * clamp(8px, 14px, 11px)) calc(-18 * clamp(8px, 14px, 11px)) hsl(0 0% 0% / 0.35)
+}
+
+/* Vidstack Mobile Touch Scroll Fix */
+media-player,
+media-provider,
+media-gesture,
+media-poster,
+media-controls,
+media-controls-group,
+media-captions,
+media-caption {
+  touch-action: pan-y !important;
+}
+
+/* Keep sliders working correctly */
+[data-media-slider],
+media-time-slider,
+media-volume-slider,
+.vds-slider {
+  touch-action: none !important;
 }

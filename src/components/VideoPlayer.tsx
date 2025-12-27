@@ -81,7 +81,7 @@ export default function VideoPlayer({ video_url, thumbnailUrl }: Props) {
         )}
       </MediaProvider>
 
-      <VideoLayout />
+      <VideoLayout thumbnails={thumbnailUrl} />
     </MediaPlayer>
   );
 }
