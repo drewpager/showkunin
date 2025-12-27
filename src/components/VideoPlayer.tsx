@@ -54,7 +54,7 @@ export default function VideoPlayer({ video_url, thumbnailUrl }: Props) {
 
   return (
     <MediaPlayer
-      className="ring-media-focus aspect-video h-full w-full max-h-[calc(100dvh*0.6)] min-h-[calc(100dvh*0.26)] sm:h-[calc(100dvh*0.33)] md:h-[calc(100dvh*0.45)] overflow-hidden rounded-md bg-black font-sans text-white data-[focus]:ring-4"
+      className="ring-media-focus aspect-video h-full w-full max-h-[60dvh] min-h-[26dvh] sm:max-h-[20dvh] sm:max-w-[100dvw] md:max-h-[45dvh] overflow-hidden rounded-md bg-black font-sans text-white data-[focus]:ring-4"
       src={[
         {
           src: video_url,

@@ -39,7 +39,7 @@ export function VideoLayout({ thumbnails }: VideoLayoutProps) {
   }, [paused]);
 
   return (
-    <>
+    <div className="vds-video-layout absolute inset-0 z-10 touch-manipulation pointer-events-none">
       <Gestures />
       <div
         className={`absolute inset-0 z-10 flex h-full w-full flex-col bg-gradient-to-t from-black/10 to-transparent transition-opacity duration-300 pointer-events-none ${showControls ? 'opacity-100' : 'opacity-0'
@@ -70,7 +70,7 @@ export function VideoLayout({ thumbnails }: VideoLayoutProps) {
           <div className="controlsShadow absolute bottom-0 z-[-1] h-full w-full" />
         </Tooltip.Provider>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -78,23 +78,22 @@ function Gestures() {
   return (
     <>
       <Gesture
-        className="absolute inset-0 z-0 block h-full w-full"
-        // event="pointerup"
-        event="click"
+        className="absolute inset-0 z-0 block h-full w-full pointer-events-auto"
+        event="pointerup"
         action="toggle:paused"
       />
       <Gesture
-        className="absolute inset-0 z-0 block h-full w-full"
+        className="absolute inset-0 z-0 block h-full w-full pointer-events-auto"
         event="dblclick"
         action="toggle:fullscreen"
       />
       <Gesture
-        className="absolute left-0 top-0 z-10 block h-full w-1/5"
+        className="absolute left-0 top-0 z-10 block h-full w-1/5 pointer-events-auto"
         event="dblclick"
         action="seek:-10"
       />
       <Gesture
-        className="absolute right-0 top-0 z-10 block h-full w-1/5"
+        className="absolute right-0 top-0 z-10 block h-full w-1/5 pointer-events-auto"
         event="dblclick"
         action="seek:10"
       />

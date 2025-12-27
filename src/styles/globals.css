@@ -50,11 +50,9 @@ media-player,
 media-provider,
 media-gesture,
 media-poster,
-media-controls,
-media-controls-group,
-media-captions,
-media-caption {
+.vds-video-layout {
   touch-action: pan-y !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 /* Keep sliders working correctly */
@@ -63,4 +61,7 @@ media-time-slider,
 media-volume-slider,
 .vds-slider {
   touch-action: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  cursor: pointer;
 }
