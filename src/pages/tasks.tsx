@@ -356,7 +356,7 @@ const VideoCard = ({
 
   return (
     <Link href={`/task/${id}`}>
-      <div className="group h-[240px] w-[250px] cursor-pointer overflow-hidden rounded-lg border border-[#6c668533] bg-white transition-all hover:border-[#6c668566] hover:shadow-md">
+      <div className="group h-[240px] w-[250px] cursor-pointer overflow-hidden rounded-lg border border-[#6c668533] bg-white transition-all hover:border-custom-dark-orange/50 hover:shadow-md">
         <figure className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-slate-50">
           {!imgError && !fileDeletedAt ? (
             <Image

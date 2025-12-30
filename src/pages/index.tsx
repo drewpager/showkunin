@@ -13,8 +13,8 @@ import Footer from "~/components/Footer";
 import Header from "~/components/Header";
 import Image from "next/image";
 import CTA from "~/components/CTA";
-import engineeringUsecase from "~/assets/engineering usecase.png";
-import supportUsecase from "~/assets/support usecase.png";
+import engineeringUsecase from "~/assets/workflow-min.png";
+import supportUsecase from "~/assets/use-case.png";
 import logo from "~/assets/logo.png";
 import Paywall from "~/components/Paywall";
 import VideoModal from "~/components/VideoModal";
@@ -65,7 +65,7 @@ const Home: NextPage = () => {
       <div className="bg-custom-white">
         <Header />
 
-        <div className="relative isolate px-6 pt-14 lg:px-8">
+        <div className="relative isolate px-6 pt-14 sm:pt-8 sm:px-2 lg:px-8">
           <div className="mx-auto max-w-7xl py-32 sm:py-48 lg:py-56">
             {/*<div className="hidden sm:mb-8 sm:flex sm:justify-center">*/}
             {/*  <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">*/}
@@ -256,7 +256,7 @@ const Home: NextPage = () => {
                 {
                   title: "Process Automation",
                   description:
-                    "Repetitive tasks within the browser, like spreadsheets,data entry, form filling, and more.",
+                    "Solve repetitive tasks within the browser, like spreadsheets, data entry, form filling, and more.",
                   features: [
                     "Automate workflows",
                     "Share automations",

@@ -79,7 +79,7 @@ export default function NewVideoMenu({ videos }: { videos?: Video[] }) {
                       className={`mx-2 flex h-8 w-40 cursor-pointer flex-row content-center rounded-md p-2 ${active ? "bg-gray-100" : ""
                         }`}
                     >
-                      <p className="leading-2 text-sm leading-4">Record a video</p>
+                      <p className="leading-2 text-sm leading-4">Record workflow</p>
                     </div>
                   )}
                 </MenuItem>
