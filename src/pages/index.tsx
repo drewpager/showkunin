@@ -3,6 +3,7 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import { useFeatureFlagEnabled, usePostHog } from "posthog-js/react";
 import { useAtom } from "jotai";
+import { useSession, signIn } from "next-auth/react";
 import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
 import VideoRecordModal from "~/components/VideoRecordModal";
 import { CogIcon } from "@heroicons/react/24/solid";
@@ -31,7 +32,13 @@ const Home: NextPage = () => {
   //   }
   // }, [session, router]);
 
+  const { status } = useSession();
+
   const openRecordModal = () => {
+    if (status !== "authenticated") {
+      void signIn();
+      return;
+    }
     if (
       !navigator?.mediaDevices?.getDisplayMedia &&
       !navigator?.mediaDevices?.getDisplayMedia

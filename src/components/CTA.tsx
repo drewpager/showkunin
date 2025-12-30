@@ -3,13 +3,19 @@ import { useAtom } from "jotai/index";
 import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
 import { usePostHog } from "posthog-js/react";
 import VideoModal from "./VideoModal";
+import { useSession, signIn } from "next-auth/react";
 
 export default function CTA() {
   const [, setRecordOpen] = useAtom(recordVideoModalOpen);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const posthog = usePostHog();
+  const { status } = useSession();
 
   const openRecordModal = () => {
+    if (status !== "authenticated") {
+      void signIn();
+      return;
+    }
     if (
       !navigator?.mediaDevices?.getDisplayMedia &&
       !navigator?.mediaDevices?.getDisplayMedia

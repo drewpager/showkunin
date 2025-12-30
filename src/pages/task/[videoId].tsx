@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getTime } from "~/utils/getTime";
 import { ShareModal } from "~/components/ShareModal";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import VideoMoreMenu from "~/components/VideoMoreMenu";
 import ProfileMenu from "~/components/ProfileMenu";
 import { usePostHog } from "posthog-js/react";
@@ -46,6 +46,11 @@ const VideoList: NextPage = () => {
   );
 
   const openRecordModal = () => {
+    if (status !== "authenticated") {
+      void signIn();
+      return;
+    }
+
     if (
       !navigator?.mediaDevices?.getDisplayMedia &&
       !navigator?.mediaDevices?.getDisplayMedia
