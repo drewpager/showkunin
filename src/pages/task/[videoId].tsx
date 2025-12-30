@@ -151,11 +151,11 @@ const VideoList: NextPage = () => {
           </div>
         </div>
         <div className="flex w-full grow flex-col items-center justify-start bg-[#fbfbfb]">
-          <div className="flex max-h-[calc(100vh-169px)] w-full justify-center bg-black 2xl:max-h-[1160px]">
+          <div className="flex max-h-[calc(100vh-169px)] w-full md:w-[94%] md:max-w-6xl justify-center bg-black md:bg-transparent md:my-8 2xl:max-h-[1160px]">
             {isLoading ? (
-              <div className="aspect-video h-full w-full max-h-[60vh] animate-pulse bg-gray-900" />
+              <div className="aspect-video h-full w-full max-h-[60vh] md:max-h-[60dvh] animate-pulse bg-gray-900 md:rounded-xl md:shadow-2xl" />
             ) : video?.fileDeletedAt ? (
-              <div className="flex h-full w-full flex-col items-center justify-center bg-gray-900 text-white">
+              <div className="flex aspect-video md:aspect-auto h-full w-full md:max-h-[20dvh] flex-col items-center justify-center bg-gray-900 text-white md:rounded-xl md:shadow-2xl">
                 <div className="rounded-lg bg-gray-800 p-8 text-center shadow-lg">
                   <h3 className="mb-2 text-xl font-semibold text-[#eb4a3a]">
                     Video No Longer Available
@@ -170,10 +170,11 @@ const VideoList: NextPage = () => {
                 </div>
               </div>
             ) : video?.video_url ? (
-              <div className="aspect-video h-full max-h-[60vh] max-w-[100dvw]">
+              <div className="aspect-video h-full md:max-h-[60dvh] w-full md:rounded-xl md:shadow-2xl md:overflow-hidden bg-black">
                 <VideoPlayer
                   video_url={video.video_url}
                   thumbnailUrl={video.thumbnailUrl}
+                  className="md:max-h-none h-full w-full"
                 />
               </div>
             ) : null}

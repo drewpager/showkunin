@@ -1,6 +1,7 @@
 import "@vidstack/react/player/styles/base.css";
 
 import React, { useEffect, useRef } from "react";
+import { twMerge } from "tailwind-merge";
 
 import {
   isHLSProvider,
@@ -19,9 +20,10 @@ import { VideoLayout } from "./VideoLayout";
 interface Props {
   video_url: string;
   thumbnailUrl?: string;
+  className?: string;
 }
 
-export default function VideoPlayer({ video_url, thumbnailUrl }: Props) {
+export default function VideoPlayer({ video_url, thumbnailUrl, className }: Props) {
   const player = useRef<MediaPlayerInstance>(null);
 
   useEffect(() => {
@@ -54,7 +56,10 @@ export default function VideoPlayer({ video_url, thumbnailUrl }: Props) {
 
   return (
     <MediaPlayer
-      className="ring-media-focus aspect-video h-full w-full max-h-[60dvh] min-h-[26dvh] sm:max-h-[20dvh] sm:max-w-[100dvw] md:max-h-[45dvh] overflow-hidden rounded-md bg-black font-sans text-white data-[focus]:ring-4"
+      className={twMerge(
+        "ring-media-focus aspect-video h-full w-full max-h-[60dvh] min-h-[26dvh] sm:max-w-[100dvw] md:max-h-[45dvh] overflow-hidden rounded-md bg-black font-sans text-white data-[focus]:ring-4",
+        className
+      )}
       src={[
         {
           src: video_url,

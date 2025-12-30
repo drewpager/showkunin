@@ -415,8 +415,7 @@ export default function VideoAnalysis({
           )}
         </button>
       ) : (
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
+        <div
           className="flex w-full items-center justify-between rounded-t-lg bg-black px-6 py-4 text-left text-white transition-all hover:bg-gray-900"
         >
           <div className="flex items-center gap-3">
@@ -436,26 +435,11 @@ export default function VideoAnalysis({
             <div>
               <h3 className="text-lg font-semibold">{analyzeVideoMutation.isLoading ? "Analyzing with AI..." : "AI Automation Analysis"}</h3>
               <p className="text-sm text-white" suppressHydrationWarning>
-                {analyzeVideoMutation.isLoading ? "This may take a minute..." : "Generated " + formatDate(generatedAt)} • Click to{" "}
-                {isExpanded ? "collapse" : "expand"}
+                {analyzeVideoMutation.isLoading ? "This may take a minute..." : "Generated " + formatDate(generatedAt)}
               </p>
             </div>
           </div>
-          <svg
-            className={`h-5 w-5 transition-transform ${isExpanded ? "rotate-180" : ""
-              }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
+        </div>
       )}
 
       {/* Thumbs Up/Down Buttons - Always visible when analysis exists */}
