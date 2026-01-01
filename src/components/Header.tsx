@@ -9,10 +9,10 @@ import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/r
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Fragment } from "react";
 
-const navigation = [
-  { name: "Overview", href: "/" },
-  { name: "Pricing", href: "/pricing" },
-];
+// const navigation = [
+//   { name: "Overview", href: "/" },
+//   { name: "Pricing", href: "/pricing" },
+// ];
 
 const useCases = [
   { name: "Vibe Automation", href: "/solutions/vibe-automation" },

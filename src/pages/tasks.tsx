@@ -73,8 +73,8 @@ const VideoList: NextPage = () => {
     void router.replace("/sign-in");
   }
 
-  const checkoutCanceledQueryParam = searchParams.get("checkoutCanceled");
-  const closeQueryParam = searchParams.get("close");
+  const checkoutCanceledQueryParam = searchParams?.get("checkoutCanceled");
+  const closeQueryParam = searchParams?.get("close");
 
   const openRecordModal = () => {
     if (

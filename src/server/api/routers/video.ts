@@ -251,6 +251,38 @@ export const videoRouter = createTRPCRouter({
         updateVideo,
       };
     }),
+  setLinkShareSeo: protectedProcedure
+    .input(z.object({ videoId: z.string(), linkShareSeo: z.boolean() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const updateVideo = await prisma.video.updateMany({
+        where: {
+          id: input.videoId,
+          userId: session.user.id,
+        },
+        data: {
+          linkShareSeo: input.linkShareSeo,
+        },
+      });
+
+      if (updateVideo.count === 0) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "update video setLinkShareSeo",
+        properties: {
+          videoId: input.videoId,
+          linkShareSeo: input.linkShareSeo,
+        },
+      });
+      void posthog?.shutdownAsync();
+
+      return {
+        success: true,
+        updateVideo,
+      };
+    }),
   setDeleteAfterLinkExpires: protectedProcedure
     .input(
       z.object({ videoId: z.string(), delete_after_link_expires: z.boolean() })

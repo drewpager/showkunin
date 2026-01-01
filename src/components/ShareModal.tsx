@@ -68,6 +68,23 @@ export function ShareModal({ video }: Props) {
       },
     });
 
+  const setLinkShareSeoMutation = api.video.setLinkShareSeo.useMutation({
+    onMutate: async ({ videoId, linkShareSeo }) => {
+      await utils.video.get.cancel();
+      const previousValue = utils.video.get.getData({ videoId });
+      if (previousValue) {
+        utils.video.get.setData({ videoId }, { ...previousValue, linkShareSeo });
+      }
+      return { previousValue };
+    },
+    onError: (err, { videoId }, context) => {
+      if (context?.previousValue) {
+        utils.video.get.setData({ videoId }, context.previousValue);
+      }
+      console.error(err.message);
+    },
+  });
+
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
 
   const handleCopy = () => {
@@ -161,6 +178,21 @@ export function ShareModal({ video }: Props) {
                                   videoId: video.id,
                                   delete_after_link_expires:
                                     !video.delete_after_link_expires,
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="mt-3 flex h-6 items-center justify-between">
+                            <div className="flex flex-col">
+                              <span>Appear in search results</span>
+                              <span className="text-[10px] text-custom-dark-orange">Public videos with SEO enabled are indexed by search engines</span>
+                            </div>
+                            <ModernSwitch
+                              enabled={video.linkShareSeo}
+                              toggle={() =>
+                                setLinkShareSeoMutation.mutate({
+                                  videoId: video.id,
+                                  linkShareSeo: !video.linkShareSeo,
                                 })
                               }
                             />

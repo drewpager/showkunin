@@ -1,6 +1,6 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { Gesture, useMediaState, TimeSlider } from "@vidstack/react";
-import { useState, useEffect, useRef } from "react";
+import { Gesture, useMediaState } from "@vidstack/react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 import * as Buttons from "./buttons";
 import * as Sliders from "./sliders";
@@ -20,13 +20,13 @@ export function VideoLayout({ thumbnails }: VideoLayoutProps) {
   const showControls = paused || !isIdle;
 
   // Reset idle timer on interaction
-  const resetIdleTimer = () => {
+  const resetIdleTimer = useCallback(() => {
     setIsIdle(false);
     clearTimeout(timeoutRef.current);
     if (!paused) {
       timeoutRef.current = setTimeout(() => setIsIdle(true), 2000);
     }
-  };
+  }, [paused]);
 
   useEffect(() => {
     if (paused) {
@@ -36,7 +36,7 @@ export function VideoLayout({ thumbnails }: VideoLayoutProps) {
       resetIdleTimer();
     }
     return () => clearTimeout(timeoutRef.current);
-  }, [paused]);
+  }, [paused, resetIdleTimer]);
 
   return (
     <div className="vds-video-layout absolute inset-0 z-10 touch-manipulation pointer-events-none">

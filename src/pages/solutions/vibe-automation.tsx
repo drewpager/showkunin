@@ -6,8 +6,8 @@ import Footer from "~/components/Footer";
 import CTA from "~/components/CTA";
 import Pricing from "~/components/Pricing";
 import Image from "next/image";
-import { useAtom } from "jotai";
-import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
+// import { useAtom } from "jotai";
+// import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
 import { usePostHog } from "posthog-js/react";
 import logo from "~/assets/logo.png";
 import feature1 from "~/assets/vibe-automation-1-min.png";
@@ -17,24 +17,24 @@ import { useRouter } from "next/navigation";
 import VideoModal from "~/components/VideoModal";
 
 const VibeAutomation: NextPage = () => {
-  const [, setRecordOpen] = useAtom(recordVideoModalOpen);
+  // const [, setRecordOpen] = useAtom(recordVideoModalOpen);
   const posthog = usePostHog();
   const router = useRouter();
   const [videoModalOpen, setVideoModalOpen] = useState(false);
 
-  const openRecordModal = () => {
-    if (
-      !navigator?.mediaDevices?.getDisplayMedia &&
-      !navigator?.mediaDevices?.getDisplayMedia
-    ) {
-      return alert("Your browser is currently NOT supported.");
-    }
-    setRecordOpen(true);
+  // const openRecordModal = () => {
+  //   if (
+  //     !navigator?.mediaDevices?.getDisplayMedia &&
+  //     !navigator?.mediaDevices?.getDisplayMedia
+  //   ) {
+  //     return alert("Your browser is currently NOT supported.");
+  //   }
+  //   setRecordOpen(true);
 
-    posthog?.capture("open record video modal", {
-      cta: "vibe automation landing page",
-    });
-  };
+  //   posthog?.capture("open record video modal", {
+  //     cta: "vibe automation landing page",
+  //   });
+  // };
 
   const openVideoModal = () => {
     setVideoModalOpen(true);
