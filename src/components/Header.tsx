@@ -55,6 +55,15 @@ export default function Header() {
             </span>
           </Link>
 
+          <Link href="/examples">
+            <span
+              className={`mx-[6px] cursor-pointer rounded-full p-2 text-sm text-custom-dark hover:text-custom-black ${router.asPath === "/examples" ? "bg-custom-black bg-opacity-10" : ""
+                }`}
+            >
+              Examples
+            </span>
+          </Link>
+
           <Link href="/pricing">
             <span
               className={`mx-[6px] cursor-pointer rounded-full p-2 text-sm text-custom-dark hover:text-custom-black ${router.asPath === "/pricing" ? "bg-custom-black bg-opacity-10" : ""
@@ -158,6 +167,11 @@ export default function Header() {
           <Link href="/" onClick={closeNav}>
             <div className="flex h-[48px] cursor-pointer items-center border-b border-custom-dark border-opacity-30 text-[16px] hover:bg-custom-white hover:bg-opacity-50">
               Overview
+            </div>
+          </Link>
+          <Link href="/examples" onClick={closeNav}>
+            <div className="flex h-[48px] cursor-pointer items-center border-b border-custom-dark border-opacity-30 text-[16px] hover:bg-custom-white hover:bg-opacity-50">
+              Examples
             </div>
           </Link>
           <Link href="/pricing" onClick={closeNav}>

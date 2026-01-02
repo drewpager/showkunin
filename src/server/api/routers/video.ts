@@ -6,6 +6,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
@@ -36,6 +37,14 @@ export const videoRouter = createTRPCRouter({
         take: limit + 1,
         where: {
           userId: session.user.id,
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
         },
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: {
@@ -103,7 +112,7 @@ export const videoRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      if (video.userId !== session?.user.id && !video.sharing) {
+      if (video.userId !== session?.user.id && !video.sharing && !video.linkShareSeo) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
@@ -144,6 +153,65 @@ export const videoRouter = createTRPCRouter({
       );
 
       return { ...video, video_url: signedUrl, thumbnailUrl };
+    }),
+  getExamples: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).nullish(),
+        cursor: z.string().nullish(),
+      })
+    )
+    .query(async ({ ctx: { prisma, s3 }, input }) => {
+      const limit = input.limit ?? 20;
+      const { cursor } = input;
+
+      const videos = await prisma.video.findMany({
+        take: limit + 1,
+        where: {
+          linkShareSeo: true,
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+        },
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (videos.length > limit) {
+        const nextItem = videos.pop();
+        nextCursor = nextItem?.id;
+      }
+
+      // Generate signed URLs for all videos
+      const videosWithUrls = await Promise.all(
+        videos.map(async (video) => {
+          const thumbnailUrl = await getSignedUrl(
+            s3,
+            new GetObjectCommand({
+              Bucket: process.env.AWS_BUCKET_NAME,
+              Key: video.userId + "/" + video.id + "-thumbnail",
+            }),
+            { expiresIn: 7 * 24 * 60 * 60 }
+          );
+          return {
+            ...video,
+            thumbnailUrl,
+          };
+        })
+      );
+
+      return {
+        items: videosWithUrls,
+        nextCursor,
+      };
     }),
   getUploadUrl: protectedProcedure
     .input(z.object({ key: z.string(), userContext: z.string().optional() }))
@@ -254,6 +322,24 @@ export const videoRouter = createTRPCRouter({
   setLinkShareSeo: protectedProcedure
     .input(z.object({ videoId: z.string(), linkShareSeo: z.boolean() }))
     .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      if (input.linkShareSeo) {
+        const video = await prisma.video.findUnique({
+          where: { id: input.videoId },
+          select: { solved: true, userId: true },
+        });
+
+        if (!video || video.userId !== session.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+
+        if (video.solved !== true) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You must mark this task as solved before enabling SEO link sharing.",
+          });
+        }
+      }
+
       const updateVideo = await prisma.video.updateMany({
         where: {
           id: input.videoId,
@@ -539,7 +625,7 @@ export const videoRouter = createTRPCRouter({
       }
 
       // Check if user has access to this video
-      if (video.userId !== session?.user.id && !video.sharing) {
+      if (video.userId !== session?.user.id && !video.sharing && !video.linkShareSeo) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
@@ -798,7 +884,7 @@ export const videoRouter = createTRPCRouter({
       }
 
       // Check if user has access to this video
-      if (video.userId !== session?.user.id && !video.sharing) {
+      if (video.userId !== session?.user.id && !video.sharing && !video.linkShareSeo) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
@@ -974,5 +1060,103 @@ export const videoRouter = createTRPCRouter({
           message: "Failed to analyze screencast update",
         });
       }
+    }),
+  copyTask: protectedProcedure
+    .input(z.object({ videoId: z.string() }))
+    .mutation(async ({ ctx: { prisma, session, s3, posthog }, input }) => {
+      const { videoId } = input;
+
+      // 1. Get original video
+      const originalVideo = await prisma.video.findUnique({
+        where: { id: videoId },
+      });
+
+      if (!originalVideo) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      // Check if user has access to this video (owner or shared)
+      if (originalVideo.userId !== session.user.id && !originalVideo.sharing && !originalVideo.linkShareSeo) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      // 2. Check user's video limit
+      const userVideoCount = await prisma.video.count({
+        where: { userId: session.user.id },
+      });
+
+      if (
+        session.user.stripeSubscriptionStatus !== "active" &&
+        !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY &&
+        userVideoCount >= 10
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You have reached the maximum video limit on our free tier. Please upgrade to copy more tasks.",
+        });
+      }
+
+      // 3. Create new video record
+      const newVideo = await prisma.video.create({
+        data: {
+          userId: session.user.id,
+          title: `Copy of ${originalVideo.title}`,
+          userContext: originalVideo.userContext,
+          aiAnalysis: originalVideo.aiAnalysis,
+          aiAnalysisGeneratedAt: originalVideo.aiAnalysisGeneratedAt,
+          sharing: false, // Default to private for the copy
+          linkShareSeo: false,
+        },
+      });
+
+      // 4. Copy S3 objects
+      const bucket = process.env.AWS_BUCKET_NAME;
+      if (!bucket) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "AWS_BUCKET_NAME is not defined",
+        });
+      }
+      
+      // Copy video file
+      try {
+        await s3.send(
+          new CopyObjectCommand({
+            Bucket: bucket,
+            CopySource: `${bucket}/${originalVideo.userId}/${originalVideo.id}`,
+            Key: `${session.user.id}/${newVideo.id}`,
+          })
+        );
+      } catch (err) {
+        console.error("Error copying video in S3:", err);
+      }
+
+      // Copy thumbnail
+      try {
+        await s3.send(
+          new CopyObjectCommand({
+            Bucket: bucket,
+            CopySource: `${bucket}/${originalVideo.userId}/${originalVideo.id}-thumbnail`,
+            Key: `${session.user.id}/${newVideo.id}-thumbnail`,
+          })
+        );
+      } catch (err) {
+        console.error("Error copying thumbnail in S3:", err);
+      }
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "copy task",
+        properties: {
+          originalVideoId: originalVideo.id,
+          newVideoId: newVideo.id,
+        },
+      });
+      void posthog?.shutdownAsync();
+
+      return {
+        success: true,
+        newVideoId: newVideo.id,
+      };
     }),
 });

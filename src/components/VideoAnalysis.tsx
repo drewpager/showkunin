@@ -18,6 +18,7 @@ interface VideoAnalysisProps {
   initialAnalysis?: string | null;
   initialGeneratedAt?: Date | null;
   initialSolved?: boolean | null;
+  isOwner?: boolean;
 }
 
 interface ComputerUseStep {
@@ -168,6 +169,7 @@ export default function VideoAnalysis({
   initialAnalysis,
   initialGeneratedAt,
   initialSolved,
+  isOwner = false,
 }: VideoAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(!!initialAnalysis);
   const [refinementInput, setRefinementInput] = useState("");
@@ -235,6 +237,7 @@ export default function VideoAnalysis({
   };
 
   const handleSolved = async (value: boolean) => {
+    if (!isOwner) return;
     // Toggle off if clicking the same button
     const newValue = solved === value ? null : value;
     setSolvedState(newValue);
@@ -384,10 +387,10 @@ export default function VideoAnalysis({
               <h3 className="text-lg font-semibold">
                 {analyzeVideoMutation.isLoading
                   ? "Analyzing with AI..."
-                  : "Get AI Automation Suggestions"}
+                  : isOwner ? "Get AI Automation Suggestions" : "AI Automation Analysis"}
               </h3>
               <p className="text-sm text-purple-100">
-                Powered by Gemini - Analyze this video to get automation ideas
+                {isOwner ? "Powered by Gemini - Analyze this video to get automation ideas" : "Powered by Gemini - View AI's analysis of this video"}
               </p>
             </div>
           </div>
@@ -452,11 +455,12 @@ export default function VideoAnalysis({
             <div className="flex gap-2">
               <button
                 onClick={() => void handleSolved(true)}
+                disabled={!isOwner}
                 className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${solved === true
                   ? "bg-green-600 text-white shadow-md"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-green-50 hover:border-green-300"
-                  }`}
-                title="Thumbs up - This solved my problem"
+                  } ${!isOwner ? "opacity-50 cursor-not-allowed" : ""}`}
+                title={isOwner ? "Thumbs up - This solved my problem" : "Only the task owner can change this"}
               >
                 <svg
                   className="h-5 w-5"
@@ -475,11 +479,12 @@ export default function VideoAnalysis({
               </button>
               <button
                 onClick={() => void handleSolved(false)}
+                disabled={!isOwner}
                 className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${solved === false
                   ? "bg-red-600 text-white shadow-md"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-red-50 hover:border-red-300"
-                  }`}
-                title="Thumbs down - This didn't solve my problem"
+                  } ${!isOwner ? "opacity-50 cursor-not-allowed" : ""}`}
+                title={isOwner ? "Thumbs down - This didn't solve my problem" : "Only the task owner can change this"}
               >
                 <svg
                   className="h-5 w-5"
@@ -624,9 +629,9 @@ export default function VideoAnalysis({
                         void handleRefine();
                       }
                     }}
-                    placeholder="Ask a follow-up question or request changes (e.g., 'Focus on the API calls', 'Convert code to Python')"
-                    className="flex-1 min-h-[120px] rounded-lg p-4 border-2 border-black shadow-sm focus:border-black focus:ring-black focus:ring-offset-2 sm:text-sm"
-                    disabled={analyzeVideoMutation.isLoading}
+                    placeholder={isOwner ? "Ask a follow-up question or request changes (e.g., 'Focus on the API calls', 'Convert code to Python')" : "Copy this task to ask follow-up questions..."}
+                    className="flex-1 min-h-[120px] rounded-lg p-4 border-2 border-black shadow-sm focus:border-black focus:ring-black focus:ring-offset-2 sm:text-sm disabled:bg-gray-50 disabled:border-gray-300 disabled:cursor-not-allowed"
+                    disabled={!isOwner || analyzeVideoMutation.isLoading}
                   />
                 </div>
                 <div className="flex gap-3">
@@ -655,8 +660,9 @@ export default function VideoAnalysis({
                   ) : (
                     <button
                       onClick={() => void handleRefine()}
-                      disabled={analyzeVideoMutation.isLoading || !refinementInput.trim()}
+                      disabled={!isOwner || analyzeVideoMutation.isLoading || !refinementInput.trim()}
                       className="inline-flex items-center rounded-lg mt-3 bg-black px-4 py-2 text-md font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+                      title={isOwner ? "" : "Only the task owner can refine analysis"}
                     >
                       {analyzeVideoMutation.isLoading ? (
                         <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -677,9 +683,9 @@ export default function VideoAnalysis({
                   )}
                   <button
                     onClick={() => setIsScreencastRecorderOpen(true)}
-                    disabled={analyzeVideoMutation.isLoading || analyzeScreencastMutation.isLoading}
+                    disabled={!isOwner || analyzeVideoMutation.isLoading || analyzeScreencastMutation.isLoading}
                     className="inline-flex items-center rounded-lg mt-3 bg-white border-2 border-black px-4 py-2 text-md font-medium text-black hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
-                    title="Record a new screencast for additional context"
+                    title={isOwner ? "Record a new screencast for additional context" : "Only the task owner can refine analysis"}
                   >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -706,6 +712,16 @@ export default function VideoAnalysis({
                     </button>
                   </div> */}
                 </div>
+                {!isOwner && (
+                  <div className="mt-3 text-sm text-custom-dark-orange bg-custom-dark-orange/10 border border-gray-200 rounded-lg p-3 w-fit">
+                    <div className="flex items-center gap-2">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Copy this task to refine the analysis or ask follow-up questions.</span>
+                    </div>
+                  </div>
+                )}
                 {screencastBlob && (
                   <div className="mt-3 text-sm text-black bg-black/10 border border-black/10 rounded-lg p-3 w-fit">
                     <div className="flex items-center gap-3">

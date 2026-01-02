@@ -85,7 +85,37 @@ export function ShareModal({ video }: Props) {
     },
   });
 
+  const setSolvedMutation = api.video.setSolved.useMutation({
+    onMutate: async ({ videoId, solved }) => {
+      await utils.video.get.cancel();
+      const previousValue = utils.video.get.getData({ videoId });
+      if (previousValue) {
+        utils.video.get.setData({ videoId }, { ...previousValue, solved });
+      }
+      return { previousValue };
+    },
+    onError: (err, { videoId }, context) => {
+      if (context?.previousValue) {
+        utils.video.get.setData({ videoId }, context.previousValue);
+      }
+      console.error(err.message);
+    },
+  });
+
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
+  const [showSolvedPrompt, setShowSolvedPrompt] = useState<boolean>(false);
+
+  const handleToggleSeo = () => {
+    const newVal = !video.linkShareSeo;
+    if (newVal && video.solved !== true) {
+      setShowSolvedPrompt(true);
+    } else {
+      setLinkShareSeoMutation.mutate({
+        videoId: video.id,
+        linkShareSeo: newVal,
+      });
+    }
+  };
 
   const handleCopy = () => {
     void navigator.clipboard.writeText(window.location.href);
@@ -189,14 +219,51 @@ export function ShareModal({ video }: Props) {
                             </div>
                             <ModernSwitch
                               enabled={video.linkShareSeo}
-                              toggle={() =>
-                                setLinkShareSeoMutation.mutate({
-                                  videoId: video.id,
-                                  linkShareSeo: !video.linkShareSeo,
-                                })
-                              }
+                              toggle={handleToggleSeo}
                             />
                           </div>
+                          {showSolvedPrompt && (
+                            <div className="mt-4 border-t border-dashed border-gray-200 pt-4">
+                              <p className="text-sm font-semibold">Is this task solved correctly?</p>
+                              <p className="mt-1 text-xs text-gray-500">
+                                Setting a task as &quot;solved&quot; is required before it can appear in search results.
+                              </p>
+                              <div className="mt-3 flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    const updateSolved = async () => {
+                                      try {
+                                        await setSolvedMutation.mutateAsync({ videoId: video.id, solved: true });
+                                        setLinkShareSeoMutation.mutate({ videoId: video.id, linkShareSeo: true });
+                                      } catch (err) {
+                                        console.error("Failed to update solved status", err);
+                                      }
+                                      setShowSolvedPrompt(false);
+                                    };
+                                    void updateSolved();
+                                  }}
+                                  className="rounded bg-custom-green px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-custom-green/90"
+                                >
+                                  Yes, it&#39;s solved
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSolvedMutation.mutate({ videoId: video.id, solved: false });
+                                    setShowSolvedPrompt(false);
+                                  }}
+                                  className="rounded border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                >
+                                  No
+                                </button>
+                                <button
+                                  onClick={() => setShowSolvedPrompt(false)}
+                                  className="ml-auto text-xs text-gray-400 hover:text-gray-600"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </>
                     ) : null}

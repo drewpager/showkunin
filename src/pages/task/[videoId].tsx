@@ -18,6 +18,8 @@ import defaultProfileIcon from "~/assets/default profile icon.jpg";
 import VideoPlayer from "~/components/VideoPlayer";
 import VideoAnalysis from "~/components/VideoAnalysis";
 import logo from "~/assets/logo.png";
+import Paywall from "~/components/Paywall";
+import paywallAtom from "~/atoms/paywallAtom";
 
 const VideoList: NextPage = () => {
   const router = useRouter();
@@ -25,6 +27,7 @@ const VideoList: NextPage = () => {
   const { videoId } = router.query as { videoId: string };
   const posthog = usePostHog();
   const [, setRecordOpen] = useAtom(recordVideoModalOpen);
+  const [, setPaywallOpen] = useAtom(paywallAtom);
 
   const { data: video, isLoading } = api.video.get.useQuery(
     { videoId },
@@ -44,6 +47,19 @@ const VideoList: NextPage = () => {
       },
     }
   );
+
+  const copyTaskMutation = api.video.copyTask.useMutation({
+    onSuccess: (data) => {
+      void router.push(`/task/${data.newVideoId}`);
+    },
+    onError: (err) => {
+      if (err.message.includes("maximum video limit")) {
+        setPaywallOpen(true);
+      } else {
+        alert(err.message);
+      }
+    },
+  });
 
   const openRecordModal = () => {
     if (status !== "authenticated") {
@@ -128,6 +144,30 @@ const VideoList: NextPage = () => {
                 <VideoMoreMenu video={video} />
                 <ShareModal video={video} />
               </>
+            ) : video?.sharing || video?.linkShareSeo ? (
+              <button
+                onClick={() => {
+                  if (status !== "authenticated") {
+                    void signIn();
+                    return;
+                  }
+                  void copyTaskMutation.mutateAsync({ videoId: video.id });
+                }}
+                disabled={copyTaskMutation.isLoading}
+                className="inline-flex max-h-[35px] items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50 transition-all mr-2"
+              >
+                {copyTaskMutation.isLoading ? (
+                  <svg className="h-4 w-4 animate-spin mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                  </svg>
+                )}
+                Copy task
+              </button>
             ) : null}
             {status === "authenticated" ? (
               <>
@@ -226,6 +266,7 @@ const VideoList: NextPage = () => {
                 initialAnalysis={video.aiAnalysis}
                 initialGeneratedAt={video.aiAnalysisGeneratedAt}
                 initialSolved={video.solved}
+                isOwner={video.userId === session?.user.id}
               />
             ) : (
               <div className="mt-6 mr-5">
@@ -237,6 +278,7 @@ const VideoList: NextPage = () => {
       </main>
 
       <VideoRecordModal />
+      <Paywall />
     </>
   );
 };
