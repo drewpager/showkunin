@@ -33,6 +33,8 @@ model Video {
   fileDeletedAt             DateTime?
   thumbnailUrl              String?   @db.Text
   thumbnailUrlExpiresAt     DateTime?
+  geminiCacheName           String?
+  geminiCacheExpiresAt      DateTime?
   user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
