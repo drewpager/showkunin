@@ -879,10 +879,16 @@ export const videoRouter = createTRPCRouter({
               hour: "numeric",
               minute: "2-digit",
             });
-            const separatorWithHeader = `\n\n---\n\n### Refined Analysis (${timestamp})\n\n`;
+            
+            // User Refinement Block
+            const userPromptBlock = input.refinementPrompt 
+              ? `\n\n---\n\n> 👤 **User Refinement**\n> ${input.refinementPrompt.replace(/\n/g, '\n> ')}\n\n`
+              : `\n\n---\n\n`;
+
+            const separatorWithHeader = `### Refined Analysis (${timestamp})\n\n`;
             const planToUse = newPlan || oldPlan;
             
-            finalAnalysis = `${oldDisplay}${separatorWithHeader}${newDisplay}${planToUse ? `\n\n${planSeparator}\n${planToUse}` : ""}`;
+            finalAnalysis = `${oldDisplay}${userPromptBlock}${separatorWithHeader}${newDisplay}${planToUse ? `\n\n${planSeparator}\n${planToUse}` : ""}`;
           }
         }
 
@@ -1077,10 +1083,17 @@ export const videoRouter = createTRPCRouter({
               hour: "numeric",
               minute: "2-digit",
             });
-            const separatorWithHeader = `\n\n---\n\n### Screencast Update (${timestamp})\n\n`;
+            
+            let userPromptBlock = `\n\n---\n\n> 👤 **User Refinement**\n`;
+            if (input.refinementPrompt) {
+               userPromptBlock += `> ${input.refinementPrompt.replace(/\n/g, '\n> ')}\n`;
+            }
+            userPromptBlock += `> 🎥 **Screencast Refinement Recorded**\n\n`;
+
+            const separatorWithHeader = `### Screencast Update (${timestamp})\n\n`;
             const planToUse = newPlan || oldPlan;
             
-            finalAnalysis = `${oldDisplay}${separatorWithHeader}${newDisplay}${planToUse ? `\n\n${planSeparator}\n${planToUse}` : ""}`;
+            finalAnalysis = `${oldDisplay}${userPromptBlock}${separatorWithHeader}${newDisplay}${planToUse ? `\n\n${planSeparator}\n${planToUse}` : ""}`;
           }
         }
 

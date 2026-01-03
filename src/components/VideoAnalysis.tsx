@@ -610,6 +610,11 @@ export default function VideoAnalysis({
                         {...props}
                       />
                     ),
+                    blockquote: ({ node: _node, ...props }) => (
+                      <div className="my-4 rounded-r-lg border-l-4 border-gray-900 bg-gray-50 p-4 shadow-sm">
+                        <div className="italic text-gray-700" {...props} />
+                      </div>
+                    ),
                   }}
                 >
                   {displayAnalysis}
