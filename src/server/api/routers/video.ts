@@ -739,21 +739,20 @@ export const videoRouter = createTRPCRouter({
           contents: [
             {
               parts: [
-                // We don't send fileData here, it's in the cache
                 {
                   text: input.refinementPrompt 
-              ? `You are an AI problem solving and automation expert analyzing a screen recording.
+              ? `You are an AI problem solving and automation expert analyzing a screen recording, the subsequent analysis, and the user's follow up request.
+
+              User Refinement Request:
+              ${input.refinementPrompt}
+
+              Please provide a refined analysis and updated response using the following context and the user's specific request. 
               
               User Context:
               ${video.userContext ?? "None"}
 
               Previous Analysis:
               ${video.aiAnalysis ?? "No previous analysis."}
-
-              User Refinement Request:
-              ${input.refinementPrompt}
-
-              Please provide a refined analysis and updated response based on the video and the user's specific request above. 
               
               Maintain this format:
               TITLE: [A 5-word or less descriptive title for the task]
@@ -761,7 +760,9 @@ export const videoRouter = createTRPCRouter({
               1. User Analysis (Markdown) - Provide ONLY the new insights, answers to follow-up questions, or changed instructions. Do NOT repeat the previous analysis, as this response will be appended to it.
               2. "---COMPUTER_USE_PLAN---" separator
               3. Computer Use Instructions (JSON) - Provide the FULL, complete, and updated JSON plan that incorporates all changes. This replaces the previous plan.`
-                            : `You are an AI problem solving and automation expert analyzing a screen recording. The user is showing you a task they want automated or a problem they want resolved.
+              : 
+              
+              `You are an AI problem solving and automation expert analyzing a screen recording. The user is showing you a task they want automated or a problem they want resolved.
 
               User Context:
               ${video.userContext ?? "None"}
