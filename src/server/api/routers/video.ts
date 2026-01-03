@@ -757,7 +757,7 @@ export const videoRouter = createTRPCRouter({
               Maintain this format:
               TITLE: [A 5-word or less descriptive title for the task]
               ---ANALYSIS_START---
-              1. User Analysis (Markdown) - Provide ONLY the new insights, answers to follow-up questions, or changed instructions. Do NOT repeat the previous analysis, as this response will be appended to it.
+              1. User Analysis (Markdown) - Provide the new insights, answers to follow-up questions, or changed instructions. IMPORTANT: If the user requests code or if the previous code needs updating, YOU MUST PROVIDE THE FULL UPDATED CODE SNIPPETS. Do not just describe the changes; show the actual code.
               2. "---COMPUTER_USE_PLAN---" separator
               3. Computer Use Instructions (JSON) - Provide the FULL, complete, and updated JSON plan that incorporates all changes. This replaces the previous plan.`
               : 
@@ -1005,7 +1005,7 @@ export const videoRouter = createTRPCRouter({
                   Maintain this format:
                   TITLE: [A 5-word or less descriptive title for the task]
                   ---ANALYSIS_START---
-                  1. User Analysis (Markdown) - Provide ONLY the new insights, answers to follow-up questions, or changed instructions based on the new screencast. Do NOT repeat the previous analysis, as this response will be appended to it.
+                  1. User Analysis (Markdown) - Provide the new insights, answers to follow-up questions, or changed instructions based on the new screencast. IMPORTANT: If the user requests code or if the previous code needs updating, YOU MUST PROVIDE THE FULL UPDATED CODE SNIPPETS. Do not just describe the changes; show the actual code.
                   2. "---COMPUTER_USE_PLAN---" separator
                   3. Computer Use Instructions (JSON) - Provide the FULL, complete, and updated JSON plan that incorporates all changes. This replaces the previous plan.`
                 },
