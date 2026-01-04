@@ -10,17 +10,17 @@ export const getTime = (timestamp: Date): string => {
   let timeString = "";
 
   if (delta < 60) {
-    timeString = "Just now";
+    timeString = "Created just now";
   } else if (delta < 2 * minute) {
-    timeString = "1 min";
+    timeString = "1 min ago";
   } else if (delta < hour) {
-    timeString = Math.floor(delta / minute).toString() + " mins";
+    timeString = Math.floor(delta / minute).toString() + " mins ago";
   } else if (Math.floor(delta / hour) === 1) {
     timeString = "1 hour ago";
   } else if (delta < day) {
     timeString = Math.floor(delta / hour).toString() + " hours ago";
   } else if (delta < day * 2) {
-    timeString = "yesterday";
+    timeString = "Created yesterday";
   } else if (delta < day * 7) {
     timeString = Math.floor(delta / day).toString() + " days ago";
   } else {

@@ -29,7 +29,7 @@ export default function Header() {
 
   return (
     <div
-      className="header sticky top-0 z-10 flex h-[64px] border-b border-custom-border bg-custom-white/80 backdrop-blur-md"
+      className="header sticky top-0 z-50 flex h-[64px] border-b border-custom-border bg-custom-white/80 backdrop-blur-md"
     >
       <div className="m-auto flex w-[1048px] items-center justify-between px-[24px]">
         <div className="flex flex-start items-center">

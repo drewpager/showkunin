@@ -20,6 +20,7 @@ import VideoAnalysis from "~/components/VideoAnalysis";
 import logo from "~/assets/logo.png";
 import Paywall from "~/components/Paywall";
 import paywallAtom from "~/atoms/paywallAtom";
+import Footer from "~/components/Footer";
 
 const VideoList: NextPage = () => {
   const router = useRouter();
@@ -125,69 +126,71 @@ const VideoList: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex min-h-screen w-full flex-col">
-        <div className="flex min-h-[62px] w-full items-center justify-between border-b border-solid border-b-[#E7E9EB] bg-white px-6">
-          <div className="flex flex-start items-center">
-            <Link href="/" className="flex items-center">
-              <Image
-                className="cursor-pointer p-2"
-                src={logo}
-                alt="logo"
-                width={42}
-                height={42}
-              />
-              <p className="text-xl font-bold text-custom-black">Greadings</p>
-            </Link>
-          </div>
-          <div className="flex items-center justify-center">
-            {video && video.userId === session?.user.id ? (
-              <>
-                <VideoMoreMenu video={video} />
-                <ShareModal video={video} />
-              </>
-            ) : video?.sharing || video?.linkShareSeo ? (
-              <button
-                onClick={() => {
-                  if (status !== "authenticated") {
-                    void signIn();
-                    return;
-                  }
-                  void copyTaskMutation.mutateAsync({ videoId: video.id });
-                }}
-                disabled={copyTaskMutation.isLoading}
-                className="inline-flex max-h-[35px] items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50 transition-all mr-2"
-              >
-                {copyTaskMutation.isLoading ? (
-                  <svg className="h-4 w-4 animate-spin mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-                  </svg>
-                )}
-                Copy task
-              </button>
-            ) : null}
-            {status === "authenticated" ? (
-              <>
-                <Link href="/tasks">
-                  <span className="hidden md:block cursor-pointer rounded border border-black bg-black px-4 py-1.5 text-sm text-white hover:bg-gray-700">
-                    My Tasks
-                  </span>
-                </Link>
-                <div className="ml-4 flex items-center justify-center">
-                  <ProfileMenu />
-                </div>
-              </>
-            ) : (
-              <button
-                onClick={openRecordModal}
-                className="inline-flex max-h-[35px] items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              >
-                Record a task
-              </button>
-            )}
+        <div className="sticky top-0 z-50 flex min-h-[62px] w-full justify-center border-b border-solid border-b-[#E7E9EB] bg-white">
+          <div className="flex w-full items-center justify-between px-6 md:w-[94%] md:max-w-6xl md:px-0">
+            <div className="flex flex-start items-center">
+              <Link href="/" className="flex items-center">
+                <Image
+                  className="cursor-pointer p-2"
+                  src={logo}
+                  alt="logo"
+                  width={42}
+                  height={42}
+                />
+                <p className="text-xl font-bold text-custom-black">Greadings</p>
+              </Link>
+            </div>
+            <div className="flex items-center justify-center">
+              {video && video.userId === session?.user.id ? (
+                <>
+                  <VideoMoreMenu video={video} />
+                  <ShareModal video={video} />
+                </>
+              ) : video?.sharing || video?.linkShareSeo ? (
+                <button
+                  onClick={() => {
+                    if (status !== "authenticated") {
+                      void signIn();
+                      return;
+                    }
+                    void copyTaskMutation.mutateAsync({ videoId: video.id });
+                  }}
+                  disabled={copyTaskMutation.isLoading}
+                  className="inline-flex max-h-[35px] items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50 transition-all mr-2"
+                >
+                  {copyTaskMutation.isLoading ? (
+                    <svg className="h-4 w-4 animate-spin mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                    </svg>
+                  )}
+                  Copy task
+                </button>
+              ) : null}
+              {status === "authenticated" ? (
+                <>
+                  <Link href="/tasks">
+                    <span className="hidden md:block cursor-pointer rounded border border-black bg-black px-4 py-1.5 text-sm text-white hover:bg-gray-700">
+                      My Tasks
+                    </span>
+                  </Link>
+                  <div className="ml-4 flex items-center justify-center">
+                    <ProfileMenu />
+                  </div>
+                </>
+              ) : (
+                <button
+                  onClick={openRecordModal}
+                  className="inline-flex max-h-[35px] items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                >
+                  Record a task
+                </button>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex w-full grow flex-col items-center justify-start bg-[#fbfbfb]">
@@ -219,7 +222,7 @@ const VideoList: NextPage = () => {
               </div>
             ) : null}
           </div>
-          <div className="mb-10 mt-4 w-full max-w-[1800px] px-4 md:pl-6">
+          <div className="mb-10 mt-4 w-full md:w-[94%] md:max-w-6xl px-4 md:px-0">
             <div>
               {video?.title ? (
                 <div className="mb-4 flex flex-col">
@@ -256,7 +259,8 @@ const VideoList: NextPage = () => {
                   <div className="h-10 w-10 animate-pulse overflow-hidden rounded-full bg-slate-200"></div>
                   <div className="ml-3 h-4 w-[150px] animate-pulse rounded bg-slate-200 font-medium"></div>
                 </>
-              )}
+              )
+              }
             </div>
 
             {/* AI Analysis Section */}
@@ -276,7 +280,7 @@ const VideoList: NextPage = () => {
           </div>
         </div>
       </main>
-
+      <Footer />
       <VideoRecordModal />
       <Paywall />
     </>

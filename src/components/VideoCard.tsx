@@ -21,7 +21,6 @@ export const VideoCardSkeleton = () => {
       <div className="aspect-video w-full bg-gray-200" />
       <div className="p-4 flex flex-col gap-3">
         <div className="h-4 w-3/4 rounded bg-gray-200" />
-        <div className="h-3 w-1/2 rounded bg-gray-200" />
         <div className="mt-4 flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-gray-200" />
           <div className="h-3 w-1/3 rounded bg-gray-200" />
@@ -87,9 +86,6 @@ export const VideoCard = ({
             <h3 className="line-clamp-2 text-base font-bold text-gray-900 group-hover:text-custom-dark-orange transition-colors">
               {title}
             </h3>
-            <p className="mt-1 text-xs text-gray-500" suppressHydrationWarning>
-              {getTime(createdAt)}
-            </p>
           </div>
 
           {author && (

@@ -150,8 +150,8 @@ const VideoList: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex h-screen min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
-        <div className="flex min-h-[62px] w-full items-center justify-between border-b border-solid border-b-[#E7E9EB] bg-custom-white px-6">
+      <main className="flex h-screen min-h-screen flex-col items-center justify-center">
+        <div className="flex w-full min-h-[62px] items-center justify-between border-b border-solid border-b-[#E7E9EB] bg-custom-white px-6 md:w-[94%] md:max-w-6xl md:px-0">
           <div className="flex flex-start items-center">
             <Link href="/" className="flex items-center">
               <Image
