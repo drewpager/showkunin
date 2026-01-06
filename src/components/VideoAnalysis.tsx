@@ -182,8 +182,8 @@ export default function VideoAnalysis({
   const utils = api.useContext();
   const { data: session } = useSession();
 
-  // Use saved analysis or mutation data
-  const analysis = analyzeVideoMutation.data?.analysis ?? initialAnalysis;
+  // Use saved analysis or mutation data (prioritize latest mutation result)
+  const analysis = analyzeScreencastMutation.data?.analysis ?? analyzeVideoMutation.data?.analysis ?? initialAnalysis;
   const generatedAt =
     analyzeVideoMutation.data?.generatedAt ?? initialGeneratedAt;
 
@@ -207,23 +207,38 @@ export default function VideoAnalysis({
   const handleScreencastUpdate = () => {
     if (!screencastBlob) return;
 
+    // Validate file size (10MB limit to stay under request limits after base64 encoding)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (screencastBlob.size > MAX_FILE_SIZE) {
+      alert(`Screencast is too large (${(screencastBlob.size / 1024 / 1024).toFixed(1)}MB). Please record a shorter video (under 30 seconds recommended).`);
+      return;
+    }
+
     // Convert blob to base64
     const reader = new FileReader();
     reader.readAsDataURL(screencastBlob);
+    reader.onerror = () => {
+      console.error("Failed to read screencast blob");
+    };
     reader.onloadend = async () => {
       const base64data = reader.result as string;
       // Remove the data:video/webm;base64, prefix
       const base64Video = base64data.split(',')[1] ?? '';
 
-      await analyzeScreencastMutation.mutateAsync({
-        videoId,
-        videoBlob: base64Video,
-        refinementPrompt: refinementInput.length > 0 ? refinementInput : undefined,
-      });
+      try {
+        await analyzeScreencastMutation.mutateAsync({
+          videoId,
+          videoBlob: base64Video,
+          refinementPrompt: refinementInput.length > 0 ? refinementInput : undefined,
+        });
 
-      setRefinementInput("");
-      setScreencastBlob(null);
-      await utils.video.get.invalidate({ videoId });
+        setRefinementInput("");
+        setScreencastBlob(null);
+        await utils.video.get.invalidate({ videoId });
+      } catch (error) {
+        // Error is handled by the mutation error state and displayed in the UI
+        console.error("Screencast update failed:", error);
+      }
     };
   };
 
@@ -362,7 +377,7 @@ export default function VideoAnalysis({
   };
 
   return (
-    <div className="mt-6 md:mr-5 rounded-lg border border-gray-200 bg-white">
+    <div className="mt-6 rounded-lg border border-gray-200 bg-white">
       {!analysis ? (
         <button
           onClick={() => void handleAnalyze()}
@@ -436,9 +451,17 @@ export default function VideoAnalysis({
               />
             </svg>
             <div>
-              <h3 className="text-lg font-semibold">{analyzeVideoMutation.isLoading ? "Analyzing with AI..." : "AI Automation Analysis"}</h3>
+              <h3 className="text-lg font-semibold">
+                {analyzeScreencastMutation.isLoading
+                  ? "Analyzing Screencast..."
+                  : analyzeVideoMutation.isLoading
+                    ? "Analyzing with AI..."
+                    : "AI Automation Analysis"}
+              </h3>
               <p className="text-sm text-white" suppressHydrationWarning>
-                {analyzeVideoMutation.isLoading ? "This may take a minute..." : "Generated " + formatDate(generatedAt)}
+                {analyzeScreencastMutation.isLoading || analyzeVideoMutation.isLoading
+                  ? "This may take a minute..."
+                  : "Generated " + formatDate(generatedAt)}
               </p>
             </div>
           </div>
@@ -512,12 +535,41 @@ export default function VideoAnalysis({
             <AnalysisSkeleton />
           )}
 
+          {analyzeScreencastMutation.isLoading && (
+            <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <div className="flex items-center gap-3">
+                <svg className="h-5 w-5 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <div>
+                  <h4 className="font-semibold text-blue-900">Processing Screencast Update</h4>
+                  <p className="text-sm text-blue-700">Analyzing your new recording...</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {analyzeVideoMutation.error && (
             <div className="rounded-lg bg-red-50 p-4 text-red-800">
               <h4 className="font-semibold">Error analyzing video</h4>
               <p className="mt-1 text-sm">
                 {analyzeVideoMutation.error.message}
               </p>
+            </div>
+          )}
+
+          {analyzeScreencastMutation.error && (
+            <div className="rounded-lg bg-red-50 p-4 text-red-800">
+              <h4 className="font-semibold">Error analyzing screencast</h4>
+              <p className="mt-1 text-sm">
+                {analyzeScreencastMutation.error.message}
+              </p>
+              {analyzeScreencastMutation.error.message.toLowerCase().includes('large') && (
+                <p className="mt-2 text-sm">
+                  Try recording a shorter screencast (under 30 seconds recommended).
+                </p>
+              )}
             </div>
           )}
 
@@ -611,7 +663,7 @@ export default function VideoAnalysis({
                       />
                     ),
                     blockquote: ({ node: _node, ...props }) => (
-                      <div className="my-4 rounded-r-lg border-l-4 border-gray-900 bg-gray-50 p-4 shadow-sm">
+                      <div className="my-4 rounded-r-lg border-l-4 border-custom-dark-orange bg-custom-dark-orange/10 p-4 shadow-sm">
                         <div className="italic text-gray-700" {...props} />
                       </div>
                     ),

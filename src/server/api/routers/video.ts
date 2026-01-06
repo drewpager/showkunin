@@ -882,7 +882,7 @@ export const videoRouter = createTRPCRouter({
             
             // User Refinement Block
             const userPromptBlock = input.refinementPrompt 
-              ? `\n\n---\n\n> 👤 **User Refinement**\n> ${input.refinementPrompt.replace(/\n/g, '\n> ')}\n\n`
+              ? `\n\n---\n\n> **User Refinement**\n> ${input.refinementPrompt.replace(/\n/g, '\n> ')}\n\n`
               : `\n\n---\n\n`;
 
             const separatorWithHeader = `### Refined Analysis (${timestamp})\n\n`;
@@ -1003,7 +1003,6 @@ export const videoRouter = createTRPCRouter({
                   Please provide a refined analysis based on the new screencast and the user's specific request above. 
                                 
                   Maintain this format:
-                  TITLE: [A 5-word or less descriptive title for the task]
                   ---ANALYSIS_START---
                   1. User Analysis (Markdown) - Provide the new insights, answers to follow-up questions, or changed instructions based on the new screencast. IMPORTANT: If the user requests code or if the previous code needs updating, YOU MUST PROVIDE THE FULL UPDATED CODE SNIPPETS. Do not just describe the changes; show the actual code.
                   2. "---COMPUTER_USE_PLAN---" separator
@@ -1084,7 +1083,7 @@ export const videoRouter = createTRPCRouter({
               minute: "2-digit",
             });
             
-            let userPromptBlock = `\n\n---\n\n> 👤 **User Refinement**\n`;
+            let userPromptBlock = `\n\n---\n\n> **User Refinement**\n`;
             if (input.refinementPrompt) {
                userPromptBlock += `> ${input.refinementPrompt.replace(/\n/g, '\n> ')}\n`;
             }
