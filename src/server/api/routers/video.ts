@@ -20,6 +20,113 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+const MODEL_NAME = "gemini-3-flash-preview";
+
+async function getOrCreateGeminiCache(prisma: any, s3: any, video: any) {
+  let cacheName = video.geminiCacheName;
+  let cacheValid = false;
+
+  // Check if we have a valid cache
+  if (cacheName && video.geminiCacheExpiresAt && video.geminiCacheExpiresAt > new Date()) {
+    cacheValid = true;
+  }
+
+  if (!cacheValid) {
+    // Get the video from S3
+    const getObjectCommand = new GetObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: video.userId + "/" + video.id,
+    });
+
+    const signedUrl = await getSignedUrl(s3, getObjectCommand, {
+      expiresIn: 3600,
+    });
+
+    // Download video to temporary file
+    const tempDir = os.tmpdir();
+    const tempFilePath = path.join(tempDir, `${video.id}-${Date.now()}-${Math.floor(Math.random() * 1000)}.webm`);
+    
+    const response = await axios.get(signedUrl, {
+      responseType: "arraybuffer",
+    });
+    
+    fs.writeFileSync(tempFilePath, new Uint8Array(response.data as ArrayBuffer));
+
+    // Upload to Gemini
+    const uploadResult = await genAI.files.upload({
+      file: tempFilePath,
+      config: {
+        mimeType: "video/webm",
+        displayName: video.title,
+      },
+    });
+
+    if (!uploadResult.name) {
+      if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+      throw new Error("Upload failed: No file name returned from Gemini");
+    }
+
+    // Wait for file to be processed
+    let file = await genAI.files.get({ name: uploadResult.name });
+    while (file.state === "PROCESSING") {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      file = await genAI.files.get({ name: uploadResult.name });
+    }
+
+    if (file.state === "FAILED") {
+      if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+      throw new Error("Video processing failed");
+    }
+
+    // Create Cache
+    const cache = await genAI.caches.create({
+      model: MODEL_NAME,
+      config: {
+        displayName: video.title,
+        contents: [
+          {
+            role: "user",
+            parts: [{
+              fileData: {
+                mimeType: uploadResult.mimeType,
+                fileUri: uploadResult.uri,
+              },
+            }],
+          },
+        ],
+        ttl: "3600s", // 1 Hour Default
+        tools: [
+          { urlContext: {} }
+        ]
+      },
+    });
+
+    if (cache.name) {
+      cacheName = cache.name;
+    }
+
+    // Update DB with new cache info
+    await prisma.video.update({
+      where: { id: video.id },
+      data: {
+        geminiCacheName: cacheName,
+        geminiCacheExpiresAt: new Date(Date.now() + 3500 * 1000), // Slightly less than 1 hour to be safe
+      },
+    });
+
+    // Clean up temporary file
+    try {
+      if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+    } catch (e) {
+      console.error("Failed to cleanup temp file:", e);
+    }
+    
+    // Note: We are NOT deleting the Gemini file immediately as it backs the cache.
+    // It will eventually expire via retention policy.
+  }
+
+  return cacheName;
+}
 
 export const videoRouter = createTRPCRouter({
   getAll: protectedProcedure
@@ -614,7 +721,6 @@ export const videoRouter = createTRPCRouter({
     .input(z.object({ videoId: z.string(), refinementPrompt: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const { s3, prisma, session } = ctx;
-      const MODEL_NAME = "gemini-3-flash-preview";
       
       // Get video from database
       const video = await prisma.video.findUnique({
@@ -631,107 +737,7 @@ export const videoRouter = createTRPCRouter({
       }
 
       try {
-        let cacheName = video.geminiCacheName;
-        let cacheValid = false;
-
-        // Check if we have a valid cache
-        if (cacheName && video.geminiCacheExpiresAt && video.geminiCacheExpiresAt > new Date()) {
-          cacheValid = true;
-        }
-
-        if (!cacheValid) {
-        // Get the video from S3
-        const getObjectCommand = new GetObjectCommand({
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: video.userId + "/" + video.id,
-        });
-
-        const signedUrl = await getSignedUrl(s3, getObjectCommand, {
-          expiresIn: 3600,
-        });
-
-        // Download video to temporary file
-        const tempDir = os.tmpdir();
-        const tempFilePath = path.join(tempDir, `${video.id}-${Date.now()}-${Math.floor(Math.random() * 1000)}.webm`);
-        
-        const response = await axios.get(signedUrl, {
-          responseType: "arraybuffer",
-        });
-        
-        fs.writeFileSync(tempFilePath, new Uint8Array(response.data as ArrayBuffer));
-
-        // Upload to Gemini
-        const uploadResult = await genAI.files.upload({
-          file: tempFilePath,
-          config: {
-            mimeType: "video/webm",
-            displayName: video.title,
-          },
-        });
-
-        if (!uploadResult.name) {
-            fs.unlinkSync(tempFilePath);
-          throw new Error("Upload failed: No file name returned from Gemini");
-        }
-
-        // Wait for file to be processed
-        let file = await genAI.files.get({ name: uploadResult.name });
-        while (file.state === "PROCESSING") {
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          file = await genAI.files.get({ name: uploadResult.name });
-        }
-
-        if (file.state === "FAILED") {
-            fs.unlinkSync(tempFilePath);
-          throw new Error("Video processing failed");
-        }
-
-          // Create Cache
-          const cache = await genAI.caches.create({
-            model: MODEL_NAME,
-            config: {
-              displayName: video.title,
-              contents: [
-                {
-                  role: "user",
-                  parts: [{
-                    fileData: {
-                      mimeType: uploadResult.mimeType,
-                      fileUri: uploadResult.uri,
-                    },
-                  }],
-                },
-              ],
-              ttl: "3600s", // 1 Hour Default
-              tools: [
-                { urlContext: {} }
-              ]
-            },
-          });
-
-          if (cache.name) {
-            cacheName = cache.name;
-          }
-
-          // Update DB with new cache info
-          await prisma.video.update({
-            where: { id: video.id },
-            data: {
-              geminiCacheName: cacheName,
-              geminiCacheExpiresAt: new Date(Date.now() + 3500 * 1000), // Slightly less than 1 hour to be safe
-            },
-          });
-
-          // Clean up temporary file
-          try {
-            fs.unlinkSync(tempFilePath);
-          } catch (e) {
-            console.error("Failed to cleanup temp file:", e);
-          }
-          
-          // Note: We are NOT deleting the Gemini file immediately as it backs the cache.
-          // It will eventually expire via retention policy.
-        }
+        const cacheName = await getOrCreateGeminiCache(prisma, s3, video);
 
         // Analyze the video using Cache
         const result = await genAI.models.generateContent({
@@ -923,7 +929,7 @@ export const videoRouter = createTRPCRouter({
       refinementPrompt: z.string().optional(), 
     }))
     .mutation(async ({ ctx, input }) => {
-      const { prisma, session } = ctx;
+      const { prisma, session, s3 } = ctx;
       
       // Get video from database
       const video = await prisma.video.findUnique({
@@ -940,51 +946,81 @@ export const videoRouter = createTRPCRouter({
       }
 
       try {
-        // Decode base64 video blob
+        // Decode base64 video blob to check size
         const videoBuffer = Buffer.from(input.videoBlob, 'base64');
+        const videoSizeBytes = videoBuffer.length;
+        const THRESHOLD = 15 * 1024 * 1024; // 15MB
         
-        // Write to temporary file
-        const tempDir = os.tmpdir();
-        const tempFilePath = path.join(tempDir, `screencast-${video.id}-${Date.now()}.webm`);
-        
-        fs.writeFileSync(tempFilePath, new Uint8Array(videoBuffer));
+        let videoPart;
+        let fileToDelete: string | null = null;
 
-        // Upload to Gemini (temporary)
-        const uploadResult = await genAI.files.upload({
-          file: tempFilePath,
-          config: {
-            mimeType: "video/webm",
-            displayName: `Screencast Update - ${video.title}`,
-          },
-        });
+        if (videoSizeBytes < THRESHOLD) {
+          // Use Inline Data for smaller videos (faster, skips processing wait)
+          videoPart = {
+            inlineData: {
+              mimeType: "video/webm",
+              data: input.videoBlob,
+            },
+          };
+        } else {
+          // Use File API for larger videos
+          // Write to temporary file
+          const tempDir = os.tmpdir();
+          const tempFilePath = path.join(tempDir, `screencast-${video.id}-${Date.now()}.webm`);
+          fs.writeFileSync(tempFilePath, new Uint8Array(videoBuffer));
 
-        if (!uploadResult.name) {
-          throw new Error("Upload failed: No file name returned from Gemini");
+          // Upload to Gemini
+          const uploadResult = await genAI.files.upload({
+            file: tempFilePath,
+            config: {
+              mimeType: "video/webm",
+              displayName: `Screencast Update - ${video.title}`,
+            },
+          });
+
+          if (!uploadResult.name) {
+            if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+            throw new Error("Upload failed: No file name returned from Gemini");
+          }
+
+          // Wait for file to be processed
+          let file = await genAI.files.get({ name: uploadResult.name });
+          while (file.state === "PROCESSING") {
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            file = await genAI.files.get({ name: uploadResult.name });
+          }
+
+          if (file.state === "FAILED") {
+            if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+            throw new Error("Video processing failed");
+          }
+
+          videoPart = {
+            fileData: {
+              mimeType: uploadResult.mimeType,
+              fileUri: uploadResult.uri,
+            },
+          };
+          fileToDelete = uploadResult.name;
+
+          // Clean up temporary file
+          try {
+            if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+          } catch (e) {
+            console.error("Failed to cleanup temp file:", e);
+          }
         }
 
-        // Wait for file to be processed
-        let file = await genAI.files.get({ name: uploadResult.name });
-        while (file.state === "PROCESSING") {
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          file = await genAI.files.get({ name: uploadResult.name });
-        }
-
-        if (file.state === "FAILED") {
-          throw new Error("Video processing failed");
-        }
+        // Get or create cache for the original video content
+        const cacheName = await getOrCreateGeminiCache(prisma, s3, video);
 
         // Analyze the video with refinement context
         const result = await genAI.models.generateContent({
-          model: "gemini-3-flash-preview",
+          model: MODEL_NAME,
           contents: [
             {
               parts: [
-                {
-                  fileData: {
-                    mimeType: uploadResult.mimeType,
-                    fileUri: uploadResult.uri,
-                  },
-                },
+                videoPart,
                 {
                   text: `You are an AI problem solving and automation expert analyzing a follow-up screen recording.
               
@@ -1012,9 +1048,7 @@ export const videoRouter = createTRPCRouter({
             },
           ],
           config: {
-            tools: [
-              { urlContext: {} }
-            ]
+            cachedContent: cacheName || undefined,
           }
         });
 
@@ -1039,12 +1073,9 @@ export const videoRouter = createTRPCRouter({
           analysisText = rawResponse.replace(/TITLE:.*\n?/i, "").trim();
         }
 
-        // Clean up temporary file
-        fs.unlinkSync(tempFilePath);
-
-        // Delete the file from Gemini
-        if (uploadResult.name) {
-          await genAI.files.delete({ name: uploadResult.name });
+        // Delete the file from Gemini if we used File API
+        if (fileToDelete) {
+          await genAI.files.delete({ name: fileToDelete });
         }
 
         // Append the new analysis to the old one
