@@ -10,7 +10,9 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
+  type S3,
 } from "@aws-sdk/client-s3";
+import { type PrismaClient, type Video } from "@prisma/client";
 import "~/dotenv-config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { TRPCError } from "@trpc/server";
@@ -22,7 +24,7 @@ import os from "os";
 
 const MODEL_NAME = "gemini-3-flash-preview";
 
-async function getOrCreateGeminiCache(prisma: any, s3: any, video: any) {
+async function getOrCreateGeminiCache(prisma: PrismaClient, s3: S3, video: Video) {
   let cacheName = video.geminiCacheName;
   let cacheValid = false;
 
@@ -951,7 +953,7 @@ export const videoRouter = createTRPCRouter({
         const videoSizeBytes = videoBuffer.length;
         const THRESHOLD = 15 * 1024 * 1024; // 15MB
         
-        let videoPart;
+        let videoPart: { inlineData: { mimeType: string, data: string } } | { fileData: { mimeType: string, fileUri: string } };
         let fileToDelete: string | null = null;
 
         if (videoSizeBytes < THRESHOLD) {
@@ -997,8 +999,8 @@ export const videoRouter = createTRPCRouter({
 
           videoPart = {
             fileData: {
-              mimeType: uploadResult.mimeType,
-              fileUri: uploadResult.uri,
+              mimeType: uploadResult.mimeType ?? "video/webm",
+              fileUri: uploadResult.uri!,
             },
           };
           fileToDelete = uploadResult.name;

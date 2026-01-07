@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { getTime } from "~/utils/getTime";
 
 export interface VideoCardProps {
   title: string;
@@ -86,6 +85,9 @@ export const VideoCard = ({
             <h3 className="line-clamp-2 text-base font-bold text-gray-900 group-hover:text-custom-dark-orange transition-colors">
               {title}
             </h3>
+            <p className="mt-1 text-[10px] text-gray-400">
+              {createdAt.toLocaleDateString()}
+            </p>
           </div>
 
           {author && (
