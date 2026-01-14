@@ -5,6 +5,8 @@ import { api } from "~/utils/api";
 import ReactMarkdown from "react-markdown";
 import dynamic from "next/dynamic";
 import { TrashIcon } from "@radix-ui/react-icons";
+import CredentialModal from "./CredentialModal";
+import AgentRunMonitor from "./AgentRunMonitor";
 
 // Import ScreencastRecorder dynamically with SSR disabled to prevent navigator errors
 const ScreencastRecorder = dynamic(
@@ -348,18 +350,38 @@ export default function VideoAnalysis({
   }, [analysis]);
 
   const [isAutomating, setIsAutomating] = useState(false);
+  const [showCredentialModal, setShowCredentialModal] = useState(false);
+  const [credentials, setCredentials] = useState<Array<{ key: string; value: string }>>([]);
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
 
-  const handleImplementAutomation = async () => {
+  const executeAutomationMutation = api.video.executeAutomation.useMutation();
+
+  const handleImplementAutomation = () => {
     if (!computerUsePlan) return;
+    // Show credential modal first
+    setShowCredentialModal(true);
+  };
+
+  const handleStartExecution = async () => {
     setIsAutomating(true);
+    setShowCredentialModal(false);
+
     try {
-      // Simulation of passing to Computer Use Agent
-      console.log("Executing Computer Use Plan:", computerUsePlan);
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate delay
-      alert("Automation instructions have been generated and passed to the Computer Use Agent runtime.");
+      const result = await executeAutomationMutation.mutateAsync({
+        videoId,
+        credentials: credentials.filter((c) => c.key && c.value),
+      });
+
+      setActiveRunId(result.runId);
+      // Clear credentials from memory after submission
+      setCredentials([]);
     } catch (error) {
-      console.error("Automation error:", error);
-      alert("Failed to start automation.");
+      console.error("Failed to start automation:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to start automation. Please try again."
+      );
     } finally {
       setIsAutomating(false);
     }
@@ -584,8 +606,7 @@ export default function VideoAnalysis({
                     </div>
                     <button
                       onClick={() => void handleImplementAutomation()}
-                      // disabled={isAutomating}
-                      disabled={true}
+                      disabled={isAutomating || !computerUsePlan}
                       className="flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
                     >
                       {isAutomating ? (
@@ -801,6 +822,23 @@ export default function VideoAnalysis({
         onRecordingComplete={handleScreencastRecorded}
         onCancel={handleScreencastCancel}
       />
+
+      {showCredentialModal && (
+        <CredentialModal
+          onClose={() => setShowCredentialModal(false)}
+          onSubmit={() => void handleStartExecution()}
+          credentials={credentials}
+          setCredentials={setCredentials}
+          isSubmitting={isAutomating}
+        />
+      )}
+
+      {activeRunId && (
+        <AgentRunMonitor
+          runId={activeRunId}
+          onClose={() => setActiveRunId(null)}
+        />
+      )}
     </div>
   );
 }

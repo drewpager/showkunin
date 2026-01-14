@@ -1249,4 +1249,157 @@ export const videoRouter = createTRPCRouter({
         newVideoId: newVideo.id,
       };
     }),
+
+  // Agent execution mutations
+  executeAutomation: protectedProcedure
+    .input(
+      z.object({
+        videoId: z.string(),
+        credentials: z
+          .array(
+            z.object({
+              key: z.string().min(1),
+              value: z.string().min(1),
+            })
+          )
+          .optional(),
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      // 1. Verify user owns video
+      const video = await prisma.video.findUnique({
+        where: { id: input.videoId },
+      });
+
+      if (!video || video.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Video not found or access denied",
+        });
+      }
+
+      // 2. Verify video has aiAnalysis with Computer Use Plan
+      if (!video.aiAnalysis?.includes("COMPUTER_USE_PLAN")) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Video must have a Computer Use Plan before execution",
+        });
+      }
+
+      // 3. Store encrypted credentials
+      const encryptionKey = process.env.ENCRYPTION_KEY;
+      if (!encryptionKey) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Encryption key not configured",
+        });
+      }
+
+      // Dynamic import to avoid issues with crypto in browser bundle
+      const { encrypt } = await import("~/utils/encryption");
+
+      if (input.credentials?.length) {
+        // Delete existing credentials for this video
+        await prisma.taskCredential.deleteMany({
+          where: { videoId: input.videoId },
+        });
+
+        // Store new encrypted credentials
+        await prisma.taskCredential.createMany({
+          data: input.credentials.map((cred) => ({
+            videoId: input.videoId,
+            key: cred.key,
+            value: encrypt(cred.value, encryptionKey),
+          })),
+        });
+      }
+
+      // 4. Create AgentRun record
+      const agentRun = await prisma.agentRun.create({
+        data: {
+          videoId: input.videoId,
+          userId: session.user.id,
+          status: "pending",
+        },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "agent_run_created",
+        properties: { videoId: input.videoId, runId: agentRun.id },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true, runId: agentRun.id };
+    }),
+
+  getAgentRun: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .query(async ({ ctx: { prisma, session }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+        include: {
+          logs: { orderBy: { timestamp: "desc" }, take: 100 },
+          checkpoints: { orderBy: { createdAt: "desc" } },
+        },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent run not found",
+        });
+      }
+
+      return run;
+    }),
+
+  getAgentRuns: protectedProcedure
+    .input(z.object({ videoId: z.string() }))
+    .query(async ({ ctx: { prisma, session }, input }) => {
+      return prisma.agentRun.findMany({
+        where: {
+          videoId: input.videoId,
+          userId: session.user.id,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      });
+    }),
+
+  cancelAgentRun: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Agent run not found or access denied",
+        });
+      }
+
+      if (run.status !== "pending" && run.status !== "running") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Can only cancel pending or running jobs",
+        });
+      }
+
+      await prisma.agentRun.update({
+        where: { id: input.runId },
+        data: { status: "cancelled" },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "agent_run_cancelled",
+        properties: { runId: input.runId },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true };
+    }),
 });

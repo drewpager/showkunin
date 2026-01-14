@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { type NextPage } from "next";
 import Head from "next/head";
+import dynamic from "next/dynamic";
 import { useFeatureFlagEnabled, usePostHog } from "posthog-js/react";
 import { useAtom } from "jotai";
 import { useSession, signIn } from "next-auth/react";
 import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
-import VideoRecordModal from "~/components/VideoRecordModal";
 import { CogIcon } from "@heroicons/react/24/solid";
 import { CheckIcon } from "@heroicons/react/20/solid";
 import { TvIcon } from "@heroicons/react/20/solid";
@@ -17,8 +17,11 @@ import CTA from "~/components/CTA";
 import engineeringUsecase from "~/assets/workflow-min.png";
 import supportUsecase from "~/assets/use-case.png";
 import logo from "~/assets/logo.png";
-import Paywall from "~/components/Paywall";
-import VideoModal from "~/components/VideoModal";
+
+// Dynamic imports for heavy modal components - reduces initial bundle size
+const VideoRecordModal = dynamic(() => import("~/components/VideoRecordModal"), { ssr: false });
+const Paywall = dynamic(() => import("~/components/Paywall"), { ssr: false });
+const VideoModal = dynamic(() => import("~/components/VideoModal"), { ssr: false });
 
 const Home: NextPage = () => {
   const [, setRecordOpen] = useAtom(recordVideoModalOpen);

@@ -1,5 +1,6 @@
 import { type NextPage } from "next";
 import Head from "next/head";
+import dynamic from "next/dynamic";
 
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
@@ -13,14 +14,16 @@ import ProfileMenu from "~/components/ProfileMenu";
 import { usePostHog } from "posthog-js/react";
 import { useAtom } from "jotai";
 import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
-import VideoRecordModal from "~/components/VideoRecordModal";
 import defaultProfileIcon from "~/assets/default profile icon.jpg";
-import VideoPlayer from "~/components/VideoPlayer";
-import VideoAnalysis from "~/components/VideoAnalysis";
 import logo from "~/assets/logo.png";
-import Paywall from "~/components/Paywall";
 import paywallAtom from "~/atoms/paywallAtom";
 import Footer from "~/components/Footer";
+
+// Dynamic imports for heavy components - reduces initial bundle size
+const VideoRecordModal = dynamic(() => import("~/components/VideoRecordModal"), { ssr: false });
+const VideoPlayer = dynamic(() => import("~/components/VideoPlayer"), { ssr: false });
+const VideoAnalysis = dynamic(() => import("~/components/VideoAnalysis"), { ssr: false });
+const Paywall = dynamic(() => import("~/components/Paywall"), { ssr: false });
 
 const VideoList: NextPage = () => {
   const router = useRouter();
