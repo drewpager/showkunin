@@ -17,25 +17,27 @@ datasource db {
 }
 
 model Video {
-  id                        String    @id @default(cuid())
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
+  id                        String            @id @default(cuid())
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
   title                     String
   userId                    String
-  sharing                   Boolean   @default(false)
-  delete_after_link_expires Boolean   @default(false)
+  sharing                   Boolean           @default(false)
+  delete_after_link_expires Boolean           @default(false)
   shareLinkExpiresAt        DateTime?
-  linkShareSeo              Boolean   @default(false)
-  aiAnalysis                String?   @db.Text
-  userContext               String?   @db.Text
+  linkShareSeo              Boolean           @default(false)
+  aiAnalysis                String?           @db.Text
+  userContext               String?           @db.Text
   aiAnalysisGeneratedAt     DateTime?
   solved                    Boolean?
   fileDeletedAt             DateTime?
-  thumbnailUrl              String?   @db.Text
+  thumbnailUrl              String?           @db.Text
   thumbnailUrlExpiresAt     DateTime?
   geminiCacheName           String?
   geminiCacheExpiresAt      DateTime?
-  user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentials               TaskCredential[]
+  agentRuns                 AgentRun[]
 
   @@index([userId])
 }
@@ -76,6 +78,7 @@ model User {
   accounts                 Account[]
   sessions                 Session[]
   videos                   Video[]
+  agentRuns                AgentRun[]
   stripeCustomerId         String?
   stripeSubscriptionId     String?
   stripeSubscriptionStatus StripeSubscriptionStatus?
@@ -112,4 +115,72 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Agent execution models
+model TaskCredential {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  key       String   // e.g., "GITHUB_TOKEN"
+  value     String   @db.Text // AES-256-GCM encrypted
+
+  @@index([videoId])
+  @@unique([videoId, key])
+}
+
+model AgentRun {
+  id             String            @id @default(cuid())
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  videoId        String
+  video          Video             @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         AgentRunStatus    @default(pending)
+  agentSessionId String?
+  exitCode       Int?
+  errorMessage   String?           @db.Text
+  startedAt      DateTime?
+  completedAt    DateTime?
+  logs           AgentLog[]
+  checkpoints    AgentCheckpoint[]
+
+  @@index([videoId])
+  @@index([userId])
+  @@index([status])
+}
+
+enum AgentRunStatus {
+  pending
+  running
+  completed
+  failed
+  cancelled
+}
+
+model AgentLog {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  agentRunId String
+  agentRun   AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  level      String   // info, error, debug
+  message    String   @db.Text
+  timestamp  DateTime @default(now())
+
+  @@index([agentRunId])
+  @@index([timestamp])
+}
+
+model AgentCheckpoint {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  agentRunId  String
+  agentRun    AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  s3Key       String   // S3 location of checkpoint tar.gz
+  description String?
+
+  @@index([agentRunId])
 }
