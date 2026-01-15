@@ -19,18 +19,19 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-RUN npm install
+# Copy package files (build context should be project root)
+COPY agent-runtime/package*.json ./
+RUN npm install --ignore-scripts
 
-# Copy Prisma schema from parent directory for client generation
-COPY ../prisma ./prisma/
+# Copy Prisma schema from project root for client generation
+COPY prisma/schema.prisma ./prisma/schema.prisma
 
 # Generate Prisma client
 RUN npx prisma generate
 
 # Copy source
-COPY . .
+COPY agent-runtime/src ./src
+COPY agent-runtime/tsconfig.json ./
 
 # Create non-root user for security
 RUN useradd -m agent && chown -R agent:agent /app
