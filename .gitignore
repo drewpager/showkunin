@@ -15,6 +15,7 @@
 /prisma/db.sqlite
 /prisma/db.sqlite-journal
 /backups/
+/.claude/SCRATCHPAD.md
 
 # next.js
 /.next/
