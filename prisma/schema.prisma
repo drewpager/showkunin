@@ -79,6 +79,7 @@ model User {
   sessions                 Session[]
   videos                   Video[]
   agentRuns                AgentRun[]
+  browserSessions          BrowserSession[]
   stripeCustomerId         String?
   stripeSubscriptionId     String?
   stripeSubscriptionStatus StripeSubscriptionStatus?
@@ -156,6 +157,7 @@ model AgentRun {
 enum AgentRunStatus {
   pending
   running
+  paused
   completed
   failed
   cancelled
@@ -170,6 +172,13 @@ model AgentLog {
   message    String   @db.Text
   timestamp  DateTime @default(now())
 
+  // Structured action fields for better UI display
+  actionType String?  // tool_call, tool_result, text, system, step
+  toolName   String?  // e.g., "Bash", "Edit", "Read", "Write"
+  toolInput  String?  @db.Text // JSON stringified tool input
+  toolOutput String?  @db.Text // JSON stringified tool output (truncated)
+  stepNumber Int?     // Step number in execution plan
+
   @@index([agentRunId])
   @@index([timestamp])
 }
@@ -183,4 +192,19 @@ model AgentCheckpoint {
   description String?
 
   @@index([agentRunId])
+}
+
+// Browser session persistence for OAuth flows
+model BrowserSession {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider    String   // 'google', 'github', etc.
+  sessionData String   @db.Text // AES-256-GCM encrypted cookies JSON
+  expiresAt   DateTime
+
+  @@index([userId])
+  @@unique([userId, provider])
 }

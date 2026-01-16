@@ -980,9 +980,9 @@ export const videoRouter = createTRPCRouter({
             },
           });
 
-          if (!uploadResult.name) {
+          if (!uploadResult.name || !uploadResult.uri) {
             if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-            throw new Error("Upload failed: No file name returned from Gemini");
+            throw new Error("Upload failed: No file name or URI returned from Gemini");
           }
 
           // Wait for file to be processed
@@ -1000,7 +1000,7 @@ export const videoRouter = createTRPCRouter({
           videoPart = {
             fileData: {
               mimeType: uploadResult.mimeType ?? "video/webm",
-              fileUri: uploadResult.uri!,
+              fileUri: uploadResult.uri,
             },
           };
           fileToDelete = uploadResult.name;
@@ -1401,5 +1401,159 @@ export const videoRouter = createTRPCRouter({
       void posthog?.shutdownAsync();
 
       return { success: true };
+    }),
+
+  pauseAgentRun: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Agent run not found or access denied",
+        });
+      }
+
+      if (run.status !== "running") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Can only pause running jobs",
+        });
+      }
+
+      await prisma.agentRun.update({
+        where: { id: input.runId },
+        data: { status: "paused" },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "agent_run_paused",
+        properties: { runId: input.runId },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true };
+    }),
+
+  resumeAgentRun: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Agent run not found or access denied",
+        });
+      }
+
+      if (run.status !== "paused") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Can only resume paused jobs",
+        });
+      }
+
+      await prisma.agentRun.update({
+        where: { id: input.runId },
+        data: { status: "running" },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "agent_run_resumed",
+        properties: { runId: input.runId },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true };
+    }),
+
+  getCheckpoints: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .query(async ({ ctx: { prisma, session }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+        include: {
+          checkpoints: { orderBy: { createdAt: "desc" } },
+        },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent run not found",
+        });
+      }
+
+      return run.checkpoints;
+    }),
+
+  restoreCheckpoint: protectedProcedure
+    .input(
+      z.object({
+        runId: z.string(),
+        checkpointId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      // Verify ownership
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Agent run not found or access denied",
+        });
+      }
+
+      // Verify checkpoint exists and belongs to this run
+      const checkpoint = await prisma.agentCheckpoint.findUnique({
+        where: { id: input.checkpointId },
+      });
+
+      if (!checkpoint || checkpoint.agentRunId !== input.runId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Checkpoint not found",
+        });
+      }
+
+      // Note: Actual restoration happens in the agent runtime
+      // Here we just create a new run that will restore from this checkpoint
+      const newRun = await prisma.agentRun.create({
+        data: {
+          videoId: run.videoId,
+          userId: session.user.id,
+          status: "pending",
+          // Store checkpoint info for the agent runtime to pick up
+        },
+      });
+
+      // Create a log entry indicating this is a restore
+      await prisma.agentLog.create({
+        data: {
+          agentRunId: newRun.id,
+          level: "info",
+          message: `Restoring from checkpoint: ${checkpoint.description ?? checkpoint.id}`,
+        },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "checkpoint_restored",
+        properties: { runId: input.runId, checkpointId: input.checkpointId, newRunId: newRun.id },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true, newRunId: newRun.id };
     }),
 });

@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { TrashIcon } from "@radix-ui/react-icons";
 import CredentialModal from "./CredentialModal";
 import AgentRunMonitor from "./AgentRunMonitor";
+import { inferCredentials, getCredentialPromptMessage } from "~/utils/credential-inference";
 
 // Import ScreencastRecorder dynamically with SSR disabled to prevent navigator errors
 const ScreencastRecorder = dynamic(
@@ -355,6 +356,16 @@ export default function VideoAnalysis({
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
 
   const executeAutomationMutation = api.video.executeAutomation.useMutation();
+
+  // Infer suggested credentials from the analysis
+  const suggestedCredentials = useMemo(
+    () => inferCredentials(analysis ?? null),
+    [analysis]
+  );
+  const credentialPromptMessage = useMemo(
+    () => getCredentialPromptMessage(isOwner, suggestedCredentials),
+    [isOwner, suggestedCredentials]
+  );
 
   const handleImplementAutomation = () => {
     if (!computerUsePlan) return;
@@ -830,6 +841,9 @@ export default function VideoAnalysis({
           credentials={credentials}
           setCredentials={setCredentials}
           isSubmitting={isAutomating}
+          suggestedCredentials={suggestedCredentials}
+          promptMessage={credentialPromptMessage}
+          isSharedTask={!isOwner}
         />
       )}
 

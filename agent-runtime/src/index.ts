@@ -1,3 +1,4 @@
+import "dotenv/config"; // Load .env from current directory or parent
 import { PrismaClient } from "@prisma/client";
 import { executeAgentRun } from "./agent-executor.js";
 
@@ -70,14 +71,41 @@ async function pollForPendingRuns(): Promise<void> {
 }
 
 /**
- * Check if a run has been cancelled
+ * Check if a run has been cancelled or paused
+ * Returns: 'continue' | 'cancelled' | 'paused'
  */
-async function checkForCancellation(runId: string): Promise<boolean> {
+async function checkRunStatus(runId: string): Promise<'continue' | 'cancelled' | 'paused'> {
   const run = await prisma.agentRun.findUnique({
     where: { id: runId },
     select: { status: true },
   });
-  return run?.status === "cancelled";
+  if (run?.status === "cancelled") return 'cancelled';
+  if (run?.status === "paused") return 'paused';
+  return 'continue';
+}
+
+/**
+ * Check if a run has been cancelled (for backwards compatibility)
+ */
+async function checkForCancellation(runId: string): Promise<boolean> {
+  const status = await checkRunStatus(runId);
+  return status === 'cancelled';
+}
+
+/**
+ * Wait while a run is paused, checking periodically
+ * Returns true if run resumed, false if cancelled during pause
+ */
+async function waitWhilePaused(runId: string): Promise<boolean> {
+  const PAUSE_CHECK_INTERVAL = 2000; // Check every 2 seconds
+
+  while (true) {
+    const status = await checkRunStatus(runId);
+    if (status === 'cancelled') return false;
+    if (status === 'continue') return true;
+    // Still paused, wait and check again
+    await new Promise(resolve => setTimeout(resolve, PAUSE_CHECK_INTERVAL));
+  }
 }
 
 /**
@@ -124,4 +152,4 @@ main().catch((error) => {
   process.exit(1);
 });
 
-export { checkForCancellation };
+export { checkForCancellation, checkRunStatus, waitWhilePaused };
