@@ -2,22 +2,22 @@
 
 ## Critical (High Impact)
 
-- [x] **1. Compress large assets** - COMPLETED
-- [x] **2. Remove `unoptimized` from static images** - COMPLETED
-- [x] **3. Increase React Query `staleTime`** - COMPLETED
+- [ ] **1. Compress large assets**
+- [ ] **2. Remove `unoptimized` from static images**
+- [ ] **3. Increase React Query `staleTime`**
 
 ## Medium Impact
 
-- [x] **4. Dynamic import heavy modal components** - COMPLETED
-- [x] **5. Dynamic import Recorder component** - COMPLETED (included in VideoRecordModal)
-- [x] **6. Tree-shake lucide-react icons** - ALREADY OPTIMIZED (using named imports)
+- [ ] **4. Dynamic import heavy modal components**
+- [ ] **5. Dynamic import Recorder component** 
+- [ ] **6. Tree-shake lucide-react icons** - ALREADY OPTIMIZED (using named imports)
 - [ ] **7. Enable SSR prefetching for key pages** - DEFERRED (requires architectural changes; existing caching is sufficient)
 
 ## Low Impact / Quick Wins
 
-- [x] **8. Add `display: 'swap'` to font config** - COMPLETED
-- [x] **9. Memoize VideoCard component** - COMPLETED
-- [x] **10. Add preconnect hints** - COMPLETED
+- [ ] **8. Add `display: 'swap'` to font config** - COMPLETED
+- [ ] **9. Memoize VideoCard component** - COMPLETED
+- [ ] **10. Add preconnect hints** - COMPLETED
 
 ---
 
