@@ -1556,4 +1556,97 @@ export const videoRouter = createTRPCRouter({
 
       return { success: true, newRunId: newRun.id };
     }),
+
+  // Browserbase Live View endpoints
+  getLiveViewUrl: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .query(async ({ ctx: { prisma, session }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+        select: {
+          userId: true,
+          liveViewUrl: true,
+          browserbaseSessionId: true,
+          status: true,
+        },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent run not found",
+        });
+      }
+
+      return {
+        liveViewUrl: run.liveViewUrl,
+        browserbaseSessionId: run.browserbaseSessionId,
+        isActive: run.status === "running" || run.status === "paused",
+      };
+    }),
+
+  getBrowserbaseContexts: protectedProcedure
+    .query(async ({ ctx: { prisma, session } }) => {
+      const contexts = await prisma.browserbaseContext.findMany({
+        where: { userId: session.user.id },
+        orderBy: { lastUsedAt: "desc" },
+      });
+
+      return contexts.map((ctx) => ({
+        id: ctx.id,
+        provider: ctx.provider,
+        lastUsedAt: ctx.lastUsedAt,
+      }));
+    }),
+
+  resetBrowserbaseContext: protectedProcedure
+    .input(z.object({ provider: z.string() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const existing = await prisma.browserbaseContext.findUnique({
+        where: {
+          userId_provider: {
+            userId: session.user.id,
+            provider: input.provider,
+          },
+        },
+      });
+
+      if (!existing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Browser context not found for this provider",
+        });
+      }
+
+      // Delete context at Browserbase (we don't have direct SDK access here,
+      // so we just delete from our DB - the context will be orphaned at BB but that's OK)
+      await prisma.browserbaseContext.delete({
+        where: { id: existing.id },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "browserbase_context_reset",
+        properties: { provider: input.provider },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true, provider: input.provider };
+    }),
+
+  resetAllBrowserbaseContexts: protectedProcedure
+    .mutation(async ({ ctx: { prisma, session, posthog } }) => {
+      const result = await prisma.browserbaseContext.deleteMany({
+        where: { userId: session.user.id },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "browserbase_contexts_reset_all",
+        properties: { count: result.count },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true, deletedCount: result.count };
+    }),
 });

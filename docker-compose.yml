@@ -5,8 +5,8 @@ services:
   # Polls database for pending runs and executes via Claude Agent SDK
   agent-runtime:
     build:
-      context: ./agent-runtime
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: agent-runtime/Dockerfile
     environment:
       DATABASE_URL: ${DATABASE_URL}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
@@ -15,6 +15,11 @@ services:
       AWS_KEY_ID: ${AWS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_REGION: ${AWS_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      # MCP Browser Configuration
+      BROWSER_MCP: ${BROWSER_MCP:-stagehand}
+      BROWSERBASE_API_KEY: ${BROWSERBASE_API_KEY}
+      BROWSERBASE_PROJECT_ID: ${BROWSERBASE_PROJECT_ID}
     volumes:
       - agent-workspace:/app/workspace
     restart: unless-stopped

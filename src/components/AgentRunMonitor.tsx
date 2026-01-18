@@ -6,6 +6,67 @@ interface AgentRunMonitorProps {
   onClose: () => void;
 }
 
+interface LiveViewModalProps {
+  url: string;
+  onClose: () => void;
+}
+
+function LiveViewModal({ url, onClose }: LiveViewModalProps) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
+      <div className="flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+        {/* Header */}
+        <div className="flex shrink-0 items-center justify-between border-b bg-gray-50 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
+              <svg className="h-4 w-4 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Live Browser View</h3>
+              <p className="text-xs text-gray-500">Watch and interact with the browser session</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              Open in New Tab
+            </a>
+            <button
+              onClick={onClose}
+              className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Iframe */}
+        <div className="flex-1 bg-gray-900">
+          <iframe
+            src={url}
+            className="h-full w-full border-0"
+            allow="clipboard-read; clipboard-write"
+            title="Browserbase Live View"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   running: "bg-blue-100 text-blue-800",
@@ -200,6 +261,7 @@ export default function AgentRunMonitor({
   onClose,
 }: AgentRunMonitorProps) {
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const [showLiveView, setShowLiveView] = useState(false);
 
   const { data: run, isLoading } = api.video.getAgentRun.useQuery(
     { runId },
@@ -265,6 +327,10 @@ export default function AgentRunMonitor({
   const isPaused = run.status === "paused";
   const isPending = run.status === "pending";
   const isActive = isRunning || isPaused || isPending;
+
+  // Live view is available when we have a URL and the run is active
+  const liveViewUrl = (run as { liveViewUrl?: string | null }).liveViewUrl;
+  const hasLiveView = Boolean(liveViewUrl && isActive);
 
   const sortedLogs = [...run.logs].sort(
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
@@ -341,6 +407,51 @@ export default function AgentRunMonitor({
             )}
           </div>
         </div>
+
+        {/* Live View Banner */}
+        {hasLiveView && (
+          <div className="shrink-0 border-b bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
+                  <svg className="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Live Browser View Available</h4>
+                  <p className="text-sm text-gray-600">
+                    Need to log in? Watch or control the browser directly to complete authentication.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowLiveView(true)}
+                  className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                  </svg>
+                  Open Live View
+                </button>
+                <a
+                  href={liveViewUrl ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 py-2 text-sm text-purple-700 hover:bg-purple-50"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                  New Tab
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Actions Stream */}
         <div className="min-h-0 flex-1 overflow-y-auto bg-gray-100 p-4">
@@ -485,6 +596,11 @@ export default function AgentRunMonitor({
           </div>
         </div>
       </div>
+
+      {/* Live View Modal */}
+      {showLiveView && liveViewUrl && (
+        <LiveViewModal url={liveViewUrl} onClose={() => setShowLiveView(false)} />
+      )}
     </div>
   );
 }

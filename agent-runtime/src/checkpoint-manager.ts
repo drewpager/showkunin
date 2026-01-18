@@ -29,6 +29,7 @@ const S3_BUCKET = process.env.S3_BUCKET ?? "showkunin-checkpoints";
 
 /**
  * Create a checkpoint of the current workspace state
+ * Returns empty string if workspace is empty (nothing to checkpoint)
  */
 export async function createCheckpoint(
   prisma: PrismaClient,
@@ -36,6 +37,19 @@ export async function createCheckpoint(
   description?: string
 ): Promise<string> {
   const workspacePath = join(WORKSPACE_BASE, runId);
+
+  // Check if workspace has any files before attempting checkpoint
+  try {
+    const files = await readdir(workspacePath);
+    if (files.length === 0) {
+      // Workspace is empty, skip checkpoint silently
+      return "";
+    }
+  } catch {
+    // Workspace directory doesn't exist, skip silently
+    return "";
+  }
+
   const checkpointId = `checkpoint-${Date.now()}`;
   const s3Key = `checkpoints/${runId}/${checkpointId}.tar.gz`;
   const tempFile = `/tmp/${checkpointId}.tar.gz`;
@@ -135,12 +149,7 @@ export async function cleanupWorkspace(runId: string): Promise<void> {
  * Create a tar.gz archive of a directory
  */
 async function createTarGz(sourcePath: string, destPath: string): Promise<void> {
-  // Get list of files in the source directory
   const files = await readdir(sourcePath);
-
-  if (files.length === 0) {
-    throw new Error("Workspace is empty, nothing to checkpoint");
-  }
 
   await tar.create(
     {

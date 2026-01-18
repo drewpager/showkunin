@@ -16,7 +16,17 @@ import {
   formatClassification,
   type TaskClassification,
 } from "./task-classifier.js";
-import { getMcpServersForTask, formatMcpServers } from "./mcp-config.js";
+import {
+  getMcpServersForTask,
+  formatMcpServers,
+  type StagehandContextOptions,
+} from "./mcp-config.js";
+import {
+  getOrCreateContext,
+  createSessionWithContext,
+  detectAuthProvider,
+  type SessionWithLiveView,
+} from "./browserbase-manager.js";
 
 interface AgentRunWithVideo extends AgentRun {
   video: Video;
@@ -67,7 +77,6 @@ export async function executeAgentRun(
 
   // 1b. Classify task to determine required MCP servers
   const classification = classifyTask(plan, run.video.aiAnalysis);
-  const mcpServers = getMcpServersForTask(classification);
 
   await streamLog(
     prisma,
@@ -75,6 +84,72 @@ export async function executeAgentRun(
     "info",
     `Task classification: ${formatClassification(classification)}`
   );
+
+  // 1c. Set up Browserbase context for browser tasks using stagehand
+  let stagehandOptions: StagehandContextOptions | undefined;
+  let sessionInfo: SessionWithLiveView | undefined;
+
+  const usesStagehand = classification.suggestedMcpServers.includes("stagehand");
+
+  if (usesStagehand) {
+    try {
+      // Detect auth provider from URLs in the task
+      const provider = detectAuthProvider(classification.browserUrls);
+
+      await streamLog(
+        prisma,
+        run.id,
+        "info",
+        `Setting up Browserbase context for provider: ${provider}`
+      );
+
+      // Get or create a persistent context for this user/provider
+      const contextId = await getOrCreateContext(prisma, run.userId, provider);
+
+      // Create a session with the context (enables Live View)
+      sessionInfo = await createSessionWithContext(contextId);
+
+      stagehandOptions = {
+        contextId,
+        sessionId: sessionInfo.sessionId,
+      };
+
+      // Store session info in the AgentRun record
+      await prisma.agentRun.update({
+        where: { id: run.id },
+        data: {
+          browserbaseSessionId: sessionInfo.sessionId,
+          liveViewUrl: sessionInfo.liveViewUrl,
+        },
+      });
+
+      await streamLog(
+        prisma,
+        run.id,
+        "info",
+        `Browserbase session created with Live View support`
+      );
+
+      await streamLog(
+        prisma,
+        run.id,
+        "debug",
+        `Live View URL: ${sessionInfo.liveViewUrl}`
+      );
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      await streamLog(
+        prisma,
+        run.id,
+        "error",
+        `Failed to set up Browserbase context: ${errorMsg}`
+      );
+      // Continue without context - will use default stagehand config
+    }
+  }
+
+  // Build MCP servers config with optional stagehand context
+  const mcpServers = getMcpServersForTask(classification, stagehandOptions);
 
   if (Object.keys(mcpServers).length > 0) {
     await streamLog(
@@ -138,7 +213,8 @@ export async function executeAgentRun(
       options: {
         tools: { type: "preset", preset: "claude_code" }, // Enable all tools including MCP
         mcpServers, // Dynamic MCP servers based on task classification
-        permissionMode: "acceptEdits", // Allow file edits without prompts
+        permissionMode: "bypassPermissions", // Allow all tools without prompts (for automated execution)
+        allowDangerouslySkipPermissions: true, // Required safety flag for bypassPermissions
         systemPrompt: buildSystemPrompt(run.video, classification, decryptedCredentials),
         cwd: workspacePath, // Set working directory to workspace
         env: process.env as Record<string, string>, // Pass environment with credentials

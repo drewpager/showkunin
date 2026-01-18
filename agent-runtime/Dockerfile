@@ -1,6 +1,6 @@
 FROM node:20-slim
 
-# Install dependencies for potential browser automation
+# Install dependencies for browser automation (Playwright/Chromium)
 RUN apt-get update && apt-get install -y \
     chromium \
     fonts-liberation \
@@ -15,7 +15,14 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     openssl \
     ca-certificates \
+    xvfb \
     && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables for Playwright to use system Chromium
+ENV DOCKER=true
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV DISPLAY=:99
 
 WORKDIR /app
 
@@ -42,4 +49,6 @@ RUN mkdir -p /app/workspace
 
 ENV NODE_ENV=production
 
-CMD ["npm", "start"]
+# Start xvfb virtual display and then run the application
+# Using exec ensures signals (SIGTERM, etc.) reach npm for graceful shutdown
+CMD ["sh", "-c", "Xvfb :99 -screen 0 1920x1080x24 & exec npm start"]

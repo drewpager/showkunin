@@ -80,6 +80,7 @@ model User {
   videos                   Video[]
   agentRuns                AgentRun[]
   browserSessions          BrowserSession[]
+  browserbaseContexts      BrowserbaseContext[]
   stripeCustomerId         String?
   stripeSubscriptionId     String?
   stripeSubscriptionStatus StripeSubscriptionStatus?
@@ -133,21 +134,23 @@ model TaskCredential {
 }
 
 model AgentRun {
-  id             String            @id @default(cuid())
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  videoId        String
-  video          Video             @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status         AgentRunStatus    @default(pending)
-  agentSessionId String?
-  exitCode       Int?
-  errorMessage   String?           @db.Text
-  startedAt      DateTime?
-  completedAt    DateTime?
-  logs           AgentLog[]
-  checkpoints    AgentCheckpoint[]
+  id                   String            @id @default(cuid())
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  videoId              String
+  video                Video             @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  userId               String
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status               AgentRunStatus    @default(pending)
+  agentSessionId       String?
+  browserbaseSessionId String?
+  liveViewUrl          String?           @db.Text
+  exitCode             Int?
+  errorMessage         String?           @db.Text
+  startedAt            DateTime?
+  completedAt          DateTime?
+  logs                 AgentLog[]
+  checkpoints          AgentCheckpoint[]
 
   @@index([videoId])
   @@index([userId])
@@ -204,6 +207,21 @@ model BrowserSession {
   provider    String   // 'google', 'github', etc.
   sessionData String   @db.Text // AES-256-GCM encrypted cookies JSON
   expiresAt   DateTime
+
+  @@index([userId])
+  @@unique([userId, provider])
+}
+
+// Browserbase context persistence for session reuse
+model BrowserbaseContext {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider   String   // 'google', 'github', 'generic'
+  contextId  String   // Browserbase context ID
+  lastUsedAt DateTime @default(now())
 
   @@index([userId])
   @@unique([userId, provider])

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { useAtom } from "jotai";
 import { api } from "~/utils/api";
 import ReactMarkdown from "react-markdown";
 import dynamic from "next/dynamic";
@@ -8,6 +9,7 @@ import { TrashIcon } from "@radix-ui/react-icons";
 import CredentialModal from "./CredentialModal";
 import AgentRunMonitor from "./AgentRunMonitor";
 import { inferCredentials, getCredentialPromptMessage } from "~/utils/credential-inference";
+import paywallAtom from "~/atoms/paywallAtom";
 
 // Import ScreencastRecorder dynamically with SSR disabled to prevent navigator errors
 const ScreencastRecorder = dynamic(
@@ -184,6 +186,8 @@ export default function VideoAnalysis({
   const setSolvedMutation = api.video.setSolved.useMutation();
   const utils = api.useContext();
   const { data: session } = useSession();
+  const [, setPaywallOpen] = useAtom(paywallAtom);
+  const hasActiveSubscription = session?.user?.stripeSubscriptionStatus === "active";
 
   // Use saved analysis or mutation data (prioritize latest mutation result)
   const analysis = analyzeScreencastMutation.data?.analysis ?? analyzeVideoMutation.data?.analysis ?? initialAnalysis;
@@ -267,6 +271,20 @@ export default function VideoAnalysis({
   };
 
   const router = useRouter();
+
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
+
+  // Disable body scroll when agent execution modal is open
+  useEffect(() => {
+    if (activeRunId) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeRunId]);
 
   useEffect(() => {
     if (
@@ -353,7 +371,6 @@ export default function VideoAnalysis({
   const [isAutomating, setIsAutomating] = useState(false);
   const [showCredentialModal, setShowCredentialModal] = useState(false);
   const [credentials, setCredentials] = useState<Array<{ key: string; value: string }>>([]);
-  const [activeRunId, setActiveRunId] = useState<string | null>(null);
 
   const executeAutomationMutation = api.video.executeAutomation.useMutation();
 
@@ -612,11 +629,21 @@ export default function VideoAnalysis({
                 <div className="mb-6 rounded-lg bg-gray-50 p-4 border border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-md font-bold text-gray-900">Implementation Coming Soon to Pro Plans!</h3>
+                      <h3 className="text-md font-bold text-gray-900">
+                        {hasActiveSubscription
+                          ? "Automate Your Goal Agentically"
+                          : "Implement Your Goal Agentically By Upgrading"}
+                      </h3>
                       <p className="text-sm text-gray-700">Detailed instructions generated for Computer Use Model ({computerUsePlan.steps?.length || 0} steps).</p>
                     </div>
                     <button
-                      onClick={() => void handleImplementAutomation()}
+                      onClick={() => {
+                        if (hasActiveSubscription) {
+                          void handleImplementAutomation();
+                        } else {
+                          setPaywallOpen(true);
+                        }
+                      }}
                       disabled={isAutomating || !computerUsePlan}
                       className="flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
                     >
@@ -634,7 +661,7 @@ export default function VideoAnalysis({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span>Implement Automation</span>
+                          <span>{hasActiveSubscription ? "Implement Automation" : "Upgrade to Automate"}</span>
                         </>
                       )}
                     </button>
