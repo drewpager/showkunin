@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import { TrashIcon } from "@radix-ui/react-icons";
 import CredentialModal from "./CredentialModal";
 import AgentRunMonitor from "./AgentRunMonitor";
+import PreAuthModal from "./PreAuthModal";
 import { inferCredentials, getCredentialPromptMessage } from "~/utils/credential-inference";
 import paywallAtom from "~/atoms/paywallAtom";
 
@@ -26,14 +27,27 @@ interface VideoAnalysisProps {
   isOwner?: boolean;
 }
 
-interface ComputerUseStep {
+interface SemanticStep {
   action?: string;
+  target?: string;
+  how_to_find?: string;
+  value?: string;
+  expected_result?: string;
+  fallback?: string;
+  // Legacy fields for backward compatibility
   coordinate?: { x: number; y: number };
-  [key: string]: unknown;
+  text?: string;
+  description?: string;
 }
 
 interface ComputerUsePlan {
-  steps?: ComputerUseStep[];
+  // New semantic format
+  goal?: string;
+  starting_url?: string;
+  steps?: SemanticStep[];
+  success_criteria?: string[];
+  // Legacy format
+  task_description?: string;
   [key: string]: unknown;
 }
 
@@ -372,7 +386,20 @@ export default function VideoAnalysis({
   const [showCredentialModal, setShowCredentialModal] = useState(false);
   const [credentials, setCredentials] = useState<Array<{ key: string; value: string }>>([]);
 
+  // Pre-auth flow state
+  const [showPreAuthModal, setShowPreAuthModal] = useState(false);
+  const [preAuthProvider, setPreAuthProvider] = useState<string | null>(null);
+  const [preAuthLiveViewUrl, setPreAuthLiveViewUrl] = useState<string | null>(null);
+  const [preAuthSessionId, setPreAuthSessionId] = useState<string | null>(null);
+  const [isStartingPreAuth, setIsStartingPreAuth] = useState(false);
+
   const executeAutomationMutation = api.video.executeAutomation.useMutation();
+  const checkAuthRequirementQuery = api.video.checkAuthRequirement.useQuery(
+    { videoId },
+    { enabled: false } // Don't run automatically
+  );
+  const startPreAuthMutation = api.video.startPreAuthSession.useMutation();
+  const completePreAuthMutation = api.video.completePreAuth.useMutation();
 
   // Infer suggested credentials from the analysis
   const suggestedCredentials = useMemo(
@@ -384,10 +411,77 @@ export default function VideoAnalysis({
     [isOwner, suggestedCredentials]
   );
 
-  const handleImplementAutomation = () => {
+  const handleImplementAutomation = async () => {
     if (!computerUsePlan) return;
-    // Show credential modal first
+
+    // Check if auth is required
+    try {
+      const authCheck = await checkAuthRequirementQuery.refetch();
+      const authData = authCheck.data;
+
+      if (authData?.authRequired && !authData.hasValidSession) {
+        // Need to pre-authenticate
+        setPreAuthProvider(authData.provider);
+        setIsStartingPreAuth(true);
+        setShowPreAuthModal(true);
+
+        try {
+          const result = await startPreAuthMutation.mutateAsync({
+            provider: authData.provider ?? "generic",
+          });
+          setPreAuthLiveViewUrl(result.liveViewUrl);
+          setPreAuthSessionId(result.sessionId);
+        } catch (error) {
+          console.error("Failed to start pre-auth session:", error);
+          alert("Failed to start authentication session. Please try again.");
+          setShowPreAuthModal(false);
+        } finally {
+          setIsStartingPreAuth(false);
+        }
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking auth requirement:", error);
+      // Continue to credential modal even if check fails
+    }
+
+    // Show credential modal
     setShowCredentialModal(true);
+  };
+
+  const handlePreAuthComplete = async () => {
+    if (preAuthProvider && preAuthSessionId) {
+      try {
+        await completePreAuthMutation.mutateAsync({
+          provider: preAuthProvider,
+          sessionId: preAuthSessionId,
+        });
+      } catch (error) {
+        console.error("Error completing pre-auth:", error);
+      }
+    }
+    setShowPreAuthModal(false);
+    setPreAuthProvider(null);
+    setPreAuthLiveViewUrl(null);
+    setPreAuthSessionId(null);
+    // Now show credential modal
+    setShowCredentialModal(true);
+  };
+
+  const handlePreAuthSkip = () => {
+    setShowPreAuthModal(false);
+    setPreAuthProvider(null);
+    setPreAuthLiveViewUrl(null);
+    setPreAuthSessionId(null);
+    // Show credential modal anyway
+    setShowCredentialModal(true);
+  };
+
+  const handlePreAuthClose = () => {
+    setShowPreAuthModal(false);
+    setPreAuthProvider(null);
+    setPreAuthLiveViewUrl(null);
+    setPreAuthSessionId(null);
   };
 
   const handleStartExecution = async () => {
@@ -634,7 +728,15 @@ export default function VideoAnalysis({
                           ? "Automate Your Goal Agentically"
                           : "Implement Your Goal Agentically By Upgrading"}
                       </h3>
-                      <p className="text-sm text-gray-700">Detailed instructions generated for Computer Use Model ({computerUsePlan.steps?.length || 0} steps).</p>
+                      <p className="text-sm text-gray-700">
+                        {computerUsePlan.goal
+                          ? `Goal: ${computerUsePlan.goal.substring(0, 80)}${computerUsePlan.goal.length > 80 ? '...' : ''}`
+                          : computerUsePlan.task_description
+                            ? `Task: ${computerUsePlan.task_description.substring(0, 80)}${computerUsePlan.task_description.length > 80 ? '...' : ''}`
+                            : `Semantic automation plan generated`
+                        }
+                        {' '}({computerUsePlan.steps?.length || 0} steps)
+                      </p>
                     </div>
                     <button
                       onClick={() => {
@@ -860,6 +962,17 @@ export default function VideoAnalysis({
         onRecordingComplete={handleScreencastRecorded}
         onCancel={handleScreencastCancel}
       />
+
+      {showPreAuthModal && (
+        <PreAuthModal
+          provider={preAuthProvider ?? "generic"}
+          liveViewUrl={preAuthLiveViewUrl}
+          isLoading={isStartingPreAuth}
+          onComplete={() => void handlePreAuthComplete()}
+          onSkip={handlePreAuthSkip}
+          onClose={handlePreAuthClose}
+        />
+      )}
 
       {showCredentialModal && (
         <CredentialModal

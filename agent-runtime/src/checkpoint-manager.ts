@@ -5,13 +5,14 @@ import { mkdir, rm, readdir } from "fs/promises";
 import { pipeline } from "stream/promises";
 import * as tar from "tar";
 import { join } from "path";
-import { streamLog } from "./log-streamer.js";
+import { streamLog } from "./log-streamer";
 
 // Use environment variable for workspace path, with fallback for local development
+// Priority: WORKSPACE_BASE env var > platform-specific default > /tmp fallback
 const WORKSPACE_BASE = process.env.WORKSPACE_BASE ?? (
   process.platform === "darwin" || process.platform === "win32"
     ? join(process.cwd(), "workspace")  // Local dev: use ./workspace
-    : "/app/workspace"                   // Docker: use /app/workspace
+    : "/tmp/showkunin-workspace"        // Docker/Linux: use /tmp for reliability
 );
 
 // Initialize S3 client

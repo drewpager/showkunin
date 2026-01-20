@@ -1,6 +1,6 @@
 import "dotenv/config"; // Load .env from current directory or parent
 import { PrismaClient } from "@prisma/client";
-import { executeAgentRun } from "./agent-executor.js";
+import { executeAgentRun, validateSuccessCriteria } from "./agent-executor";
 
 const prisma = new PrismaClient();
 const POLL_INTERVAL_MS = 10_000; // 10 seconds
@@ -41,15 +41,33 @@ async function pollForPendingRuns(): Promise<void> {
     try {
       await executeAgentRun(prisma, pendingRun);
 
+      // Validate success before marking as completed
+      const validation = await validateSuccessCriteria(prisma, pendingRun.id);
+
+      if (!validation.valid) {
+        console.log(`[Polling] Run ${pendingRun.id} failed validation: ${validation.reason}`);
+        await prisma.agentRun.update({
+          where: { id: pendingRun.id },
+          data: {
+            status: "failed",
+            errorMessage: `Validation failed: ${validation.reason}`,
+            completedAt: new Date(),
+            successValidated: false,
+          },
+        });
+        return;
+      }
+
       await prisma.agentRun.update({
         where: { id: pendingRun.id },
         data: {
           status: "completed",
           completedAt: new Date(),
+          successValidated: true,
         },
       });
 
-      console.log(`[Polling] Run ${pendingRun.id} completed successfully`);
+      console.log(`[Polling] Run ${pendingRun.id} completed successfully (validated)`);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

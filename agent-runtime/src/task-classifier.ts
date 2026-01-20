@@ -188,11 +188,15 @@ export function classifyTask(
   }
 
   // Suggest MCP servers based on requirements
+  // Use Stagehand (Browserbase) for browser tasks - provides cloud browser with Live View
+  // Note: Playwright fallback disabled - it spawns a local browser which bypasses Browserbase
   const suggestedMcpServers: string[] = [];
   if (requiresBrowser) {
-    // Use environment variable to select browser MCP, default to playwright
-    const browserMcp = process.env.BROWSER_MCP ?? "playwright";
-    suggestedMcpServers.push(browserMcp);
+    // Stagehand: AI-powered browser automation via Browserbase cloud
+    // This enables Live View and persistent auth contexts
+    suggestedMcpServers.push("stagehand");
+    // Playwright fallback DISABLED - uncomment below to re-enable local browser fallback
+    // suggestedMcpServers.push("playwright");
   }
 
   return {

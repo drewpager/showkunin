@@ -152,6 +152,14 @@ model AgentRun {
   logs                 AgentLog[]
   checkpoints          AgentCheckpoint[]
 
+  // Timeout and progress tracking fields
+  maxDurationMs        Int?              @default(300000)  // 5 min default
+  lastProgressAt       DateTime?                           // Last meaningful progress
+  progressStallCount   Int               @default(0)       // Consecutive stalls
+  successValidated     Boolean           @default(false)   // Verified completion
+  authRequired         String?                             // Provider needing pre-auth
+  authCompleted        Boolean           @default(false)   // Pre-auth done
+
   @@index([videoId])
   @@index([userId])
   @@index([status])
@@ -225,4 +233,18 @@ model BrowserbaseContext {
 
   @@index([userId])
   @@unique([userId, provider])
+}
+
+// Browserbase active session tracking for rate limit management
+model BrowserbaseActiveSession {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  sessionId   String   @unique
+  userId      String
+  agentRunId  String?
+  status      String   @default("active")  // active, closed, stale
+  lastPingAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
 }

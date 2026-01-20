@@ -4,7 +4,7 @@
  * based on task classification.
  */
 
-import type { TaskClassification } from "./task-classifier.js";
+import type { TaskClassification } from "./task-classifier";
 
 // Type from Claude Agent SDK
 interface McpStdioServerConfig {
@@ -16,10 +16,10 @@ interface McpStdioServerConfig {
 
 type McpServerConfig = McpStdioServerConfig;
 
-// Options for building Stagehand/Browserbase config with context
+// Options for building Stagehand/Browserbase config with context persistence
 export interface StagehandContextOptions {
+  // Browserbase context ID for cookie/auth persistence across sessions
   contextId?: string;
-  sessionId?: string;
 }
 
 /**
@@ -32,10 +32,11 @@ const isDocker = process.env.DOCKER === "true" || process.platform === "linux";
  */
 export const MCP_SERVERS: Record<string, McpStdioServerConfig> = {
   // Default: Playwright headless - precise element-based browser automation
+  // Uses official Microsoft @playwright/mcp package
   playwright: {
     type: "stdio",
     command: "npx",
-    args: ["-y", "@anthropic-ai/mcp-server-playwright", "--headless"],
+    args: ["-y", "--headless","@playwright/mcp@latest"],
     env: {
       // Use virtual display :99 (xvfb) in Docker, or native display locally
       DISPLAY: process.env.DISPLAY || (isDocker ? ":99" : ":0"),
@@ -54,7 +55,7 @@ export const MCP_SERVERS: Record<string, McpStdioServerConfig> = {
   "playwright-headed": {
     type: "stdio",
     command: "npx",
-    args: ["-y", "@anthropic-ai/mcp-server-playwright"], // No --headless flag
+    args: ["-y", "@playwright/mcp@latest", "--browser", "chrome"], // Headed mode with Chrome
     env: {
       DISPLAY: process.env.DISPLAY || ":0",
       PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:
@@ -69,12 +70,14 @@ export const MCP_SERVERS: Record<string, McpStdioServerConfig> = {
   stagehand: {
     type: "stdio",
     command: "npx",
-    args: ["-y", "@browserbasehq/mcp-server-browserbase"],
-    env: {
-      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ?? "",
-      BROWSERBASE_API_KEY: process.env.BROWSERBASE_API_KEY ?? "",
-      BROWSERBASE_PROJECT_ID: process.env.BROWSERBASE_PROJECT_ID ?? "",
-    },
+    args: [
+      "-y",
+      "@browserbasehq/mcp-server-browserbase",
+      "--browserbaseApiKey", process.env.BROWSERBASE_API_KEY ?? "",
+      "--browserbaseProjectId", process.env.BROWSERBASE_PROJECT_ID ?? "",
+      "--modelName", "anthropic/claude-sonnet-4-20250514",
+      "--modelApiKey", process.env.ANTHROPIC_API_KEY ?? "",
+    ],
   },
 };
 
@@ -83,28 +86,31 @@ export const MCP_SERVERS: Record<string, McpStdioServerConfig> = {
  * When contextId is provided, the session will use/persist cookies from that context.
  */
 export function buildStagehandConfig(options?: StagehandContextOptions): McpStdioServerConfig {
-  const args = ["-y", "@browserbasehq/mcp-server-browserbase"];
+  const args = [
+    "-y",
+    "@browserbasehq/mcp-server-browserbase",
+    "--browserbaseApiKey", process.env.BROWSERBASE_API_KEY ?? "",
+    "--browserbaseProjectId", process.env.BROWSERBASE_PROJECT_ID ?? "",
+    "--modelName", "anthropic/claude-sonnet-4-20250514",
+    "--modelApiKey", process.env.ANTHROPIC_API_KEY ?? "",
+  ];
 
   // Add context options if provided
+  // contextId enables cookie/auth persistence across sessions
+  // persist: true saves cookies back to the context when session ends
   if (options?.contextId) {
     args.push("--contextId", options.contextId);
     args.push("--persist", "true");
   }
 
-  // Add session ID if connecting to existing session
-  if (options?.sessionId) {
-    args.push("--sessionId", options.sessionId);
-  }
+  // NOTE: The MCP server creates and manages its own Browserbase session internally
+  // when the agent calls session_create. We detect that session ID from the tool
+  // result in agent-executor.ts and use it to get the Live View URL.
 
   return {
     type: "stdio",
     command: "npx",
     args,
-    env: {
-      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ?? "",
-      BROWSERBASE_API_KEY: process.env.BROWSERBASE_API_KEY ?? "",
-      BROWSERBASE_PROJECT_ID: process.env.BROWSERBASE_PROJECT_ID ?? "",
-    },
   };
 }
 
@@ -112,7 +118,7 @@ export function buildStagehandConfig(options?: StagehandContextOptions): McpStdi
  * Get the preferred browser MCP server name from environment
  */
 export function getBrowserMcpServer(): string {
-  const server = process.env.BROWSER_MCP ?? "playwright";
+  const server = process.env.BROWSER_MCP ?? "stagehand";
   // Validate it exists in our registry
   if (server in MCP_SERVERS) {
     return server;

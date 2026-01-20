@@ -6,6 +6,12 @@
 
 import Browserbase from "@browserbasehq/sdk";
 import type { PrismaClient } from "@prisma/client";
+import {
+  ensureSessionSlotAvailable,
+  registerSession,
+  releaseSession,
+  pingSession,
+} from "./session-cleanup";
 
 // Initialize the Browserbase SDK
 const browserbase = new Browserbase({
@@ -19,6 +25,9 @@ export interface SessionWithLiveView {
   liveViewUrl: string;
   connectUrl: string;
 }
+
+// Re-export session tracking functions for use by agent-executor
+export { releaseSession, pingSession };
 
 /**
  * Get or create a Browserbase context for a user/provider combination.
@@ -74,12 +83,24 @@ export async function getOrCreateContext(
 /**
  * Create a Browserbase session with context persistence enabled.
  * Returns session ID, live view URL, and WebSocket connect URL.
+ * Now integrates with session tracking for rate limit management.
  */
 export async function createSessionWithContext(
-  contextId: string
+  contextId: string,
+  prisma?: PrismaClient,
+  userId?: string,
+  agentRunId?: string
 ): Promise<SessionWithLiveView> {
   if (!projectId) {
     throw new Error("BROWSERBASE_PROJECT_ID is not configured");
+  }
+
+  // Check session slot availability if prisma is provided
+  if (prisma) {
+    const slotCheck = await ensureSessionSlotAvailable(prisma);
+    if (!slotCheck.available) {
+      throw new Error(slotCheck.message ?? "No session slots available");
+    }
   }
 
   // Create session with context and persistence enabled
@@ -93,12 +114,19 @@ export async function createSessionWithContext(
     },
   });
 
+  // Register the session for tracking if prisma and userId are provided
+  if (prisma && userId) {
+    await registerSession(prisma, session.id, userId, agentRunId);
+  }
+
   // Get the debug/live view URLs
+  // Use session-level URL which automatically shows the active tab
   const debugInfo = await browserbase.sessions.debug(session.id);
+  const liveViewUrl = debugInfo.debuggerFullscreenUrl;
 
   return {
     sessionId: session.id,
-    liveViewUrl: debugInfo.debuggerFullscreenUrl,
+    liveViewUrl,
     connectUrl: debugInfo.wsUrl,
   };
 }
@@ -106,22 +134,64 @@ export async function createSessionWithContext(
 /**
  * Create a session without context (for one-off browser tasks)
  */
-export async function createSession(): Promise<SessionWithLiveView> {
+export async function createSession(
+  prisma?: PrismaClient,
+  userId?: string,
+  agentRunId?: string
+): Promise<SessionWithLiveView> {
   if (!projectId) {
     throw new Error("BROWSERBASE_PROJECT_ID is not configured");
+  }
+
+  // Check session slot availability if prisma is provided
+  if (prisma) {
+    const slotCheck = await ensureSessionSlotAvailable(prisma);
+    if (!slotCheck.available) {
+      throw new Error(slotCheck.message ?? "No session slots available");
+    }
   }
 
   const session = await browserbase.sessions.create({
     projectId,
   });
 
+  // Register the session for tracking if prisma and userId are provided
+  if (prisma && userId) {
+    await registerSession(prisma, session.id, userId, agentRunId);
+  }
+
+  // Get the debug/live view URLs
+  // Use session-level URL which automatically shows the active tab
   const debugInfo = await browserbase.sessions.debug(session.id);
+  const liveViewUrl = debugInfo.debuggerFullscreenUrl;
 
   return {
     sessionId: session.id,
-    liveViewUrl: debugInfo.debuggerFullscreenUrl,
+    liveViewUrl,
     connectUrl: debugInfo.wsUrl,
   };
+}
+
+/**
+ * Close a Browserbase session and release the slot
+ */
+export async function closeSession(
+  prisma: PrismaClient,
+  sessionId: string
+): Promise<void> {
+  try {
+    // Request release at Browserbase
+    await browserbase.sessions.update(sessionId, {
+      projectId: projectId!,
+      status: "REQUEST_RELEASE",
+    });
+  } catch (error) {
+    // Session may already be closed
+    console.log(`[Browserbase] Could not release session ${sessionId} (may already be closed)`);
+  }
+
+  // Update tracking in our database
+  await releaseSession(prisma, sessionId);
 }
 
 /**
@@ -204,4 +274,40 @@ export function detectAuthProvider(urls: string[]): string {
     }
   }
   return "generic";
+}
+
+/**
+ * Refresh the live view URL for an active session.
+ * Returns the session-level debuggerFullscreenUrl which automatically shows the active tab.
+ * This should be called when the user opens the live view to get the most current URL.
+ */
+export async function refreshLiveViewUrl(sessionId: string): Promise<string | null> {
+  try {
+    const debugInfo = await browserbase.sessions.debug(sessionId);
+    // Use session-level URL which automatically shows the active tab
+    return debugInfo.debuggerFullscreenUrl;
+  } catch (error) {
+    console.log(`[Browserbase] Could not refresh live view URL for session ${sessionId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get debug info (Live View URL, WebSocket URL) for an externally created session.
+ * Use this to get the Live View URL for sessions created by Stagehand MCP.
+ */
+export async function getSessionDebugInfo(sessionId: string): Promise<{
+  liveViewUrl: string;
+  connectUrl: string;
+} | null> {
+  try {
+    const debugInfo = await browserbase.sessions.debug(sessionId);
+    return {
+      liveViewUrl: debugInfo.debuggerFullscreenUrl,
+      connectUrl: debugInfo.wsUrl,
+    };
+  } catch (error) {
+    console.log(`[Browserbase] Could not get debug info for session ${sessionId}:`, error);
+    return null;
+  }
 }
