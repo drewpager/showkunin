@@ -4,6 +4,10 @@ import { streamLog, streamToolCall, streamToolResult } from "./log-streamer";
 import {
   decryptCredentials,
   injectCredentialsToEnv,
+  extractServiceAccountKey,
+  isGoogleProductUrl,
+  getGoogleSharingNotification,
+  getGoogleServiceAccountEmail,
 } from "./credential-manager";
 import {
   initializeWorkspace,
@@ -20,6 +24,8 @@ import {
   getMcpServersForTask,
   formatMcpServers,
   type StagehandContextOptions,
+  type GsheetsOptions,
+  type CodeSandboxOptions,
 } from "./mcp-config";
 import {
   getOrCreateContext,
@@ -119,6 +125,7 @@ const FALSE_POSITIVE_PATTERNS = [
 const AUTOMATION_TOOL_PATTERNS = [
   /^mcp__playwright__browser_/,
   /^mcp__stagehand__/,
+  /^mcp__gsheets__/,
   /^browser_/,
 ];
 
@@ -308,7 +315,10 @@ export async function executeAgentRun(
   }
 
   // 1b. Classify task to determine required MCP servers
-  const classification = classifyTask(plan, run.video.aiAnalysis);
+  // Pass forceCodeExecution flag if set on the run (test mode)
+  const classification = classifyTask(plan, run.video.aiAnalysis, undefined, {
+    forceCodeExecution: run.forceCodeExecution ?? false,
+  });
 
   await streamLog(
     prisma,
@@ -317,7 +327,29 @@ export async function executeAgentRun(
     `Task classification: ${formatClassification(classification)}`
   );
 
-  // 1c. Check for pre-execution auth requirements
+  // 1c. Check for Google product URLs and notify user about sharing requirements
+  const googleUrls = classification.browserUrls.filter(isGoogleProductUrl);
+  if (googleUrls.length > 0) {
+    const sharingNotification = getGoogleSharingNotification(googleUrls[0]);
+    if (sharingNotification) {
+      await streamLog(
+        prisma,
+        run.id,
+        "info",
+        sharingNotification,
+        { actionType: "system" }
+      );
+      // Also log the specific URLs detected
+      await streamLog(
+        prisma,
+        run.id,
+        "debug",
+        `Google product URLs detected: ${googleUrls.join(", ")}`
+      );
+    }
+  }
+
+  // 1d. Check for pre-execution auth requirements
   // This catches auth-required URLs BEFORE we waste time trying to automate
   if (classification.browserUrls.length > 0) {
     const authRequirement = detectAuthRequirements(classification.browserUrls);
@@ -407,8 +439,8 @@ export async function executeAgentRun(
     }
   }
 
-  // Build MCP servers config with optional stagehand context
-  const mcpServers = getMcpServersForTask(classification, stagehandOptions);
+  // Build MCP servers config (will be rebuilt after credentials are loaded if gsheets is needed)
+  let mcpServers = getMcpServersForTask(classification, stagehandOptions);
 
   if (Object.keys(mcpServers).length > 0) {
     await streamLog(
@@ -485,6 +517,50 @@ export async function executeAgentRun(
       "debug",
       `Credentials available: ${decryptedCredentials.map(c => c.key).join(", ")}`
     );
+  }
+
+  // 3b. Set up Google Sheets API options if service account key is available
+  let gsheetsOptions: GsheetsOptions | undefined;
+  if (classification.suggestedMcpServers.includes("gsheets")) {
+    const serviceAccountKey = extractServiceAccountKey(decryptedCredentials);
+    if (serviceAccountKey) {
+      gsheetsOptions = { serviceAccountKey };
+      // Rebuild MCP servers with gsheets options
+      mcpServers = getMcpServersForTask(classification, stagehandOptions, gsheetsOptions);
+      await streamLog(prisma, run.id, "info", "Google Sheets API mode: service account key found, bypassing browser");
+    } else {
+      await streamLog(prisma, run.id, "info", "Google Sheets API mode requested but no GOOGLE_SERVICE_ACCOUNT_KEY credential found - falling back to browser");
+    }
+  }
+
+  // 3c. Set up Code Sandbox options if code execution is required
+  let codeSandboxOptions: CodeSandboxOptions | undefined;
+  if (classification.suggestedMcpServers.includes("code-sandbox")) {
+    const serviceAccountKey = extractServiceAccountKey(decryptedCredentials);
+    const oauthRefreshToken = decryptedCredentials.find(c => c.key === "GOOGLE_OAUTH_REFRESH_TOKEN")?.value;
+
+    codeSandboxOptions = {
+      googleServiceAccountKey: serviceAccountKey,
+      googleOAuthRefreshToken: oauthRefreshToken,
+      agentRunId: run.id,
+    };
+
+    // Rebuild MCP servers with code-sandbox options
+    mcpServers = getMcpServersForTask(classification, stagehandOptions, gsheetsOptions, codeSandboxOptions);
+
+    await streamLog(
+      prisma,
+      run.id,
+      "info",
+      `Code Sandbox mode enabled (template: ${classification.suggestedCodeTemplate ?? "auto"})`
+    );
+
+    if (serviceAccountKey) {
+      await streamLog(prisma, run.id, "debug", "Service account key available for code execution");
+    }
+    if (oauthRefreshToken) {
+      await streamLog(prisma, run.id, "debug", "OAuth refresh token available for Apps Script");
+    }
   }
 
   // 4. Build prompt with video context, plan, AND credentials
@@ -671,6 +747,15 @@ export async function executeAgentRun(
         activeSessionId = detectedSessionId;
         await streamLog(prisma, run.id, "info", `Stagehand session created: ${detectedSessionId}`);
 
+        // CRITICAL: Always store the browserbaseSessionId in the database immediately
+        // This ensures the cancel button can close the session even if we fail to get the live view URL
+        await prisma.agentRun.update({
+          where: { id: run.id },
+          data: {
+            browserbaseSessionId: detectedSessionId,
+          },
+        });
+
         // Register the session for tracking so it can be cleaned up on cancellation
         // This is important because Stagehand MCP creates sessions independently
         try {
@@ -687,19 +772,21 @@ export async function executeAgentRun(
         // Get the Live View URL for this session and update AgentRun
         try {
           const debugInfo = await getSessionDebugInfo(detectedSessionId);
-          if (debugInfo) {
+          if (debugInfo?.liveViewUrl) {
             await prisma.agentRun.update({
               where: { id: run.id },
               data: {
-                browserbaseSessionId: detectedSessionId,
                 liveViewUrl: debugInfo.liveViewUrl,
               },
             });
             await streamLog(prisma, run.id, "info", `Live View available for browser session`);
             await streamLog(prisma, run.id, "debug", `Live View URL: ${debugInfo.liveViewUrl}`);
+          } else {
+            await streamLog(prisma, run.id, "info", `Browser session created (Live View URL pending)`);
           }
         } catch (error) {
           console.log(`[Agent Executor] Could not get Live View URL: ${error}`);
+          await streamLog(prisma, run.id, "info", `Browser session created (Live View URL unavailable)`);
         }
       }
 
@@ -944,6 +1031,171 @@ function extractSessionIdFromToolResult(content: unknown): string | null {
 }
 
 /**
+ * Build Google Sheets API-mode guidance for the system prompt.
+ * This instructs the agent to use the gsheets MCP tools instead of browser automation.
+ */
+function buildGoogleSheetsApiGuidance(
+  credentials: { key: string; value: string }[] = []
+): string {
+  // Extract service account email from the key if possible
+  let serviceAccountEmail = "the service account email (from the JSON key)";
+  const saKeyCred = credentials.find((c) => c.key === "GOOGLE_SERVICE_ACCOUNT_KEY");
+  if (saKeyCred) {
+    try {
+      const parsed = JSON.parse(saKeyCred.value);
+      if (parsed.client_email) {
+        serviceAccountEmail = parsed.client_email;
+      }
+    } catch {
+      // Not parseable - use generic description
+    }
+  }
+
+  const userEmail = credentials.find((c) => c.key === "USER_EMAIL")?.value;
+
+  return `
+## Google Sheets API Mode (No Browser Required)
+You have access to the Google Sheets MCP server which uses a service account for direct API access.
+This is FASTER and MORE RELIABLE than browser automation - no login pages, no CAPTCHAs.
+
+**Tool Prefix: \`mcp__gsheets__\`**
+
+### Available Tools
+Use tools prefixed with \`mcp__gsheets__\` for all spreadsheet operations:
+- \`mcp__gsheets__sheets_get\`: Read spreadsheet data (values, metadata)
+- \`mcp__gsheets__sheets_update\`: Update cell values in a spreadsheet
+- \`mcp__gsheets__sheets_create\`: Create a new spreadsheet
+- \`mcp__gsheets__sheets_batch_update\`: Batch update operations (formatting, structure)
+- \`mcp__gsheets__sheets_values_get\`: Get values from a specific range
+- \`mcp__gsheets__sheets_values_update\`: Update values in a specific range
+- \`mcp__gsheets__sheets_values_append\`: Append rows to a sheet
+- \`mcp__gsheets__sheets_values_clear\`: Clear values in a range
+
+### Workflow for Reading an Existing Spreadsheet
+1. The source spreadsheet must be shared with the service account email: \`${serviceAccountEmail}\`
+2. Use \`mcp__gsheets__sheets_get\` or \`mcp__gsheets__sheets_values_get\` to read data
+3. Process and transform data as needed
+
+### Workflow for Creating a New Spreadsheet
+1. Use \`mcp__gsheets__sheets_create\` to create a new spreadsheet
+2. Use \`mcp__gsheets__sheets_values_update\` to populate it with data
+3. Use \`mcp__gsheets__sheets_batch_update\` for formatting (bold headers, column widths, etc.)
+4. Share the result with the user (see Sharing section below)
+
+### Sharing Results with the User
+After creating or modifying a spreadsheet, share it with the user's email using the Drive API via curl:
+\`\`\`bash
+curl -X POST "https://www.googleapis.com/drive/v3/files/SPREADSHEET_ID/permissions" \\
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \\
+  -H "Content-Type: application/json" \\
+  -d '{"role": "writer", "type": "user", "emailAddress": "USER_EMAIL"}'
+\`\`\`
+${userEmail ? `**User's email for sharing**: ${userEmail}` : "**Note**: Ask the user for their email or check the USER_EMAIL credential to share results."}
+
+### Important Notes
+- The service account owns any spreadsheets it creates - always share with the user
+- For reading existing spreadsheets, the user must first share them with: \`${serviceAccountEmail}\`
+- If a spreadsheet ID or URL is provided in credentials (SPREADSHEET_URL or SPREADSHEET_ID), use that
+- DO NOT attempt to open a browser or navigate to Google Sheets - use the API tools directly
+- If the gsheets tools are not available, report: "ERROR: Google Sheets MCP tools not available"
+
+### Error Handling
+- If you get a 403/permission error reading a spreadsheet, inform the user they need to share it with \`${serviceAccountEmail}\`
+- If you get a 404, the spreadsheet ID may be incorrect
+- For quota errors, wait briefly and retry`;
+}
+
+/**
+ * Build Code Sandbox execution guidance for the system prompt.
+ * This instructs the agent to use the sandbox MCP tools for code execution.
+ */
+function buildCodeSandboxGuidance(
+  suggestedTemplate: string | null,
+  credentials: { key: string; value: string }[] = []
+): string {
+  const hasServiceAccount = credentials.some(c => c.key === "GOOGLE_SERVICE_ACCOUNT_KEY");
+  const hasOAuth = credentials.some(c => c.key === "GOOGLE_OAUTH_REFRESH_TOKEN");
+
+  return `
+## Code Sandbox Execution Mode (Isolated Docker Containers)
+You have access to a secure code execution sandbox that runs generated code in isolated Docker containers.
+This is ideal for complex operations, batch processing, and custom logic that goes beyond simple API calls.
+
+**Tool Prefix: \`mcp__code-sandbox__\`**
+
+### Available Tools
+- \`mcp__code-sandbox__sandbox_execute_code\`: Execute code in an isolated container
+- \`mcp__code-sandbox__sandbox_list_templates\`: List available code templates
+- \`mcp__code-sandbox__sandbox_get_result\`: Retrieve execution results
+- \`mcp__code-sandbox__sandbox_check_availability\`: Check if Docker is available
+
+### Available Templates
+${suggestedTemplate ? `**Recommended for this task**: \`${suggestedTemplate}\`\n` : ""}
+- \`google-sheets-node\`: Node.js with googleapis SDK for Sheets operations
+- \`google-sheets-python\`: Python with Google API client for Sheets
+- \`google-drive-node\`: Node.js for Google Drive operations
+- \`apps-script\`: Google Apps Script execution (requires OAuth)
+- \`generic-node\`: General Node.js code execution
+- \`generic-python\`: General Python code execution
+
+### Credentials Status
+- Google Service Account: ${hasServiceAccount ? "Available (for direct API access)" : "Not available"}
+- Google OAuth Token: ${hasOAuth ? "Available (for Apps Script)" : "Not available"}
+
+### How to Use
+
+1. **Check availability first**:
+   \`\`\`
+   Use mcp__code-sandbox__sandbox_check_availability to verify Docker is running
+   \`\`\`
+
+2. **Execute code with a template**:
+   \`\`\`
+   Use mcp__code-sandbox__sandbox_execute_code with:
+   - template: "${suggestedTemplate ?? "google-sheets-node"}"
+   - code: "// Your generated code here"
+   - timeout_seconds: 60 (optional, max 300)
+   \`\`\`
+
+3. **Review results**: The tool returns stdout, stderr, exit code, and execution time.
+
+### Example: Read and Transform Spreadsheet Data
+\`\`\`javascript
+// Code to pass to sandbox_execute_code with template "google-sheets-node"
+const spreadsheetId = process.env.SPREADSHEET_ID || "YOUR_SPREADSHEET_ID";
+
+// Read data from Sheet1
+const response = await sheets.spreadsheets.values.get({
+  spreadsheetId,
+  range: 'Sheet1!A1:D100',
+});
+
+const rows = response.data.values || [];
+console.log(\`Read \${rows.length} rows\`);
+
+// Transform data (example: calculate totals)
+const processed = rows.map(row => ({
+  name: row[0],
+  value: parseFloat(row[1]) || 0,
+}));
+
+const total = processed.reduce((sum, item) => sum + item.value, 0);
+return { rowCount: rows.length, total };
+\`\`\`
+
+### Security Notes
+- Code runs in isolated containers with limited resources (512MB RAM, 0.5 CPU)
+- Network is restricted to Google APIs only
+- Execution times out after 60 seconds by default
+- Containers are destroyed after execution
+
+### Error Handling
+- If Docker is unavailable, fall back to direct API calls via gsheets MCP
+- If a template requires missing credentials, the tool will report an error
+- Check stderr for detailed error messages from code execution`;
+}
+
+/**
  * Build the system prompt for the agent
  */
 function buildSystemPrompt(
@@ -992,6 +1244,16 @@ The following credentials have been provided and are available as environment va
     }
     prompt += `
 Use these environment variables in your commands (e.g., \`echo $SPREADSHEET_URL\` or access via \`process.env.SPREADSHEET_URL\`).`;
+  }
+
+  // Add Google Sheets API guidance when using API mode
+  if (classification.preferApiOverBrowser && classification.detectedServices.includes("google_sheets")) {
+    prompt += buildGoogleSheetsApiGuidance(credentials);
+  }
+
+  // Add code sandbox guidance when code execution is required
+  if (classification.requiresCodeExecution) {
+    prompt += buildCodeSandboxGuidance(classification.suggestedCodeTemplate, credentials);
   }
 
   // Add browser-specific guidance if browser automation is enabled

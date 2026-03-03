@@ -20,8 +20,19 @@ services:
       BROWSER_MCP: ${BROWSER_MCP:-stagehand}
       BROWSERBASE_API_KEY: ${BROWSERBASE_API_KEY}
       BROWSERBASE_PROJECT_ID: ${BROWSERBASE_PROJECT_ID}
+      # Code Sandbox Configuration
+      DOCKER_SOCKET: /var/run/docker.sock
+      DOCKER: "true"
+      # Google OAuth for Apps Script (optional)
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
     volumes:
       - agent-workspace:/app/workspace
+      # Mount Docker socket for code sandbox execution
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # Add docker group for socket access
+    group_add:
+      - ${DOCKER_GID:-999}
     restart: unless-stopped
     # Uncomment to enable log viewing
     # logging:
@@ -29,6 +40,36 @@ services:
     #   options:
     #     max-size: "10m"
     #     max-file: "3"
+
+  # Sandbox Node.js Executor Image
+  # Pre-built image for Node.js code execution in sandbox
+  sandbox-node:
+    build:
+      context: ./agent-runtime/src/sandbox/templates
+      dockerfile: Dockerfile.node
+    image: showkunin/sandbox-node:latest
+    profiles:
+      - build-only
+
+  # Sandbox Python Executor Image
+  # Pre-built image for Python code execution in sandbox
+  sandbox-python:
+    build:
+      context: ./agent-runtime/src/sandbox/templates
+      dockerfile: Dockerfile.python
+    image: showkunin/sandbox-python:latest
+    profiles:
+      - build-only
+
+  # Sandbox Clasp Executor Image
+  # Pre-built image for Apps Script execution via clasp
+  sandbox-clasp:
+    build:
+      context: ./agent-runtime/src/sandbox/templates
+      dockerfile: Dockerfile.clasp
+    image: showkunin/sandbox-clasp:latest
+    profiles:
+      - build-only
 
 volumes:
   agent-workspace:

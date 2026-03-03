@@ -14,7 +14,7 @@ const browserbase = new Browserbase({
 const projectId = process.env.BROWSERBASE_PROJECT_ID;
 
 // Session limits - Browserbase has concurrency limits per account
-const MAX_CONCURRENT_SESSIONS = 5; // Adjust based on your Browserbase plan
+const MAX_CONCURRENT_SESSIONS = 25; // Adjust based on your Browserbase plan
 const STALE_SESSION_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 
 export interface SessionSlotResult {
@@ -228,6 +228,9 @@ export async function closeAllSessionsForUser(
         status: "REQUEST_RELEASE",
       });
     } catch {
+      console.log(
+        `[Session Cleanup] Could not release session ${session.sessionId} (may already be closed)`
+      );
       // Ignore errors
     }
   }

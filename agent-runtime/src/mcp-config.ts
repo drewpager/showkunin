@@ -22,6 +22,22 @@ export interface StagehandContextOptions {
   contextId?: string;
 }
 
+// Options for building Google Sheets MCP config
+export interface GsheetsOptions {
+  // Google service account key JSON string
+  serviceAccountKey?: string;
+}
+
+// Options for building Code Sandbox MCP config
+export interface CodeSandboxOptions {
+  // Google service account key JSON string for API access
+  googleServiceAccountKey?: string;
+  // Google OAuth refresh token for Apps Script
+  googleOAuthRefreshToken?: string;
+  // Current agent run ID for tracking
+  agentRunId?: string;
+}
+
 /**
  * Detect if running in Docker/production environment
  */
@@ -65,6 +81,17 @@ export const MCP_SERVERS: Record<string, McpStdioServerConfig> = {
     },
   },
 
+  // Google Sheets API via service account - bypasses browser login entirely
+  // Note: Use buildGsheetsConfig() with dynamic service account key
+  gsheets: {
+    type: "stdio",
+    command: "npx",
+    args: ["-y", "mcp-gsheets@latest"],
+    env: {
+      GOOGLE_SERVICE_ACCOUNT_KEY: process.env.GOOGLE_SERVICE_ACCOUNT_KEY ?? "",
+    },
+  },
+
   // Alternative: Stagehand - AI-powered natural language browser automation via Browserbase
   // Note: Use buildStagehandConfig() for sessions with context persistence
   stagehand: {
@@ -78,6 +105,17 @@ export const MCP_SERVERS: Record<string, McpStdioServerConfig> = {
       "--modelName", "anthropic/claude-sonnet-4-20250514",
       "--modelApiKey", process.env.ANTHROPIC_API_KEY ?? "",
     ],
+  },
+
+  // Code Sandbox - isolated Docker container execution for generated code
+  // Note: Use buildCodeSandboxConfig() to inject credentials
+  "code-sandbox": {
+    type: "stdio",
+    command: "node",
+    args: ["./sandbox/mcp-server.js"],
+    env: {
+      DOCKER_SOCKET: process.env.DOCKER_SOCKET ?? "/var/run/docker.sock",
+    },
   },
 };
 
@@ -93,6 +131,7 @@ export function buildStagehandConfig(options?: StagehandContextOptions): McpStdi
     "--browserbaseProjectId", process.env.BROWSERBASE_PROJECT_ID ?? "",
     "--modelName", "anthropic/claude-sonnet-4-20250514",
     "--modelApiKey", process.env.ANTHROPIC_API_KEY ?? "",
+    "--keepAlive", // Keep session alive during pauses/inactivity
   ];
 
   // Add context options if provided
@@ -115,6 +154,56 @@ export function buildStagehandConfig(options?: StagehandContextOptions): McpStdi
 }
 
 /**
+ * Build a Google Sheets MCP server config with the service account key.
+ * When serviceAccountKey is provided, it's passed as an env var to the MCP process.
+ */
+export function buildGsheetsConfig(options?: GsheetsOptions): McpStdioServerConfig {
+  return {
+    type: "stdio",
+    command: "npx",
+    args: ["-y", "mcp-gsheets@latest"],
+    env: {
+      GOOGLE_SERVICE_ACCOUNT_KEY: options?.serviceAccountKey ?? process.env.GOOGLE_SERVICE_ACCOUNT_KEY ?? "",
+    },
+  };
+}
+
+/**
+ * Build a Code Sandbox MCP server config with credentials.
+ * Credentials are passed as environment variables to the MCP server process.
+ */
+export function buildCodeSandboxConfig(options?: CodeSandboxOptions): McpStdioServerConfig {
+  const env: Record<string, string> = {
+    DOCKER_SOCKET: process.env.DOCKER_SOCKET ?? "/var/run/docker.sock",
+  };
+
+  // Inject Google credentials if provided
+  if (options?.googleServiceAccountKey) {
+    env.GOOGLE_SERVICE_ACCOUNT_KEY = options.googleServiceAccountKey;
+  } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+    env.GOOGLE_SERVICE_ACCOUNT_KEY = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  }
+
+  if (options?.googleOAuthRefreshToken) {
+    env.GOOGLE_OAUTH_REFRESH_TOKEN = options.googleOAuthRefreshToken;
+  } else if (process.env.GOOGLE_OAUTH_REFRESH_TOKEN) {
+    env.GOOGLE_OAUTH_REFRESH_TOKEN = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
+  }
+
+  // Pass agent run ID for tracking executions
+  if (options?.agentRunId) {
+    env.AGENT_RUN_ID = options.agentRunId;
+  }
+
+  return {
+    type: "stdio",
+    command: "node",
+    args: ["./sandbox/mcp-server.js"],
+    env,
+  };
+}
+
+/**
  * Get the preferred browser MCP server name from environment
  */
 export function getBrowserMcpServer(): string {
@@ -131,10 +220,14 @@ export function getBrowserMcpServer(): string {
  * Build MCP servers config for a task based on its classification
  * @param classification - Task classification from classifier
  * @param stagehandOptions - Optional context/session options for Stagehand
+ * @param gsheetsOptions - Optional service account key for Google Sheets API
+ * @param codeSandboxOptions - Optional credentials for code sandbox
  */
 export function getMcpServersForTask(
   classification: TaskClassification,
-  stagehandOptions?: StagehandContextOptions
+  stagehandOptions?: StagehandContextOptions,
+  gsheetsOptions?: GsheetsOptions,
+  codeSandboxOptions?: CodeSandboxOptions
 ): Record<string, McpServerConfig> {
   const servers: Record<string, McpServerConfig> = {};
 
@@ -142,6 +235,10 @@ export function getMcpServersForTask(
     // Special handling for stagehand with context options
     if (serverName === "stagehand" && stagehandOptions) {
       servers[serverName] = buildStagehandConfig(stagehandOptions);
+    } else if (serverName === "gsheets" && gsheetsOptions) {
+      servers[serverName] = buildGsheetsConfig(gsheetsOptions);
+    } else if (serverName === "code-sandbox" && codeSandboxOptions) {
+      servers[serverName] = buildCodeSandboxConfig(codeSandboxOptions);
     } else {
       const config = MCP_SERVERS[serverName];
       if (config) {

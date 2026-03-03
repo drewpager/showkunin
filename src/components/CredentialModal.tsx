@@ -15,6 +15,13 @@ interface CredentialModalProps {
   suggestedCredentials?: SuggestedCredential[];
   promptMessage?: string;
   isSharedTask?: boolean;
+  googleSharingNotification?: {
+    message: string;
+    serviceAccountEmail: string;
+  };
+  // Test mode: force code sandbox execution
+  forceCodeExecution?: boolean;
+  setForceCodeExecution?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function CredentialModal({
@@ -26,6 +33,9 @@ export default function CredentialModal({
   suggestedCredentials = [],
   promptMessage,
   isSharedTask = false,
+  googleSharingNotification,
+  forceCodeExecution = false,
+  setForceCodeExecution,
 }: CredentialModalProps) {
   const addCredential = () => {
     setCredentials([...credentials, { key: "", value: "" }]);
@@ -101,6 +111,65 @@ export default function CredentialModal({
               "Add environment variables the automation may need (e.g., API keys, tokens). These are encrypted and stored securely."}
           </p>
         </div>
+
+        {/* Google Sharing Notification */}
+        {googleSharingNotification && (
+          <div className="border-b bg-amber-50 px-6 py-4">
+            <div className="flex items-start gap-3">
+              <svg
+                className="mt-0.5 h-5 w-5 shrink-0 text-amber-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div className="flex-1">
+                <h4 className="text-sm font-semibold text-amber-800">
+                  Google Resource Access Required
+                </h4>
+                <p className="mt-1 text-sm text-amber-700">
+                  {googleSharingNotification.message}
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <code className="rounded bg-amber-100 px-2 py-1 text-xs font-mono text-amber-900 select-all">
+                    {googleSharingNotification.serviceAccountEmail}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(
+                        googleSharingNotification.serviceAccountEmail
+                      );
+                    }}
+                    className="rounded px-2 py-1 text-xs text-amber-700 hover:bg-amber-100"
+                    title="Copy email"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-amber-600">
+                  Grant <strong>Editor</strong> access for modifications, or <strong>Viewer</strong> for read-only.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Suggested Credentials Section */}
         {unusedSuggestions.length > 0 && (
@@ -226,6 +295,31 @@ export default function CredentialModal({
             </button>
           </div>
         </div>
+
+        {/* Test Mode Toggle */}
+        {setForceCodeExecution && (
+          <div className="border-t bg-gray-50 px-6 py-3">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={forceCodeExecution}
+                onChange={(e) => setForceCodeExecution(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+              />
+              <div className="flex-1">
+                <span className="text-sm font-medium text-gray-700">
+                  Use Code Sandbox
+                </span>
+                <span className="ml-2 rounded bg-purple-100 px-1.5 py-0.5 text-xs text-purple-700">
+                  Test Mode
+                </span>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Execute via isolated Docker container instead of browser automation
+                </p>
+              </div>
+            </label>
+          </div>
+        )}
 
         <div className="flex justify-end gap-3 border-t px-6 py-4">
           <button

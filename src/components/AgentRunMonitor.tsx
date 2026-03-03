@@ -744,10 +744,9 @@ export default function AgentRunMonitor({
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
 
-  // Live view is available when we have a URL and the run is active
+  // Live view is available when we have a URL OR a session ID and the run is active
   const liveViewUrl = (run as { liveViewUrl?: string | null }).liveViewUrl;
   const browserbaseSessionId = (run as { browserbaseSessionId?: string | null }).browserbaseSessionId;
-  const hasLiveView = Boolean(liveViewUrl && isActive);
 
   // Check logs for session creation as a fallback indicator
   // This handles the case where the database hasn't been polled yet but logs show session is ready
@@ -756,6 +755,10 @@ export default function AgentRunMonitor({
     log.message.includes("Stagehand session created") ||
     log.message.includes("Browser session created")
   );
+
+  // Show Live View banner if we have a session ID OR liveViewUrl, and run is active
+  // This ensures buttons show even if we couldn't get the live view URL initially
+  const hasLiveView = Boolean((liveViewUrl || browserbaseSessionId) && isActive);
 
   // Show "waiting for browser" when active but no session yet
   // Also check logs as a fallback - if logs show session is ready, don't show waiting banner
@@ -915,19 +918,21 @@ export default function AgentRunMonitor({
                   )}
                   {isRefreshingUrl ? "Loading..." : "Open Live View"}
                 </button>
-                <a
-                  href={liveViewUrl ?? "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 py-2 text-sm text-purple-700 hover:bg-purple-50"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                    <polyline points="15 3 21 3 21 9" />
-                    <line x1="10" y1="14" x2="21" y2="3" />
-                  </svg>
-                  New Tab
-                </a>
+                {liveViewUrl && (
+                  <a
+                    href={liveViewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 py-2 text-sm text-purple-700 hover:bg-purple-50"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                    New Tab
+                  </a>
+                )}
               </div>
             </div>
           </div>

@@ -151,6 +151,7 @@ model AgentRun {
   completedAt          DateTime?
   logs                 AgentLog[]
   checkpoints          AgentCheckpoint[]
+  codeExecutions       CodeExecution[]
 
   // Timeout and progress tracking fields
   maxDurationMs        Int?              @default(300000)  // 5 min default
@@ -159,6 +160,9 @@ model AgentRun {
   successValidated     Boolean           @default(false)   // Verified completion
   authRequired         String?                             // Provider needing pre-auth
   authCompleted        Boolean           @default(false)   // Pre-auth done
+
+  // Test mode: force specific execution paths
+  forceCodeExecution   Boolean           @default(false)   // Skip browser, use sandbox
 
   @@index([videoId])
   @@index([userId])
@@ -246,5 +250,26 @@ model BrowserbaseActiveSession {
   lastPingAt  DateTime @default(now())
 
   @@index([userId])
+  @@index([status])
+}
+
+// Code execution tracking for sandbox executions
+model CodeExecution {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  agentRunId    String
+  agentRun      AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  runtime       String   // "node", "python", "clasp"
+  template      String?  // Template name used (e.g., "google-sheets-node")
+  generatedCode String   @db.Text
+  containerId   String?
+  status        String   @default("pending") // pending, running, completed, failed, timeout
+  stdout        String?  @db.Text
+  stderr        String?  @db.Text
+  exitCode      Int?
+  durationMs    Int?
+  error         String?  @db.Text
+
+  @@index([agentRunId])
   @@index([status])
 }

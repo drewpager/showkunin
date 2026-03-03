@@ -9,7 +9,7 @@ import { TrashIcon } from "@radix-ui/react-icons";
 import CredentialModal from "./CredentialModal";
 import AgentRunMonitor from "./AgentRunMonitor";
 import PreAuthModal from "./PreAuthModal";
-import { inferCredentials, getCredentialPromptMessage } from "~/utils/credential-inference";
+import { inferCredentials, getCredentialPromptMessage, getGoogleSharingNotification } from "~/utils/credential-inference";
 import paywallAtom from "~/atoms/paywallAtom";
 
 // Import ScreencastRecorder dynamically with SSR disabled to prevent navigator errors
@@ -383,8 +383,11 @@ export default function VideoAnalysis({
   }, [analysis]);
 
   const [isAutomating, setIsAutomating] = useState(false);
+  const [isPreparingAutomation, setIsPreparingAutomation] = useState(false);
   const [showCredentialModal, setShowCredentialModal] = useState(false);
   const [credentials, setCredentials] = useState<Array<{ key: string; value: string }>>([]);
+  // Test mode: force code sandbox execution instead of browser automation
+  const [forceCodeExecution, setForceCodeExecution] = useState(false);
 
   // Pre-auth flow state
   const [showPreAuthModal, setShowPreAuthModal] = useState(false);
@@ -411,8 +414,17 @@ export default function VideoAnalysis({
     [isOwner, suggestedCredentials]
   );
 
+  // Check for Google product URLs that need sharing notification
+  const googleSharingNotification = useMemo(
+    () => getGoogleSharingNotification(analysis ?? null),
+    [analysis]
+  );
+
   const handleImplementAutomation = async () => {
     if (!computerUsePlan) return;
+
+    // Show loading immediately
+    setIsPreparingAutomation(true);
 
     // Check if auth is required
     try {
@@ -424,6 +436,7 @@ export default function VideoAnalysis({
         setPreAuthProvider(authData.provider);
         setIsStartingPreAuth(true);
         setShowPreAuthModal(true);
+        setIsPreparingAutomation(false);
 
         try {
           const result = await startPreAuthMutation.mutateAsync({
@@ -446,6 +459,7 @@ export default function VideoAnalysis({
     }
 
     // Show credential modal
+    setIsPreparingAutomation(false);
     setShowCredentialModal(true);
   };
 
@@ -492,6 +506,7 @@ export default function VideoAnalysis({
       const result = await executeAutomationMutation.mutateAsync({
         videoId,
         credentials: credentials.filter((c) => c.key && c.value),
+        forceCodeExecution,
       });
 
       setActiveRunId(result.runId);
@@ -746,16 +761,16 @@ export default function VideoAnalysis({
                           setPaywallOpen(true);
                         }
                       }}
-                      disabled={isAutomating || !computerUsePlan}
+                      disabled={isAutomating || isPreparingAutomation || !computerUsePlan}
                       className="flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
                     >
-                      {isAutomating ? (
+                      {isAutomating || isPreparingAutomation ? (
                         <>
                           <svg className="h-4 w-4 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          <span>Running...</span>
+                          <span>{isPreparingAutomation ? "Preparing..." : "Running..."}</span>
                         </>
                       ) : (
                         <>
@@ -984,6 +999,9 @@ export default function VideoAnalysis({
           suggestedCredentials={suggestedCredentials}
           promptMessage={credentialPromptMessage}
           isSharedTask={!isOwner}
+          googleSharingNotification={googleSharingNotification ?? undefined}
+          forceCodeExecution={forceCodeExecution}
+          setForceCodeExecution={setForceCodeExecution}
         />
       )}
 

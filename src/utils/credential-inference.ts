@@ -34,7 +34,38 @@ const CREDENTIAL_PATTERNS: Array<{
       required: true,
     },
   },
-  // Google Sheets API Key - for direct API access (faster, no browser needed)
+  // Google Service Account Key - for API access without browser login (recommended)
+  {
+    patterns: [
+      /google\s*sheet/i,
+      /spreadsheet/i,
+      /sheets\.googleapis\.com/i,
+      /google\s*sheets?\s*api/i,
+      /docs\.google\.com\/spreadsheets/i,
+    ],
+    credential: {
+      key: "GOOGLE_SERVICE_ACCOUNT_KEY",
+      description: "Google Service Account JSON key (enables API access without browser login)",
+      placeholder: '{"type":"service_account","project_id":"...","private_key":"...","client_email":"..."}',
+      required: false,
+    },
+  },
+  // User email - for sharing API-created spreadsheets with the user
+  {
+    patterns: [
+      /google\s*sheet/i,
+      /spreadsheet/i,
+      /share.*with/i,
+      /docs\.google\.com\/spreadsheets/i,
+    ],
+    credential: {
+      key: "USER_EMAIL",
+      description: "Your email address (for sharing API-created spreadsheets with you)",
+      placeholder: "you@example.com",
+      required: false,
+    },
+  },
+  // Google Sheets API Key - for direct API access (legacy, less capable than service account)
   {
     patterns: [
       /sheets\.googleapis\.com/i,
@@ -42,7 +73,7 @@ const CREDENTIAL_PATTERNS: Array<{
     ],
     credential: {
       key: "GOOGLE_SHEETS_API_KEY",
-      description: "Google Sheets API key (enables faster API access without browser)",
+      description: "Google Sheets API key (read-only, prefer Service Account Key instead)",
       placeholder: "AIzaSy...",
       required: false,
     },
@@ -58,6 +89,23 @@ const CREDENTIAL_PATTERNS: Array<{
       key: "GOOGLE_ACCESS_TOKEN",
       description: "Google OAuth access token (for write operations)",
       placeholder: "ya29...",
+      required: false,
+    },
+  },
+  // Google OAuth Refresh Token - for Apps Script execution via clasp
+  {
+    patterns: [
+      /apps?\s*script/i,
+      /google\s*apps?\s*script/i,
+      /clasp/i,
+      /custom\s*function/i,
+      /spreadsheet.*macro/i,
+      /trigger/i,
+    ],
+    credential: {
+      key: "GOOGLE_OAUTH_REFRESH_TOKEN",
+      description: "Google OAuth refresh token for Apps Script execution (enables clasp)",
+      placeholder: "1//...",
       required: false,
     },
   },
@@ -271,6 +319,42 @@ export function inferCredentials(aiAnalysis: string | null): SuggestedCredential
   }
 
   return Array.from(suggestions.values());
+}
+
+// Google product URL patterns
+const GOOGLE_PRODUCT_PATTERNS = [
+  /docs\.google\.com\/document/i,
+  /docs\.google\.com\/spreadsheets/i,
+  /docs\.google\.com\/presentation/i,
+  /drive\.google\.com/i,
+  /sheets\.google\.com/i,
+  /slides\.google\.com/i,
+];
+
+// Default service account email - should match the one in agent-runtime
+const GOOGLE_SERVICE_ACCOUNT_EMAIL = "greadings@showkunin.iam.gserviceaccount.com";
+
+/**
+ * Check if the analysis contains Google product URLs that require sharing
+ * Returns sharing notification info if Google URLs are detected
+ */
+export function getGoogleSharingNotification(
+  aiAnalysis: string | null
+): { message: string; serviceAccountEmail: string } | null {
+  if (!aiAnalysis) return null;
+
+  // Check if any Google product patterns match
+  const hasGoogleUrl = GOOGLE_PRODUCT_PATTERNS.some((pattern) =>
+    pattern.test(aiAnalysis)
+  );
+
+  if (!hasGoogleUrl) return null;
+
+  return {
+    message:
+      "To allow the automation to access your Google resource, please share it with the service account email below. Do this before starting execution.",
+    serviceAccountEmail: GOOGLE_SERVICE_ACCOUNT_EMAIL,
+  };
 }
 
 /**

@@ -1295,6 +1295,8 @@ export const videoRouter = createTRPCRouter({
             })
           )
           .optional(),
+        // Test mode: force code sandbox execution instead of browser automation
+        forceCodeExecution: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
@@ -1352,6 +1354,7 @@ export const videoRouter = createTRPCRouter({
           videoId: input.videoId,
           userId: session.user.id,
           status: "pending",
+          forceCodeExecution: input.forceCodeExecution ?? false,
         },
       });
 

@@ -1,0 +1,35 @@
+# Node.js Sandbox Executor
+# Isolated container for running Node.js code with Google APIs
+#
+# Security features:
+# - Non-root user (node, UID 1000 - built into node:alpine)
+# - Minimal base image
+# - No shell access in production runs
+# - Read-only root filesystem (tmpfs for /app/code, /tmp)
+
+FROM node:20-alpine
+
+# Install dependencies
+RUN apk add --no-cache \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Set up app directory
+WORKDIR /app
+
+# Install googleapis SDK globally for all executions
+RUN npm install -g googleapis@130
+
+# Create directories for code and output
+# Use existing 'node' user (UID 1000) from base image
+RUN mkdir -p /app/code /app/output \
+    && chown -R node:node /app
+
+# Set NODE_PATH so globally installed modules are found
+ENV NODE_PATH=/usr/local/lib/node_modules
+
+# Switch to non-root user
+USER node
+
+# Default command (will be overridden by sandbox-manager)
+CMD ["node", "--version"]

@@ -104,8 +104,10 @@ export async function createSessionWithContext(
   }
 
   // Create session with context and persistence enabled
+  // keepAlive: true keeps the session alive even during periods of inactivity (e.g., user pauses)
   const session = await browserbase.sessions.create({
     projectId,
+    keepAlive: true,
     browserSettings: {
       context: {
         id: contextId,
@@ -151,8 +153,10 @@ export async function createSession(
     }
   }
 
+  // keepAlive: true keeps the session alive even during periods of inactivity (e.g., user pauses)
   const session = await browserbase.sessions.create({
     projectId,
+    keepAlive: true,
   });
 
   // Register the session for tracking if prisma and userId are provided
