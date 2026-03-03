@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useAtom } from "jotai";
@@ -215,14 +215,37 @@ export default function VideoAnalysis({
     await utils.video.get.invalidate({ videoId });
   };
 
+  const refineAbortRef = useRef<AbortController | null>(null);
+
   const handleRefine = async () => {
     if (!refinementInput.trim()) return;
-    await analyzeVideoMutation.mutateAsync({
-      videoId,
-      refinementPrompt: refinementInput
-    });
-    setRefinementInput("");
-    await utils.video.get.invalidate({ videoId });
+    const abortController = new AbortController();
+    refineAbortRef.current = abortController;
+    try {
+      await analyzeVideoMutation.mutateAsync({
+        videoId,
+        refinementPrompt: refinementInput
+      });
+      if (!abortController.signal.aborted) {
+        setRefinementInput("");
+        await utils.video.get.invalidate({ videoId });
+      }
+    } catch {
+      // Swallow error if we aborted intentionally
+      if (!abortController.signal.aborted) {
+        throw undefined;
+      }
+    } finally {
+      refineAbortRef.current = null;
+    }
+  };
+
+  const handleStopRefine = () => {
+    if (refineAbortRef.current) {
+      refineAbortRef.current.abort();
+      refineAbortRef.current = null;
+    }
+    analyzeVideoMutation.reset();
   };
 
   const handleScreencastUpdate = () => {
@@ -890,6 +913,16 @@ export default function VideoAnalysis({
                           : "Refine with Screencast"}
                       </span>
                     </button>
+                  ) : analyzeVideoMutation.isLoading && analyzeVideoMutation.variables?.refinementPrompt ? (
+                    <button
+                      onClick={handleStopRefine}
+                      className="inline-flex items-center rounded-lg mt-3 bg-red-600 px-4 py-2 text-md font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    >
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                        <rect x="6" y="6" width="12" height="12" rx="1" />
+                      </svg>
+                      <span className="ml-2">Stop</span>
+                    </button>
                   ) : (
                     <button
                       onClick={() => void handleRefine()}
@@ -897,21 +930,10 @@ export default function VideoAnalysis({
                       className="inline-flex items-center rounded-lg mt-3 bg-black px-4 py-2 text-md font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
                       title={isOwner ? "" : "Only the task owner can refine analysis"}
                     >
-                      {analyzeVideoMutation.isLoading ? (
-                        <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                      ) : (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                      )}
-                      <span className="ml-2">
-                        {analyzeVideoMutation.isLoading && analyzeVideoMutation.variables?.refinementPrompt
-                          ? "Refining..."
-                          : "Refine"}
-                      </span>
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span className="ml-2">Refine</span>
                     </button>
                   )}
                   <button
