@@ -1457,6 +1457,7 @@ export const videoRouter = createTRPCRouter({
         const { closeSessionsForAgentRun } = await import(
           "../../../../agent-runtime/src/session-cleanup"
         );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
         await closeSessionsForAgentRun(prisma as any, input.runId);
       } catch (error) {
         // Log but don't fail if session cleanup fails
@@ -1883,9 +1884,11 @@ export const videoRouter = createTRPCRouter({
 
       try {
         // Get or create a context for this provider
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
         const contextId = await getOrCreateContext(prisma as any, session.user.id, input.provider);
 
         // Create a session with the context
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
         const sessionInfo = await createSessionWithContext(contextId, prisma as any, session.user.id);
 
         // Track the session in BrowserbaseActiveSession
