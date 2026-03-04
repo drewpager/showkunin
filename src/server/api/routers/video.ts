@@ -1312,6 +1312,15 @@ export const videoRouter = createTRPCRouter({
         });
       }
 
+      // 1.5 Restrict automation to allowlisted emails only
+      const AUTOMATION_ALLOWED_EMAILS = ["drew@greadings.com"];
+      if (!AUTOMATION_ALLOWED_EMAILS.includes(session.user.email ?? "")) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Automation is not available for your account",
+        });
+      }
+
       // 2. Verify video has aiAnalysis with Computer Use Plan
       if (!video.aiAnalysis?.includes("COMPUTER_USE_PLAN")) {
         throw new TRPCError({

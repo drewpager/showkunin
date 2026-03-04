@@ -1,6 +1,15 @@
 name: CI
 
-on: [push, pull_request]
+# on: [push, pull_request]
+on:
+  push:
+    branches:
+      - 'comp-use'
+      - 'main'
+  pull_request:
+    branches:
+      - 'comp-use'
+      - 'main'
 
 env:
   DATABASE_URL: "https://fake.com"
@@ -37,3 +46,6 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Test
+        run: npm run test

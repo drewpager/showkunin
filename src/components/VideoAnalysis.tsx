@@ -202,6 +202,8 @@ export default function VideoAnalysis({
   const { data: session } = useSession();
   const [, setPaywallOpen] = useAtom(paywallAtom);
   const hasActiveSubscription = session?.user?.stripeSubscriptionStatus === "active";
+  const AUTOMATION_ALLOWED_EMAILS = ["drew@greadings.com"];
+  const canAccessAutomation = AUTOMATION_ALLOWED_EMAILS.includes(session?.user?.email ?? "");
 
   // Use saved analysis or mutation data (prioritize latest mutation result)
   const analysis = analyzeScreencastMutation.data?.analysis ?? analyzeVideoMutation.data?.analysis ?? initialAnalysis;
@@ -757,7 +759,7 @@ export default function VideoAnalysis({
 
           {analysis && (!analyzeVideoMutation.isLoading || analyzeVideoMutation.variables?.refinementPrompt) && (
             <>
-              {computerUsePlan && (
+              {computerUsePlan && canAccessAutomation && (
                 <div className="mb-6 rounded-lg bg-gray-50 p-4 border border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
