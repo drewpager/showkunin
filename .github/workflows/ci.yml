@@ -12,6 +12,7 @@ on:
       - 'main'
 
 env:
+  SKIP_ENV_VALIDATION: "true"
   DATABASE_URL: "https://fake.com"
   AWS_ENDPOINT: "https://fake.com"
   AWS_REGION: "us-east-005"
