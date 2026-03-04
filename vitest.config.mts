@@ -12,7 +12,7 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts", "src/**/*.test.tsx", "tests/**/*.test.ts"],
     exclude: ["node_modules/**/*"],
-    environment: "jsdom",
+    environment: "happy-dom",
     // Browser testing configuration (for component tests)
     browser: {
       enabled: false, // Set to true or use --browser flag to run browser tests
