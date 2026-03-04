@@ -1457,7 +1457,7 @@ export const videoRouter = createTRPCRouter({
         const { closeSessionsForAgentRun } = await import(
           "../../../../agent-runtime/src/session-cleanup"
         );
-        await closeSessionsForAgentRun(prisma, input.runId);
+        await closeSessionsForAgentRun(prisma as any, input.runId);
       } catch (error) {
         // Log but don't fail if session cleanup fails
         console.log(`[Cancel] Session cleanup error:`, error);
@@ -1883,10 +1883,10 @@ export const videoRouter = createTRPCRouter({
 
       try {
         // Get or create a context for this provider
-        const contextId = await getOrCreateContext(prisma, session.user.id, input.provider);
+        const contextId = await getOrCreateContext(prisma as any, session.user.id, input.provider);
 
         // Create a session with the context
-        const sessionInfo = await createSessionWithContext(contextId, prisma, session.user.id);
+        const sessionInfo = await createSessionWithContext(contextId, prisma as any, session.user.id);
 
         // Track the session in BrowserbaseActiveSession
         await prisma.browserbaseActiveSession.create({

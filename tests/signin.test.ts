@@ -52,14 +52,14 @@ describe("SignIn Page", () => {
   });
 
   it("renders Google and GitHub auth provider buttons", () => {
-    render(React.createElement(SignIn, { providers: mockProviders }));
+    render(React.createElement(SignIn, { providers: mockProviders as any }));
 
     expect(screen.getByText("Continue with Google")).toBeDefined();
     expect(screen.getByText("Continue with GitHub")).toBeDefined();
   });
 
   it("shows Confirm Password field when Sign up is clicked", async () => {
-    render(React.createElement(SignIn, { providers: mockProviders }));
+    render(React.createElement(SignIn, { providers: mockProviders as any }));
 
     // Initially, Confirm Password should not be visible
     expect(screen.queryByLabelText("Confirm Password")).toBeNull();
