@@ -1,11 +1,14 @@
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
 import Head from "next/head";
+import dynamic from "next/dynamic";
 import { Disclosure, DisclosureButton, DisclosurePanel, Transition } from "@headlessui/react";
 import { ChevronUpIcon } from "@heroicons/react/20/solid";
 import CTA from "~/components/CTA";
-import VideoRecordModal from "~/components/VideoRecordModal";
 import PricingComponent from "~/components/Pricing";
+
+// Dynamic import for heavy modal component
+const VideoRecordModal = dynamic(() => import("~/components/VideoRecordModal"), { ssr: false });
 
 export default function Pricing() {
   return (

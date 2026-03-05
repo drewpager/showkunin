@@ -1,0 +1,38 @@
+# Python Sandbox Executor
+# Isolated container for running Python code with Google APIs
+#
+# Security features:
+# - Non-root user (sandbox, UID 10001)
+# - Minimal base image
+# - Read-only root filesystem (tmpfs for /app/code, /tmp)
+
+FROM python:3.11-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user with UID 10001 to avoid conflicts
+RUN addgroup -g 10001 sandbox \
+    && adduser -u 10001 -G sandbox -s /bin/sh -D sandbox
+
+# Set up app directory
+WORKDIR /app
+
+# Install Google API Python libraries
+RUN pip install --no-cache-dir \
+    google-api-python-client==2.118.0 \
+    google-auth==2.27.0 \
+    google-auth-httplib2==0.2.0 \
+    google-auth-oauthlib==1.2.0
+
+# Create directories for code and output
+RUN mkdir -p /app/code /app/output \
+    && chown -R sandbox:sandbox /app
+
+# Switch to non-root user
+USER sandbox
+
+# Default command (will be overridden by sandbox-manager)
+CMD ["python3", "--version"]

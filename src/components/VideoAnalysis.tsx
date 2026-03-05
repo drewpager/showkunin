@@ -1,10 +1,16 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { useAtom } from "jotai";
 import { api } from "~/utils/api";
 import ReactMarkdown from "react-markdown";
 import dynamic from "next/dynamic";
 import { TrashIcon } from "@radix-ui/react-icons";
+import CredentialModal from "./CredentialModal";
+import AgentRunMonitor from "./AgentRunMonitor";
+import PreAuthModal from "./PreAuthModal";
+import { inferCredentials, getCredentialPromptMessage, getGoogleSharingNotification } from "~/utils/credential-inference";
+import paywallAtom from "~/atoms/paywallAtom";
 
 // Import ScreencastRecorder dynamically with SSR disabled to prevent navigator errors
 const ScreencastRecorder = dynamic(
@@ -21,14 +27,27 @@ interface VideoAnalysisProps {
   isOwner?: boolean;
 }
 
-interface ComputerUseStep {
+interface SemanticStep {
   action?: string;
+  target?: string;
+  how_to_find?: string;
+  value?: string;
+  expected_result?: string;
+  fallback?: string;
+  // Legacy fields for backward compatibility
   coordinate?: { x: number; y: number };
-  [key: string]: unknown;
+  text?: string;
+  description?: string;
 }
 
 interface ComputerUsePlan {
-  steps?: ComputerUseStep[];
+  // New semantic format
+  goal?: string;
+  starting_url?: string;
+  steps?: SemanticStep[];
+  success_criteria?: string[];
+  // Legacy format
+  task_description?: string;
   [key: string]: unknown;
 }
 
@@ -181,6 +200,10 @@ export default function VideoAnalysis({
   const setSolvedMutation = api.video.setSolved.useMutation();
   const utils = api.useContext();
   const { data: session } = useSession();
+  const [, setPaywallOpen] = useAtom(paywallAtom);
+  const hasActiveSubscription = session?.user?.stripeSubscriptionStatus === "active";
+  const AUTOMATION_ALLOWED_EMAILS = ["drew@greadings.com"];
+  const canAccessAutomation = AUTOMATION_ALLOWED_EMAILS.includes(session?.user?.email ?? "");
 
   // Use saved analysis or mutation data (prioritize latest mutation result)
   const analysis = analyzeScreencastMutation.data?.analysis ?? analyzeVideoMutation.data?.analysis ?? initialAnalysis;
@@ -194,14 +217,37 @@ export default function VideoAnalysis({
     await utils.video.get.invalidate({ videoId });
   };
 
+  const refineAbortRef = useRef<AbortController | null>(null);
+
   const handleRefine = async () => {
     if (!refinementInput.trim()) return;
-    await analyzeVideoMutation.mutateAsync({
-      videoId,
-      refinementPrompt: refinementInput
-    });
-    setRefinementInput("");
-    await utils.video.get.invalidate({ videoId });
+    const abortController = new AbortController();
+    refineAbortRef.current = abortController;
+    try {
+      await analyzeVideoMutation.mutateAsync({
+        videoId,
+        refinementPrompt: refinementInput
+      });
+      if (!abortController.signal.aborted) {
+        setRefinementInput("");
+        await utils.video.get.invalidate({ videoId });
+      }
+    } catch {
+      // Swallow error if we aborted intentionally
+      if (!abortController.signal.aborted) {
+        throw undefined;
+      }
+    } finally {
+      refineAbortRef.current = null;
+    }
+  };
+
+  const handleStopRefine = () => {
+    if (refineAbortRef.current) {
+      refineAbortRef.current.abort();
+      refineAbortRef.current = null;
+    }
+    analyzeVideoMutation.reset();
   };
 
   const handleScreencastUpdate = () => {
@@ -264,6 +310,20 @@ export default function VideoAnalysis({
   };
 
   const router = useRouter();
+
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
+
+  // Disable body scroll when agent execution modal is open
+  useEffect(() => {
+    if (activeRunId) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeRunId]);
 
   useEffect(() => {
     if (
@@ -348,18 +408,142 @@ export default function VideoAnalysis({
   }, [analysis]);
 
   const [isAutomating, setIsAutomating] = useState(false);
+  const [isPreparingAutomation, setIsPreparingAutomation] = useState(false);
+  const [showCredentialModal, setShowCredentialModal] = useState(false);
+  const [credentials, setCredentials] = useState<Array<{ key: string; value: string }>>([]);
+  // Test mode: force code sandbox execution instead of browser automation
+  const [forceCodeExecution, setForceCodeExecution] = useState(false);
+
+  // Pre-auth flow state
+  const [showPreAuthModal, setShowPreAuthModal] = useState(false);
+  const [preAuthProvider, setPreAuthProvider] = useState<string | null>(null);
+  const [preAuthLiveViewUrl, setPreAuthLiveViewUrl] = useState<string | null>(null);
+  const [preAuthSessionId, setPreAuthSessionId] = useState<string | null>(null);
+  const [isStartingPreAuth, setIsStartingPreAuth] = useState(false);
+
+  const executeAutomationMutation = api.video.executeAutomation.useMutation();
+  const checkAuthRequirementQuery = api.video.checkAuthRequirement.useQuery(
+    { videoId },
+    { enabled: false } // Don't run automatically
+  );
+  const startPreAuthMutation = api.video.startPreAuthSession.useMutation();
+  const completePreAuthMutation = api.video.completePreAuth.useMutation();
+
+  // Infer suggested credentials from the analysis
+  const suggestedCredentials = useMemo(
+    () => inferCredentials(analysis ?? null),
+    [analysis]
+  );
+  const credentialPromptMessage = useMemo(
+    () => getCredentialPromptMessage(isOwner, suggestedCredentials),
+    [isOwner, suggestedCredentials]
+  );
+
+  // Check for Google product URLs that need sharing notification
+  const googleSharingNotification = useMemo(
+    () => getGoogleSharingNotification(analysis ?? null),
+    [analysis]
+  );
 
   const handleImplementAutomation = async () => {
     if (!computerUsePlan) return;
-    setIsAutomating(true);
+
+    // Show loading immediately
+    setIsPreparingAutomation(true);
+
+    // Check if auth is required
     try {
-      // Simulation of passing to Computer Use Agent
-      console.log("Executing Computer Use Plan:", computerUsePlan);
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate delay
-      alert("Automation instructions have been generated and passed to the Computer Use Agent runtime.");
+      const authCheck = await checkAuthRequirementQuery.refetch();
+      const authData = authCheck.data;
+
+      if (authData?.authRequired && !authData.hasValidSession) {
+        // Need to pre-authenticate
+        setPreAuthProvider(authData.provider);
+        setIsStartingPreAuth(true);
+        setShowPreAuthModal(true);
+        setIsPreparingAutomation(false);
+
+        try {
+          const result = await startPreAuthMutation.mutateAsync({
+            provider: authData.provider ?? "generic",
+          });
+          setPreAuthLiveViewUrl(result.liveViewUrl);
+          setPreAuthSessionId(result.sessionId);
+        } catch (error) {
+          console.error("Failed to start pre-auth session:", error);
+          alert("Failed to start authentication session. Please try again.");
+          setShowPreAuthModal(false);
+        } finally {
+          setIsStartingPreAuth(false);
+        }
+        return;
+      }
     } catch (error) {
-      console.error("Automation error:", error);
-      alert("Failed to start automation.");
+      console.error("Error checking auth requirement:", error);
+      // Continue to credential modal even if check fails
+    }
+
+    // Show credential modal
+    setIsPreparingAutomation(false);
+    setShowCredentialModal(true);
+  };
+
+  const handlePreAuthComplete = async () => {
+    if (preAuthProvider && preAuthSessionId) {
+      try {
+        await completePreAuthMutation.mutateAsync({
+          provider: preAuthProvider,
+          sessionId: preAuthSessionId,
+        });
+      } catch (error) {
+        console.error("Error completing pre-auth:", error);
+      }
+    }
+    setShowPreAuthModal(false);
+    setPreAuthProvider(null);
+    setPreAuthLiveViewUrl(null);
+    setPreAuthSessionId(null);
+    // Now show credential modal
+    setShowCredentialModal(true);
+  };
+
+  const handlePreAuthSkip = () => {
+    setShowPreAuthModal(false);
+    setPreAuthProvider(null);
+    setPreAuthLiveViewUrl(null);
+    setPreAuthSessionId(null);
+    // Show credential modal anyway
+    setShowCredentialModal(true);
+  };
+
+  const handlePreAuthClose = () => {
+    setShowPreAuthModal(false);
+    setPreAuthProvider(null);
+    setPreAuthLiveViewUrl(null);
+    setPreAuthSessionId(null);
+  };
+
+  const handleStartExecution = async () => {
+    setIsAutomating(true);
+    setShowCredentialModal(false);
+
+    try {
+      const result = await executeAutomationMutation.mutateAsync({
+        videoId,
+        credentials: credentials.filter((c) => c.key && c.value),
+        forceCodeExecution,
+      });
+
+      setActiveRunId(result.runId);
+      // Clear credentials from memory after submission
+      setCredentials([]);
+    } catch (error) {
+      console.error("Failed to start automation:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to start automation. Please try again."
+      );
     } finally {
       setIsAutomating(false);
     }
@@ -575,26 +759,43 @@ export default function VideoAnalysis({
 
           {analysis && (!analyzeVideoMutation.isLoading || analyzeVideoMutation.variables?.refinementPrompt) && (
             <>
-              {computerUsePlan && (
+              {computerUsePlan && canAccessAutomation && (
                 <div className="mb-6 rounded-lg bg-gray-50 p-4 border border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-md font-bold text-gray-900">Implementation Coming Soon to Pro Plans!</h3>
-                      <p className="text-sm text-gray-700">Detailed instructions generated for Computer Use Model ({computerUsePlan.steps?.length || 0} steps).</p>
+                      <h3 className="text-md font-bold text-gray-900">
+                        {hasActiveSubscription
+                          ? "Automate Your Goal Agentically"
+                          : "Implement Your Goal Agentically By Upgrading"}
+                      </h3>
+                      <p className="text-sm text-gray-700">
+                        {computerUsePlan.goal
+                          ? `Goal: ${computerUsePlan.goal.substring(0, 80)}${computerUsePlan.goal.length > 80 ? '...' : ''}`
+                          : computerUsePlan.task_description
+                            ? `Task: ${computerUsePlan.task_description.substring(0, 80)}${computerUsePlan.task_description.length > 80 ? '...' : ''}`
+                            : `Semantic automation plan generated`
+                        }
+                        {' '}({computerUsePlan.steps?.length || 0} steps)
+                      </p>
                     </div>
                     <button
-                      onClick={() => void handleImplementAutomation()}
-                      // disabled={isAutomating}
-                      disabled={true}
+                      onClick={() => {
+                        if (hasActiveSubscription) {
+                          void handleImplementAutomation();
+                        } else {
+                          setPaywallOpen(true);
+                        }
+                      }}
+                      disabled={isAutomating || isPreparingAutomation || !computerUsePlan}
                       className="flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
                     >
-                      {isAutomating ? (
+                      {isAutomating || isPreparingAutomation ? (
                         <>
                           <svg className="h-4 w-4 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          <span>Running...</span>
+                          <span>{isPreparingAutomation ? "Preparing..." : "Running..."}</span>
                         </>
                       ) : (
                         <>
@@ -602,7 +803,7 @@ export default function VideoAnalysis({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span>Implement Automation</span>
+                          <span>{hasActiveSubscription ? "Implement Automation" : "Upgrade to Automate"}</span>
                         </>
                       )}
                     </button>
@@ -714,6 +915,16 @@ export default function VideoAnalysis({
                           : "Refine with Screencast"}
                       </span>
                     </button>
+                  ) : analyzeVideoMutation.isLoading && analyzeVideoMutation.variables?.refinementPrompt ? (
+                    <button
+                      onClick={handleStopRefine}
+                      className="inline-flex items-center rounded-lg mt-3 bg-red-600 px-4 py-2 text-md font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    >
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                        <rect x="6" y="6" width="12" height="12" rx="1" />
+                      </svg>
+                      <span className="ml-2">Stop</span>
+                    </button>
                   ) : (
                     <button
                       onClick={() => void handleRefine()}
@@ -721,21 +932,10 @@ export default function VideoAnalysis({
                       className="inline-flex items-center rounded-lg mt-3 bg-black px-4 py-2 text-md font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
                       title={isOwner ? "" : "Only the task owner can refine analysis"}
                     >
-                      {analyzeVideoMutation.isLoading ? (
-                        <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                      ) : (
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                      )}
-                      <span className="ml-2">
-                        {analyzeVideoMutation.isLoading && analyzeVideoMutation.variables?.refinementPrompt
-                          ? "Refining..."
-                          : "Refine"}
-                      </span>
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span className="ml-2">Refine</span>
                     </button>
                   )}
                   <button
@@ -801,6 +1001,40 @@ export default function VideoAnalysis({
         onRecordingComplete={handleScreencastRecorded}
         onCancel={handleScreencastCancel}
       />
+
+      {showPreAuthModal && (
+        <PreAuthModal
+          provider={preAuthProvider ?? "generic"}
+          liveViewUrl={preAuthLiveViewUrl}
+          isLoading={isStartingPreAuth}
+          onComplete={() => void handlePreAuthComplete()}
+          onSkip={handlePreAuthSkip}
+          onClose={handlePreAuthClose}
+        />
+      )}
+
+      {showCredentialModal && (
+        <CredentialModal
+          onClose={() => setShowCredentialModal(false)}
+          onSubmit={() => void handleStartExecution()}
+          credentials={credentials}
+          setCredentials={setCredentials}
+          isSubmitting={isAutomating}
+          suggestedCredentials={suggestedCredentials}
+          promptMessage={credentialPromptMessage}
+          isSharedTask={!isOwner}
+          googleSharingNotification={googleSharingNotification ?? undefined}
+          forceCodeExecution={forceCodeExecution}
+          setForceCodeExecution={setForceCodeExecution}
+        />
+      )}
+
+      {activeRunId && (
+        <AgentRunMonitor
+          runId={activeRunId}
+          onClose={() => setActiveRunId(null)}
+        />
+      )}
     </div>
   );
 }

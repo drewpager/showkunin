@@ -17,25 +17,27 @@ datasource db {
 }
 
 model Video {
-  id                        String    @id @default(cuid())
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
+  id                        String            @id @default(cuid())
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
   title                     String
   userId                    String
-  sharing                   Boolean   @default(false)
-  delete_after_link_expires Boolean   @default(false)
+  sharing                   Boolean           @default(false)
+  delete_after_link_expires Boolean           @default(false)
   shareLinkExpiresAt        DateTime?
-  linkShareSeo              Boolean   @default(false)
-  aiAnalysis                String?   @db.Text
-  userContext               String?   @db.Text
+  linkShareSeo              Boolean           @default(false)
+  aiAnalysis                String?           @db.Text
+  userContext               String?           @db.Text
   aiAnalysisGeneratedAt     DateTime?
   solved                    Boolean?
   fileDeletedAt             DateTime?
-  thumbnailUrl              String?   @db.Text
+  thumbnailUrl              String?           @db.Text
   thumbnailUrlExpiresAt     DateTime?
   geminiCacheName           String?
   geminiCacheExpiresAt      DateTime?
-  user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentials               TaskCredential[]
+  agentRuns                 AgentRun[]
 
   @@index([userId])
 }
@@ -76,6 +78,9 @@ model User {
   accounts                 Account[]
   sessions                 Session[]
   videos                   Video[]
+  agentRuns                AgentRun[]
+  browserSessions          BrowserSession[]
+  browserbaseContexts      BrowserbaseContext[]
   stripeCustomerId         String?
   stripeSubscriptionId     String?
   stripeSubscriptionStatus StripeSubscriptionStatus?
@@ -112,4 +117,159 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Agent execution models
+model TaskCredential {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  key       String   // e.g., "GITHUB_TOKEN"
+  value     String   @db.Text // AES-256-GCM encrypted
+
+  @@index([videoId])
+  @@unique([videoId, key])
+}
+
+model AgentRun {
+  id                   String            @id @default(cuid())
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  videoId              String
+  video                Video             @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  userId               String
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status               AgentRunStatus    @default(pending)
+  agentSessionId       String?
+  browserbaseSessionId String?
+  liveViewUrl          String?           @db.Text
+  exitCode             Int?
+  errorMessage         String?           @db.Text
+  startedAt            DateTime?
+  completedAt          DateTime?
+  logs                 AgentLog[]
+  checkpoints          AgentCheckpoint[]
+  codeExecutions       CodeExecution[]
+
+  // Timeout and progress tracking fields
+  maxDurationMs        Int?              @default(300000)  // 5 min default
+  lastProgressAt       DateTime?                           // Last meaningful progress
+  progressStallCount   Int               @default(0)       // Consecutive stalls
+  successValidated     Boolean           @default(false)   // Verified completion
+  authRequired         String?                             // Provider needing pre-auth
+  authCompleted        Boolean           @default(false)   // Pre-auth done
+
+  // Test mode: force specific execution paths
+  forceCodeExecution   Boolean           @default(false)   // Skip browser, use sandbox
+
+  @@index([videoId])
+  @@index([userId])
+  @@index([status])
+}
+
+enum AgentRunStatus {
+  pending
+  running
+  paused
+  completed
+  failed
+  cancelled
+}
+
+model AgentLog {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  agentRunId String
+  agentRun   AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  level      String   // info, error, debug
+  message    String   @db.Text
+  timestamp  DateTime @default(now())
+
+  // Structured action fields for better UI display
+  actionType String?  // tool_call, tool_result, text, system, step
+  toolName   String?  // e.g., "Bash", "Edit", "Read", "Write"
+  toolInput  String?  @db.Text // JSON stringified tool input
+  toolOutput String?  @db.Text // JSON stringified tool output (truncated)
+  stepNumber Int?     // Step number in execution plan
+
+  @@index([agentRunId])
+  @@index([timestamp])
+}
+
+model AgentCheckpoint {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  agentRunId  String
+  agentRun    AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  s3Key       String   // S3 location of checkpoint tar.gz
+  description String?
+
+  @@index([agentRunId])
+}
+
+// Browser session persistence for OAuth flows
+model BrowserSession {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider    String   // 'google', 'github', etc.
+  sessionData String   @db.Text // AES-256-GCM encrypted cookies JSON
+  expiresAt   DateTime
+
+  @@index([userId])
+  @@unique([userId, provider])
+}
+
+// Browserbase context persistence for session reuse
+model BrowserbaseContext {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider   String   // 'google', 'github', 'generic'
+  contextId  String   // Browserbase context ID
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
+  @@unique([userId, provider])
+}
+
+// Browserbase active session tracking for rate limit management
+model BrowserbaseActiveSession {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  sessionId   String   @unique
+  userId      String
+  agentRunId  String?
+  status      String   @default("active")  // active, closed, stale
+  lastPingAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Code execution tracking for sandbox executions
+model CodeExecution {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  agentRunId    String
+  agentRun      AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  runtime       String   // "node", "python", "clasp"
+  template      String?  // Template name used (e.g., "google-sheets-node")
+  generatedCode String   @db.Text
+  containerId   String?
+  status        String   @default("pending") // pending, running, completed, failed, timeout
+  stdout        String?  @db.Text
+  stderr        String?  @db.Text
+  exitCode      Int?
+  durationMs    Int?
+  error         String?  @db.Text
+
+  @@index([agentRunId])
+  @@index([status])
 }

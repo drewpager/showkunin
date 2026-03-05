@@ -16,6 +16,7 @@ const ExamplesHub: NextPage = () => {
     { limit: 20 },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
+      staleTime: 1000 * 60 * 10, // 10 minutes - public examples change infrequently
     }
   );
 

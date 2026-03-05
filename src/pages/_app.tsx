@@ -31,6 +31,7 @@ import { Inter } from "next/font/google";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap", // Prevents Flash of Invisible Text (FOIT) during font loading
 });
 
 const MyApp: AppType<{ session: Session | null }> = ({

@@ -21,6 +21,33 @@ import axios from "axios";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import Browserbase from "@browserbasehq/sdk";
+
+// Initialize Browserbase SDK for session management
+const browserbase = new Browserbase({
+  apiKey: process.env.BROWSERBASE_API_KEY,
+});
+
+/**
+ * Close a Browserbase session by ID
+ * Used when cancelling agent runs to clean up resources
+ */
+async function closeBrowserbaseSession(sessionId: string): Promise<void> {
+  if (!sessionId || !process.env.BROWSERBASE_PROJECT_ID) {
+    return;
+  }
+
+  try {
+    await browserbase.sessions.update(sessionId, {
+      projectId: process.env.BROWSERBASE_PROJECT_ID,
+      status: "REQUEST_RELEASE",
+    });
+    console.log(`[Browserbase] Session ${sessionId} released`);
+  } catch (error) {
+    // Session may already be closed or expired
+    console.log(`[Browserbase] Could not release session ${sessionId}:`, error);
+  }
+}
 
 const MODEL_NAME = "gemini-3-flash-preview";
 
@@ -767,7 +794,7 @@ export const videoRouter = createTRPCRouter({
               ---ANALYSIS_START---
               1. User Analysis (Markdown) - Provide the new insights, answers to follow-up questions, or changed instructions. IMPORTANT: If the user requests code or if the previous code needs updating, YOU MUST PROVIDE THE FULL UPDATED CODE SNIPPETS. Do not just describe the changes; show the actual code.
               2. "---COMPUTER_USE_PLAN---" separator
-              3. Computer Use Instructions (JSON) - Provide the FULL, complete, and updated JSON plan that incorporates all changes. This replaces the previous plan.`
+              3. Computer Use Instructions (JSON) - Provide the FULL, complete, and updated SEMANTIC JSON plan that incorporates all changes. Use the semantic format with goal, starting_url, steps (with target, how_to_find, value, expected_result, fallback), and success_criteria. Do NOT use coordinates.`
               : 
               
               `You are an AI problem solving and automation expert analyzing a screen recording. The user is showing you a task they want automated or a problem they want resolved.
@@ -794,20 +821,25 @@ export const videoRouter = createTRPCRouter({
 
               Section 2: Computer Use Instructions (JSON)
               Provide a valid JSON object immediately following the separator. Do not include markdown code blocks.
-              The JSON should contain a step-by-step plan for a Computer Use agent to replicate the workflow shown in the video.
-              
+              The JSON should contain a SEMANTIC step-by-step plan for an automation agent to replicate the workflow shown in the video.
+
+              IMPORTANT: Do NOT use coordinates! Instead, describe elements semantically so the agent can find them by their text content, labels, and roles.
+
               Format:
               {
-                "task_description": "Brief description of the task",
+                "goal": "High-level description of what the automation achieves",
+                "starting_url": "The URL where the task begins (if applicable)",
                 "steps": [
                   {
-                    "action": "click" | "type" | "scroll" | "wait",
-                    "coordinate": [x, y], // Estimate coordinates based on a 1024x768 resolution grid.
-                    "text": "...", // For type actions
-                    "description": "Explanation of the step",
-                    "element_description": "Visual description of the element to interact with"
+                    "action": "navigate" | "click" | "type" | "scroll" | "wait" | "select" | "hover",
+                    "target": "Semantic description of the element (e.g., 'Submit button', 'Email input field')",
+                    "how_to_find": "Detailed instructions on finding this element (e.g., 'Blue button labeled Submit at the bottom of the form', 'Text input with placeholder Enter your email')",
+                    "value": "For type/select actions - the text to enter or option to select",
+                    "expected_result": "What should happen after this action (e.g., 'Form submits, confirmation page appears')",
+                    "fallback": "Alternative approach if the primary method fails (optional)"
                   }
-                ]
+                ],
+                "success_criteria": ["List of conditions that indicate successful completion"]
               }`
                 },
               ],
@@ -980,9 +1012,9 @@ export const videoRouter = createTRPCRouter({
             },
           });
 
-          if (!uploadResult.name) {
+          if (!uploadResult.name || !uploadResult.uri) {
             if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-            throw new Error("Upload failed: No file name returned from Gemini");
+            throw new Error("Upload failed: No file name or URI returned from Gemini");
           }
 
           // Wait for file to be processed
@@ -1000,7 +1032,7 @@ export const videoRouter = createTRPCRouter({
           videoPart = {
             fileData: {
               mimeType: uploadResult.mimeType ?? "video/webm",
-              fileUri: uploadResult.uri!,
+              fileUri: uploadResult.uri,
             },
           };
           fileToDelete = uploadResult.name;
@@ -1247,6 +1279,732 @@ export const videoRouter = createTRPCRouter({
       return {
         success: true,
         newVideoId: newVideo.id,
+      };
+    }),
+
+  // Agent execution mutations
+  executeAutomation: protectedProcedure
+    .input(
+      z.object({
+        videoId: z.string(),
+        credentials: z
+          .array(
+            z.object({
+              key: z.string().min(1),
+              value: z.string().min(1),
+            })
+          )
+          .optional(),
+        // Test mode: force code sandbox execution instead of browser automation
+        forceCodeExecution: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      // 1. Verify user owns video
+      const video = await prisma.video.findUnique({
+        where: { id: input.videoId },
+      });
+
+      if (!video || video.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Video not found or access denied",
+        });
+      }
+
+      // 1.5 Restrict automation to allowlisted emails only
+      const AUTOMATION_ALLOWED_EMAILS = ["drew@greadings.com"];
+      if (!AUTOMATION_ALLOWED_EMAILS.includes(session.user.email ?? "")) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Automation is not available for your account",
+        });
+      }
+
+      // 2. Verify video has aiAnalysis with Computer Use Plan
+      if (!video.aiAnalysis?.includes("COMPUTER_USE_PLAN")) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Video must have a Computer Use Plan before execution",
+        });
+      }
+
+      // 3. Store encrypted credentials
+      const encryptionKey = process.env.ENCRYPTION_KEY;
+      if (!encryptionKey) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Encryption key not configured",
+        });
+      }
+
+      // Dynamic import to avoid issues with crypto in browser bundle
+      const { encrypt } = await import("~/utils/encryption");
+
+      if (input.credentials?.length) {
+        // Delete existing credentials for this video
+        await prisma.taskCredential.deleteMany({
+          where: { videoId: input.videoId },
+        });
+
+        // Store new encrypted credentials
+        await prisma.taskCredential.createMany({
+          data: input.credentials.map((cred) => ({
+            videoId: input.videoId,
+            key: cred.key,
+            value: encrypt(cred.value, encryptionKey),
+          })),
+        });
+      }
+
+      // 4. Create AgentRun record
+      const agentRun = await prisma.agentRun.create({
+        data: {
+          videoId: input.videoId,
+          userId: session.user.id,
+          status: "pending",
+          forceCodeExecution: input.forceCodeExecution ?? false,
+        },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "agent_run_created",
+        properties: { videoId: input.videoId, runId: agentRun.id },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true, runId: agentRun.id };
+    }),
+
+  getAgentRun: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .query(async ({ ctx: { prisma, session }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+        include: {
+          logs: { orderBy: { timestamp: "desc" }, take: 100 },
+          checkpoints: { orderBy: { createdAt: "desc" } },
+        },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent run not found",
+        });
+      }
+
+      return run;
+    }),
+
+  getAgentRuns: protectedProcedure
+    .input(z.object({ videoId: z.string() }))
+    .query(async ({ ctx: { prisma, session }, input }) => {
+      return prisma.agentRun.findMany({
+        where: {
+          videoId: input.videoId,
+          userId: session.user.id,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      });
+    }),
+
+  cancelAgentRun: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+        select: {
+          id: true,
+          userId: true,
+          status: true,
+          browserbaseSessionId: true,
+        },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Agent run not found or access denied",
+        });
+      }
+
+      if (run.status !== "pending" && run.status !== "running" && run.status !== "paused") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Can only cancel pending, running, or paused jobs",
+        });
+      }
+
+      // IMPORTANT: Set status to cancelled FIRST so the agent-executor loop
+      // can see the cancellation immediately and stop processing
+      await prisma.agentRun.update({
+        where: { id: input.runId },
+        data: { status: "cancelled" },
+      });
+
+      // Close the Browserbase session if one exists
+      // This releases the browser resource immediately instead of waiting for timeout
+      if (run.browserbaseSessionId) {
+        await closeBrowserbaseSession(run.browserbaseSessionId);
+      }
+
+      // Also close any other sessions that may be tracked for this run
+      // (handles edge cases where multiple sessions were started)
+      try {
+        const { closeSessionsForAgentRun } = await import(
+          "../../../../agent-runtime/src/session-cleanup"
+        );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+        await closeSessionsForAgentRun(prisma as any, input.runId);
+      } catch (error) {
+        // Log but don't fail if session cleanup fails
+        console.log(`[Cancel] Session cleanup error:`, error);
+      }
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "agent_run_cancelled",
+        properties: { runId: input.runId },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true };
+    }),
+
+  pauseAgentRun: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Agent run not found or access denied",
+        });
+      }
+
+      if (run.status !== "running") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Can only pause running jobs",
+        });
+      }
+
+      await prisma.agentRun.update({
+        where: { id: input.runId },
+        data: { status: "paused" },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "agent_run_paused",
+        properties: { runId: input.runId },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true };
+    }),
+
+  resumeAgentRun: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Agent run not found or access denied",
+        });
+      }
+
+      if (run.status !== "paused") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Can only resume paused jobs",
+        });
+      }
+
+      await prisma.agentRun.update({
+        where: { id: input.runId },
+        data: { status: "running" },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "agent_run_resumed",
+        properties: { runId: input.runId },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true };
+    }),
+
+  getCheckpoints: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .query(async ({ ctx: { prisma, session }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+        include: {
+          checkpoints: { orderBy: { createdAt: "desc" } },
+        },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent run not found",
+        });
+      }
+
+      return run.checkpoints;
+    }),
+
+  restoreCheckpoint: protectedProcedure
+    .input(
+      z.object({
+        runId: z.string(),
+        checkpointId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      // Verify ownership
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Agent run not found or access denied",
+        });
+      }
+
+      // Verify checkpoint exists and belongs to this run
+      const checkpoint = await prisma.agentCheckpoint.findUnique({
+        where: { id: input.checkpointId },
+      });
+
+      if (!checkpoint || checkpoint.agentRunId !== input.runId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Checkpoint not found",
+        });
+      }
+
+      // Note: Actual restoration happens in the agent runtime
+      // Here we just create a new run that will restore from this checkpoint
+      const newRun = await prisma.agentRun.create({
+        data: {
+          videoId: run.videoId,
+          userId: session.user.id,
+          status: "pending",
+          // Store checkpoint info for the agent runtime to pick up
+        },
+      });
+
+      // Create a log entry indicating this is a restore
+      await prisma.agentLog.create({
+        data: {
+          agentRunId: newRun.id,
+          level: "info",
+          message: `Restoring from checkpoint: ${checkpoint.description ?? checkpoint.id}`,
+        },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "checkpoint_restored",
+        properties: { runId: input.runId, checkpointId: input.checkpointId, newRunId: newRun.id },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true, newRunId: newRun.id };
+    }),
+
+  // Browserbase Live View endpoints
+  getLiveViewUrl: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .query(async ({ ctx: { prisma, session }, input }) => {
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+        select: {
+          userId: true,
+          liveViewUrl: true,
+          browserbaseSessionId: true,
+          status: true,
+        },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent run not found",
+        });
+      }
+
+      return {
+        liveViewUrl: run.liveViewUrl,
+        browserbaseSessionId: run.browserbaseSessionId,
+        isActive: run.status === "running" || run.status === "paused",
+      };
+    }),
+
+  refreshLiveViewUrl: protectedProcedure
+    .input(z.object({ runId: z.string() }))
+    .mutation(async ({ ctx: { prisma, session }, input }) => {
+      // Get run with session ID
+      const run = await prisma.agentRun.findUnique({
+        where: { id: input.runId },
+        select: {
+          userId: true,
+          browserbaseSessionId: true,
+          status: true,
+        },
+      });
+
+      if (!run || run.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent run not found",
+        });
+      }
+
+      if (!run.browserbaseSessionId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No browser session associated with this run",
+        });
+      }
+
+      // Only refresh for active runs
+      const isActive = run.status === "running" || run.status === "paused";
+      if (!isActive) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot refresh live view URL for inactive run",
+        });
+      }
+
+      // Dynamic import to avoid server/client issues
+      const { refreshLiveViewUrl } = await import(
+        "../../../../agent-runtime/src/browserbase-manager"
+      );
+
+      // Get fresh URL from Browserbase
+      const newUrl = await refreshLiveViewUrl(run.browserbaseSessionId);
+
+      if (!newUrl) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to refresh live view URL - session may have closed",
+        });
+      }
+
+      // Update the stored URL in the database
+      await prisma.agentRun.update({
+        where: { id: input.runId },
+        data: { liveViewUrl: newUrl },
+      });
+
+      return {
+        liveViewUrl: newUrl,
+        browserbaseSessionId: run.browserbaseSessionId,
+      };
+    }),
+
+  getBrowserbaseContexts: protectedProcedure
+    .query(async ({ ctx: { prisma, session } }) => {
+      const contexts = await prisma.browserbaseContext.findMany({
+        where: { userId: session.user.id },
+        orderBy: { lastUsedAt: "desc" },
+      });
+
+      return contexts.map((ctx) => ({
+        id: ctx.id,
+        provider: ctx.provider,
+        lastUsedAt: ctx.lastUsedAt,
+      }));
+    }),
+
+  resetBrowserbaseContext: protectedProcedure
+    .input(z.object({ provider: z.string() }))
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      const existing = await prisma.browserbaseContext.findUnique({
+        where: {
+          userId_provider: {
+            userId: session.user.id,
+            provider: input.provider,
+          },
+        },
+      });
+
+      if (!existing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Browser context not found for this provider",
+        });
+      }
+
+      // Delete context at Browserbase (we don't have direct SDK access here,
+      // so we just delete from our DB - the context will be orphaned at BB but that's OK)
+      await prisma.browserbaseContext.delete({
+        where: { id: existing.id },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "browserbase_context_reset",
+        properties: { provider: input.provider },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true, provider: input.provider };
+    }),
+
+  resetAllBrowserbaseContexts: protectedProcedure
+    .mutation(async ({ ctx: { prisma, session, posthog } }) => {
+      const result = await prisma.browserbaseContext.deleteMany({
+        where: { userId: session.user.id },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "browserbase_contexts_reset_all",
+        properties: { count: result.count },
+      });
+      void posthog?.shutdownAsync();
+
+      return { success: true, deletedCount: result.count };
+    }),
+
+  // Pre-authentication flow endpoints
+  checkAuthRequirement: protectedProcedure
+    .input(
+      z.object({
+        videoId: z.string(),
+        urls: z.array(z.string()).optional(),
+      })
+    )
+    .query(async ({ ctx: { prisma, session }, input }) => {
+      // Get the video to extract URLs from analysis
+      const video = await prisma.video.findUnique({
+        where: { id: input.videoId },
+      });
+
+      if (!video || video.userId !== session.user.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Video not found",
+        });
+      }
+
+      // Extract URLs from the video analysis or use provided URLs
+      let urls = input.urls ?? [];
+      if (urls.length === 0 && video.aiAnalysis) {
+        // Extract URLs from the analysis
+        const urlRegex = /https?:\/\/[^\s"'<>]+/gi;
+        const matches = video.aiAnalysis.match(urlRegex) ?? [];
+        urls = [...new Set(matches)]; // Deduplicate
+      }
+
+      // Check for known auth patterns
+      const authPatterns: Record<string, { regex: RegExp; provider: string }[]> = {
+        google: [
+          { regex: /docs\.google\.com/i, provider: "google" },
+          { regex: /sheets\.google\.com/i, provider: "google" },
+          { regex: /drive\.google\.com/i, provider: "google" },
+          { regex: /script\.google\.com/i, provider: "google" },
+          { regex: /calendar\.google\.com/i, provider: "google" },
+        ],
+        github: [
+          { regex: /github\.com\/settings/i, provider: "github" },
+          { regex: /github\.com\/.*\/settings/i, provider: "github" },
+        ],
+        microsoft: [
+          { regex: /office\.com/i, provider: "microsoft" },
+          { regex: /outlook\.com/i, provider: "microsoft" },
+          { regex: /sharepoint\.com/i, provider: "microsoft" },
+        ],
+      };
+
+      // Check if any URL requires auth
+      for (const url of urls) {
+        for (const [, patterns] of Object.entries(authPatterns)) {
+          for (const { regex, provider } of patterns) {
+            if (regex.test(url)) {
+              // Check if user has a valid session for this provider
+              const existingContext = await prisma.browserbaseContext.findUnique({
+                where: {
+                  userId_provider: {
+                    userId: session.user.id,
+                    provider,
+                  },
+                },
+              });
+
+              return {
+                authRequired: true,
+                provider,
+                hasValidSession: !!existingContext,
+                canSkip: false,
+                matchedUrl: url,
+              };
+            }
+          }
+        }
+      }
+
+      return {
+        authRequired: false,
+        provider: null,
+        hasValidSession: false,
+        canSkip: true,
+        matchedUrl: null,
+      };
+    }),
+
+  startPreAuthSession: protectedProcedure
+    .input(
+      z.object({
+        provider: z.string(),
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      // Dynamic import to avoid server/client issues
+      const { getOrCreateContext, createSessionWithContext } = await import(
+        "../../../../agent-runtime/src/browserbase-manager"
+      );
+
+      try {
+        // Get or create a context for this provider
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+        const contextId = await getOrCreateContext(prisma as any, session.user.id, input.provider);
+
+        // Create a session with the context
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+        const sessionInfo = await createSessionWithContext(contextId, prisma as any, session.user.id);
+
+        // Track the session in BrowserbaseActiveSession
+        await prisma.browserbaseActiveSession.create({
+          data: {
+            sessionId: sessionInfo.sessionId,
+            userId: session.user.id,
+            status: "active",
+          },
+        });
+
+        posthog?.capture({
+          distinctId: session.user.id,
+          event: "pre_auth_session_started",
+          properties: { provider: input.provider },
+        });
+        void posthog?.shutdownAsync();
+
+        return {
+          success: true,
+          liveViewUrl: sessionInfo.liveViewUrl,
+          sessionId: sessionInfo.sessionId,
+          provider: input.provider,
+        };
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to start pre-auth session: ${errorMsg}`,
+        });
+      }
+    }),
+
+  completePreAuth: protectedProcedure
+    .input(
+      z.object({
+        provider: z.string(),
+        sessionId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session, posthog }, input }) => {
+      // Update the session status
+      try {
+        await prisma.browserbaseActiveSession.update({
+          where: { sessionId: input.sessionId },
+          data: { status: "closed" },
+        });
+      } catch {
+        // Session may not exist, continue anyway
+      }
+
+      // Update the context's lastUsedAt
+      await prisma.browserbaseContext.updateMany({
+        where: {
+          userId: session.user.id,
+          provider: input.provider,
+        },
+        data: {
+          lastUsedAt: new Date(),
+        },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "pre_auth_completed",
+        properties: { provider: input.provider },
+      });
+      void posthog?.shutdownAsync();
+
+      return {
+        success: true,
+        provider: input.provider,
+      };
+    }),
+
+  getActiveSessions: protectedProcedure
+    .query(async ({ ctx: { prisma, session } }) => {
+      const activeSessions = await prisma.browserbaseActiveSession.findMany({
+        where: {
+          userId: session.user.id,
+          status: "active",
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return activeSessions.map((s) => ({
+        id: s.id,
+        sessionId: s.sessionId,
+        agentRunId: s.agentRunId,
+        createdAt: s.createdAt,
+        lastPingAt: s.lastPingAt,
+      }));
+    }),
+
+  closeAllActiveSessions: protectedProcedure
+    .mutation(async ({ ctx: { prisma, session, posthog } }) => {
+      const result = await prisma.browserbaseActiveSession.updateMany({
+        where: {
+          userId: session.user.id,
+          status: "active",
+        },
+        data: {
+          status: "closed",
+        },
+      });
+
+      posthog?.capture({
+        distinctId: session.user.id,
+        event: "all_sessions_closed",
+        properties: { count: result.count },
+      });
+      void posthog?.shutdownAsync();
+
+      return {
+        success: true,
+        closedCount: result.count,
       };
     }),
 });
