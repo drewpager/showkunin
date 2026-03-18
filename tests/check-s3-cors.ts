@@ -20,8 +20,7 @@ const checkCors = async () => {
     console.log(JSON.stringify(response.CORSRules, null, 2));
   } catch (error) {
     console.error("\n❌ Failed to get CORS configuration:");
-    // @ts-ignore
-    if (error.name === "NoSuchCORSConfiguration") {
+    if (error instanceof Error && error.name === "NoSuchCORSConfiguration") {
       console.error("   No CORS configuration found for this bucket.");
     } else {
       console.error(error);

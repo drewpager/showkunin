@@ -28,7 +28,7 @@ async function main() {
     expirationDate.setDate(expirationDate.getDate() + retentionDays);
 
     if (new Date() > expirationDate) {
-      console.log(`Video ${video.id} (User: ${video.user.email}, Paying: ${isPaying}) expired on ${expirationDate.toISOString()}. Deleting...`);
+      console.log(`Video ${video.id} (User: ${String(video.user.email)}, Paying: ${String(isPaying)}) expired on ${expirationDate.toISOString()}. Deleting...`);
 
       try {
         // Delete video file
@@ -74,6 +74,6 @@ main()
     console.error(e);
     process.exit(1);
   })
-  .finally(async () => {
-    await prisma.$disconnect();
+  .finally(() => {
+    void prisma.$disconnect();
   });
