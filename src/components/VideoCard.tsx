@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { memo, useState } from "react";
+import { useState } from "react";
 
 export interface VideoCardProps {
   title: string;
@@ -14,8 +14,7 @@ export interface VideoCardProps {
   };
 }
 
-// Memoized skeleton - static component that never needs to re-render
-export const VideoCardSkeleton = memo(function VideoCardSkeleton() {
+export const VideoCardSkeleton = () => {
   return (
     <div className="h-[320px] w-[280px] animate-pulse overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       <div className="aspect-video w-full bg-gray-200" />
@@ -28,17 +27,16 @@ export const VideoCardSkeleton = memo(function VideoCardSkeleton() {
       </div>
     </div>
   );
-});
+};
 
-// Memoized VideoCard - only re-renders when props change
-export const VideoCard = memo(function VideoCard({
+export const VideoCard = ({
   title,
   id,
   createdAt,
   thumbnailUrl,
   fileDeletedAt,
   author,
-}: VideoCardProps) {
+}: VideoCardProps) => {
   const [imgError, setImgError] = useState(!!fileDeletedAt);
 
   return (
@@ -118,4 +116,4 @@ export const VideoCard = memo(function VideoCard({
       </div>
     </Link>
   );
-});
+};

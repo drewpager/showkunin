@@ -1,6 +1,5 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import dynamic from "next/dynamic";
 
 import { api } from "~/utils/api";
 import Link from "next/link";
@@ -9,19 +8,17 @@ import { useRouter } from "next/router";
 import { getTime } from "~/utils/getTime";
 import ProfileMenu from "~/components/ProfileMenu";
 import NewVideoMenu from "~/components/NewVideoMenu";
+import VideoRecordModal from "~/components/VideoRecordModal";
+import VideoUploadModal from "~/components/VideoUploadModal";
 import { useAtom } from "jotai";
 import uploadVideoModalOpen from "~/atoms/uploadVideoModalOpen";
 import recordVideoModalOpen from "~/atoms/recordVideoModalOpen";
+import Paywall from "~/components/Paywall";
 import paywallAtom from "~/atoms/paywallAtom";
-
-// Dynamic imports for heavy modal components - reduces initial bundle size
-const VideoRecordModal = dynamic(() => import("~/components/VideoRecordModal"), { ssr: false });
-const VideoUploadModal = dynamic(() => import("~/components/VideoUploadModal"), { ssr: false });
-const Paywall = dynamic(() => import("~/components/Paywall"), { ssr: false });
 import { usePostHog } from "posthog-js/react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { memo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import logo from "~/assets/logo.png";
 
 import { getTasksCache, setTasksCache } from "~/utils/cacheUtils";
@@ -57,7 +54,7 @@ const VideoList: NextPage = () => {
     { limit: 20 },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      staleTime: 1000 * 60 * 5, // 5 minutes - reduces unnecessary refetches while still keeping data fresh
+      staleTime: 0, // Always refresh in background while showing cache
     }
   );
 
@@ -163,6 +160,7 @@ const VideoList: NextPage = () => {
                 alt="logo"
                 width={42}
                 height={42}
+                unoptimized
               />
               <p className="text-xl font-bold text-custom-black">Greadings</p>
             </Link>
@@ -335,8 +333,7 @@ interface VideoCardProps {
   fileDeletedAt?: Date | null;
 }
 
-// Memoized skeleton - static component that never needs to re-render
-const VideoCardSkeleton = memo(function VideoCardSkeleton() {
+const VideoCardSkeleton = () => {
   return (
     <div className="h-[240px] w-[250px] animate-pulse overflow-hidden rounded-lg border border-[#6c668533] text-sm font-normal">
       <figure className="relative aspect-video w-full bg-slate-200" />
@@ -346,16 +343,15 @@ const VideoCardSkeleton = memo(function VideoCardSkeleton() {
       </div>
     </div>
   );
-});
+};
 
-// Memoized VideoCard - only re-renders when props change
-const VideoCard = memo(function VideoCard({
+const VideoCard = ({
   title,
   id,
   createdAt,
   thumbnailUrl,
   fileDeletedAt,
-}: VideoCardProps) {
+}: VideoCardProps) => {
   const [imgError, setImgError] = useState(!!fileDeletedAt);
 
   return (
@@ -407,6 +403,6 @@ const VideoCard = memo(function VideoCard({
       </div>
     </Link>
   );
-});
+};
 
 export default VideoList;

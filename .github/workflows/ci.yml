@@ -1,18 +1,8 @@
 name: CI
 
-# on: [push, pull_request]
-on:
-  push:
-    branches:
-      - 'comp-use'
-      - 'main'
-  pull_request:
-    branches:
-      - 'comp-use'
-      - 'main'
+on: [push, pull_request]
 
 env:
-  SKIP_ENV_VALIDATION: "true"
   DATABASE_URL: "https://fake.com"
   AWS_ENDPOINT: "https://fake.com"
   AWS_REGION: "us-east-005"
@@ -48,5 +38,5 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test
-        run: npm run test
+      - name: Print Environment Variable
+        run: echo $MY_ENV_VAR

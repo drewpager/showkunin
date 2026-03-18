@@ -2,14 +2,14 @@
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
  * This is especially useful for Docker builds.
  */
-if (!process.env.SKIP_ENV_VALIDATION) {
-  const { config: dotenvx } = await import("@dotenvx/dotenvx");
-  dotenvx({
-    path: process.env.NODE_ENV === "production" ? ".env.production" : ".env",
-    override: true,
-  });
-  await import("./src/env.mjs");
-}
+import { config as dotenvx } from "@dotenvx/dotenvx";
+
+dotenvx({
+  path: process.env.NODE_ENV === "production" ? ".env.production" : ".env",
+  override: true,
+});
+
+!process.env.SKIP_ENV_VALIDATION && (await import("./src/env.mjs"));
 
 /** @type {import("next").NextConfig} */
 const config = {

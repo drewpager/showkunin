@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules
-/agent-runtime/node_modules/
 /.pnp
 .pnp.js
 
@@ -15,8 +14,6 @@
 # database
 /prisma/db.sqlite
 /prisma/db.sqlite-journal
-/backups/
-/.claude/SCRATCHPAD.md
 
 # next.js
 /.next/
